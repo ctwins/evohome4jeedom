@@ -1,4 +1,4 @@
-# jeevohome
+# evohome4jeedom
 This is a plugin for Jeedom 3.0 platform, regarding the Honeywell Evohome system.
 State is : prototype
 
