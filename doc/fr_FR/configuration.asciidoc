@@ -1,0 +1,3 @@
+== Configuration du plugin
+
+Après installation du plugin et activation, vous devez régler votre compte d'accès au système Honeywell Evohome.

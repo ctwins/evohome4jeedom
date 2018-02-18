@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<info>
+    <id>evohome</id>
+    <name>Evohome</name>
+    <description>Plugin EVOHOME</description>
+    <licence>AGPL</licence>
+    <author>ctwins</author>
+    <require>3.0</require>
+    <category>wellness</category>
+    <hasDependency>1</hasDependency>
+    <hasOwnDeamon>0</hasOwnDeamon>
+</info>
