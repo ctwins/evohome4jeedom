@@ -13,7 +13,8 @@ On the general properties page, you have to set your username and password, whic
 
 
 Install and try, with your favorite FTP client. You must have the possibility to remove the plugin in case of general crash.<br/>
-As you will see, the configuration is very simple.
+As you will see, the configuration is very simple.<br/>
+**Warning : some operations take times, more than 30 seconds for the setting mode, just be patient when you see the rolling picture..**
 
 Tip to trigger setting mode or restore from file, is to add 2 lines of code inside your scenario, like that :
 - Setting mode, with xxx is the ID of the setmode action, inside your Console component :
