@@ -13,6 +13,10 @@ On the general properties page, you have to set your username and password, whic
 
 
 Install and try, with your favorite FTP client. You must have the possibility to remove the plugin in case of general crash.<br/>
+So, to install from the downloaded zip file :<br/>
+Just unzip in a folder named 'evohome' inside the plugins folder, then grant to www-data for owner and group part, with the "rwx" rights, set "r-x" for others (or 0775 when under www-data user)<br/>
+
+
 As you will see, the configuration is very simple.<br/>
 **Warning : some operations take times, more than 30 seconds for the setting mode, just be patient when you see the rolling picture..**
 
