@@ -51,7 +51,11 @@ else:
 	jZones = '{ "success" : true'
 	# examples : Auto (isPermanent=True) / 
 	jZones = jZones + ', "currentMode":"' + tcs.systemModeStatus['mode'] + '"'
-	jZones = jZones + ', "permanentMode" : ' + str(tcs.systemModeStatus['isPermanent'])
+	jZones = jZones + ', "permanentMode" : '
+	if tcs.systemModeStatus['isPermanent']:
+		jZones = jZones + 'true'
+	else:
+		jZones = jZones + 'false'
 	if tcs.systemModeStatus['isPermanent']:
 		jZones = jZones + ', "untilMode" : "NA"'
 	else:
@@ -79,7 +83,7 @@ else:
 		if zone.heatSetpointStatus['setpointMode'] == 'TemporaryOverride':
 			# example : 2018-01-25T08:00:00
 			jZones = jZones + ', "until" : "' + zone.heatSetpointStatus['until'] + '"'
-		else
+		else:
 			jZones = jZones + ', "until" : "NA"'
 		# add schedule infos (NB : each call to zone.schedule() takes ~1 sec because of an API request)
 		jZones = jZones + ', "schedule":' + json.dumps(zone.schedule())
