@@ -38,7 +38,7 @@
 	},
 	"plugins\/evohome\/plugin_info\/configuration.php": {
 		"_noAccess": "Unauthorized access",
-		"_userName": "USer name",
+		"_userName": "User name",
 		"_password": "Password",
 		"_place": "Location",
 		"_default": "Default",
@@ -79,7 +79,7 @@
 	"_title.delete": "Delete the schedule selected in the liste above",
 	"_saveAs": "Save the schedule with the name",
 	"_saveReplace": "Are you agree to update the existing file [{0}] ?",
-		"saveInfoList": "Save as {0}...",
+		"_saveInfoList": "Save as {0}...",
 	"_restoreConfirm": "Do you confirm the loading with [{0}] ?",
 		"_restoreInfoList": "Loading {0}...",
 	"_deleteConfirm": "Do you confirm the removing of [{0}] ?",

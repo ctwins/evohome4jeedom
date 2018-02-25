@@ -49,4 +49,5 @@ else:
 			if nb < nbItems:
 				zonesRet = zonesRet + ','
 	zonesRet = zonesRet + "]"
-	print '{ "success" : true, "resultByZone" : ' + zonesRet + ' }'
+	# 2018-02-24 - same as InfosZonesE2 - fix to correctly send some non ascii characters
+	print '{ "success" : true, "resultByZone" : ' + zonesRet.encode('utf-8') + ' }'

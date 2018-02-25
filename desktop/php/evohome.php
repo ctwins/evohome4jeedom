@@ -133,8 +133,11 @@ $eqLogics = eqLogic::byType($plugin->getId());
 											<option value="-2">{{_noZone}}</option>
 											<option value="-1">{{_console}}</option>
 											<?php
-											foreach (evohome::getInformationsAllZonesE2()['zones'] as $zone) {
-												echo '<option value="' . $zone['id'] . '">' . $zone['name'] . ' (' . $zone['temperature'] . ')</option>';
+											$zones = evohome::getInformationsAllZonesE2();
+											if ( $zones != null ) {
+												foreach ($zones['zones'] as $zone) {
+													echo '<option value="' . $zone['id'] . '">' . $zone['name'] . ' (' . $zone['temperature'] . ')</option>';
+												}
 											}
 											?>
 										</select>

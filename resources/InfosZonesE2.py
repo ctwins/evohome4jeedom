@@ -79,6 +79,8 @@ else:
 		if zone.heatSetpointStatus['setpointMode'] == 'TemporaryOverride':
 			# example : 2018-01-25T08:00:00
 			jZones = jZones + ', "until" : "' + zone.heatSetpointStatus['until'] + '"'
+		else
+			jZones = jZones + ', "until" : "NA"'
 		# add schedule infos (NB : each call to zone.schedule() takes ~1 sec because of an API request)
 		jZones = jZones + ', "schedule":' + json.dumps(zone.schedule())
 		jZones = jZones + "}"
@@ -88,4 +90,5 @@ else:
 			jZones = jZones + ','
 
 	jZones = jZones + ']}'
-	print jZones
+	# 2018-02-21 - thx to ecc - fix to correctly send some non ascii characters (specifically inside the names of the zones)
+	print jZones.encode('utf-8')

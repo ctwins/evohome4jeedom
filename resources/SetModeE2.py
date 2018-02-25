@@ -24,7 +24,7 @@ else:
 			loc = tmp
 
 if loc == None:
-	print '{ "success" : false, "error" : "no location for ID = ' + LOCATION_ID + '"}'
+	print '{ "success": false, "errors" : [ { "code" : "UnknownLocation", "message" : "no location for ID ' + LOCATION_ID + '" } ] }'
 else:
 	tcs = loc._gateways[0]._control_systems[0]
 	systemId = tcs.systemId;
@@ -41,6 +41,10 @@ else:
 	else:
 		data = {"SystemMode":CODE_MODE,"TimeUntil":"%sT00:00:00Z" % UNTIL.strftime('%Y-%m-%d'),"Permanent":False}
 	r = requests.put('https://tccna.honeywell.com/WebAPI/emea/api/v1/temperatureControlSystem/%s/mode' % systemId, data=json.dumps(data), headers=headers)
-	#json.dumps(retValue)		// json to string
-	#client._convert(string)	// string to json
-	print '{ "success" : true, "modeSet" : ' + CODE_MODE + ', "result" : ' + r.text + ' }';
+
+	ret = client._convert(r.text)
+	if 'id' in ret:
+		r = requests.get('https://tccna.honeywell.com/WebAPI/emea/api/v1/commTasks?commTaskId=%s' % ret['id'], headers=headers)
+		print '{ "success" : true, "modeSet" : ' + CODE_MODE + ', "result" : ' + r.text + ' }'
+	else:
+		print '{ "success" : false, "modeSet" : ' + CODE_MODE + ', "errors" : [ { "code" : "TreatmentError", ' + r.text[1:] + ' ] }'

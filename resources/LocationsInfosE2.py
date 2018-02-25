@@ -22,4 +22,5 @@ for loc_data in client.installation_info:
 	nb = nb + 1
 	if nb < nbItems:
 		print ',',
-print ']'
+# 2018-02-21 - same as InfosZonesE2 - fix to correctly send some non ascii characters
+print ']'.encode('utf-8')
