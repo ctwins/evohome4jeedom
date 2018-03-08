@@ -4,7 +4,8 @@
 	"description" : "Plugin EVOHOME",
 	"licence" : "AGPL",
 	"author" : "ctwins",
-	"require" : "3.0",
+	"version" : "coucou",
+	"require" : "3.0b",
 	"category" : "wellness",
 	"hasDependency" : true,
 	"hasOwnDeamon" : false

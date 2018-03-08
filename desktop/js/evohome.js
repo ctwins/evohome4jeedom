@@ -41,31 +41,29 @@ function addCmdToTable(_cmd) {
 	tr += '</td>';
 	// NOM
 	tr += '<td>';
-	//tr += '<span class="cmdAttr" data-l1key="id" style="display:none;"></span>';
-	tr += '<input class="cmdAttr form-control input-sm" data-l1key="name" style="width : 140px;" placeholder="{{_name}}">';
+	tr += '<span class="cmdAttr" data-l1key="name" style="width : 140px;">{{Nom}}</span>';
 	tr += '</td>';
 	// TYPE
 	tr += '<td>';
-	//tr += '<input class="cmdAttr form-control input-sm" data-l1key="type" value="info" ';	// style="display: none">';
-	tr += '<span class="type" type="' + init(_cmd.type) + '">' + jeedom.cmd.availableType() + '</span>';
-	tr += '<span class="subType" subType="' + init(_cmd.subType) + '"></span>';
+	tr += '<span class="cmdAttr" data-l1key="type">' + init(_cmd.type) + '</span>';
+	tr += '<br/><span class="cmdAttr" data-l1key="subType">' + init(_cmd.subType) + '</span>';
 	tr += '</td>';
-	
+
 	// AFFICHER/HISTORISER
-	tr += '<td style="width: 150px;">';
-	if ( _cmd.logicalId == 'etat' || _cmd.logicalId == 'temperature' || _cmd.logicalId == 'consigne' || _cmd.logicalId == 'consigneType' ) {
-		tr += '<span><input type="checkbox" class="cmdAttr" data-size="mini" data-l1key="isVisible" checked/> {{_display}}<br/></span>';
+	tr += '<td style="width: 200px;">';
+	if ( _cmd.configuration['canBeVisible'] == '1' ) {
+		tr += '<span><input type="checkbox" class="cmdAttr" data-size="mini" data-l1key="isVisible" checked/> {{Afficher}}</span><br/>';
 	}
-	if ( _cmd.logicalId == 'temperature' || _cmd.logicalId == 'consigne' ) {
-		tr += '<span><input type="checkbox" class="cmdAttr" data-l1key="isHistorized"/> {{_historize}}</span>';
+	if ( _cmd.configuration['canBeHistorize'] == '1' ) {
+		tr += '<span><input type="checkbox" class="cmdAttr" data-l1key="isHistorized"/> {{Historiser}}</span><br/>';
 	}
 	tr += '</td>';
-	
+
 	// ACTIONS
 	tr += '<td>';
 	if (is_numeric(_cmd.id)) {
 		tr += '<a class="btn btn-default btn-xs cmdAction" data-action="configure"><i class="fa fa-cogs"></i></a> ';
-		tr += '<a class="btn btn-default btn-xs cmdAction" data-action="test"><i class="fa fa-rss"></i> {{_test}}</a>';
+		tr += '<a class="btn btn-default btn-xs cmdAction" data-action="test"><i class="fa fa-rss"></i> {{Tester}}</a>';
 	}
 	//tr += '<i class="fa fa-minus-circle pull-right cmdAction cursor" data-action="remove"></i>';
 	tr += '</td>';
@@ -77,6 +75,6 @@ function addCmdToTable(_cmd) {
 	if (isset(_cmd.type)) {
 		$('#table_cmd tbody tr:last .cmdAttr[data-l1key=type]').value(init(_cmd.type));
 	}
-	
+
 	jeedom.cmd.changeType($('#table_cmd tbody tr:last'), init(_cmd.subType));
 }

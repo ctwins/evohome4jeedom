@@ -1,54 +1,50 @@
 <?php
 class inner {
 	static function i18n($txt, $arg=null) {
-		if ( $arg == null ) $txt = __($txt,__FILE__);
-		else {
-			$txt = __($txt, __FILE__, $arg);
- 			if ( !is_array($arg) ) $txt = sprintf($txt, $arg);
-			else for ( $i=0 ; $i<count($arg) ; $i++ ) $txt = str_replace("{".$i."}", $arg[$i], $txt);
-		}
+		if ( substr($txt,-1) == '}' ) $txt .= '__';
+		$txt = __($txt, 'schedule');
+		if ( substr($txt,-2) == '__' ) $txt = substr($txt,0,-2);
+		if ( $arg == null ) return $txt;
+		if ( !is_array($arg) ) return str_replace('{0}', $arg, $txt);
+		for ( $i=0 ; $i<count($arg) ; $i++ ) $txt = str_replace("{".$i."}", $arg[$i], $txt);
 		return $txt;
 	}
 }
 if (!isConnect()) {
-	throw new Exception(inner::i18n('_noAccess'));
+	throw new Exception(inner::i18n('401 - Accès non autorisé'));
 }
 if (init('id') == '') {
-	throw new Exception(inner::i18n("_idCantBeEmpty"));
+	throw new Exception(inner::i18n("L'id ne peut être vide"));
 }
 $fileId = init(evohome::ARG_FILE_ID);
 if ($fileId == '') {
-	throw new Exception(inner::i18n("_saveIdCantBeEmpty"));
+	throw new Exception(inner::i18n("L'id du fichier programme ne peut être vide"));
 }
 $evohome = evohome::byId(init('id'));
 if (!is_object($evohome)) {
-	throw new Exception(inner::i18n("_cantFindEvohome", init('id')));
+	throw new Exception(inner::i18n("L'équipement Evohome est introuvable sur l'ID {0}", init('id')));
 }
 if ($evohome->getEqType_name() != 'evohome') {
-	throw new Exception(inner::i18n("_unwaitedType", $evohome->getEqType_name()));
+	throw new Exception(inner::i18n("Cet équipement n'est pas du type attendu : {0}", $evohome->getEqType_name()));
 }
 
 echo "<div id='div_scheduleAlert' style='display: none;'></div>";
 
 $scheduleToShow = evohome::getSchedule($fileId);
+$zoneId = init(evohome::ARG_ZONE_ID);
+$subTitle = evohome::getScheduleSubTitle($fileId,$scheduleToShow,evohome::CFG_SCH_MODE_VERTICAL,$zoneId);
+echo "<script>";
+echo "$('#md_modal')[0].previousSibling.firstChild.innerHTML = \"$subTitle\";";
+// so the background is really white (and not transparent) when printing
+echo "if ( $('#md_modal')[0].style.cssText.search('background') == -1 ) $('#md_modal')[0].style.cssText += 'background-color:white !important'";
+echo "</script>";
 
-if ( $fileId == 0) {
-	$subTitle = inner::i18n("_activeSchedule");
-} else {
-	$dt = new DateTime();
-	$dt->setTimestamp($scheduleToShow['datetime']);
-	$subTitle = inner::i18n("_scheduleInfo", [evohome::getFileInfosById($fileId)['name'], $dt->format('Y-m-d'), $dt->format('H:i:s')]);
-	$scheduleCurrent = evohome::getSchedule(0);
-	if ( json_encode($scheduleToShow['zones']) != json_encode($scheduleCurrent['zones']) ) {
-		$infoDiff = inner::i18n("_scheduleIDiffAsCurrent");
-	} else {
-		$infoDiff = inner::i18n("_scheduleSameAsCurrent");
-	}
-	$subTitle .= '<br/><i>' . $infoDiff . '</i>';
+if ( $scheduleToShow['comment'] != '') {
+	echo "<table width=100% style='background-color:white;color:black;'><tr>";
+	echo "<td style='vertical-align:top;'>" . inner::i18n('Commentaire') . "&nbsp;:&nbsp;</td>";
+	echo "<td width=90%>" . urldecode(str_replace('%0A','<br/>',$scheduleToShow['comment'])) . "</td>";
+	echo "</tr><tr style='height:6px;'><td colspan=2></td></tr></table>";
 }
-$subTitle = "<a class=\"btn btn-success btn-sm tooltips\" onclick=\"showSchedule($fileId,\'V\');\">" . inner::i18n("_VforVertical") . "</a>&nbsp;" . $subTitle;
-// not a good way to localize the title ; I'm too bad in jquery selectors :(
-echo "<script>document.getElementById('ui-id-3').innerHTML = '" . $subTitle. "';</script>";
 
 $days = array();
 for ( $i=1; $i<=7 ;$i++ ) {
@@ -58,41 +54,32 @@ for ( $i=1; $i<=7 ;$i++ ) {
 $currentDay = strftime('%u', time())-1;
 $currentTime = strftime('%H:%M', time());
 
-//echo "<div style='display: visible;'>" . json_encode($scheduleToShow,true) . "</div>";
-$z = 1;
+$zoneNum = 0;
 foreach ( $scheduleToShow['zones'] as $mydata ) {
 	echo "<table border=0>";
-	echo "<tr><td colspan=7 style='font-size:16px;font-weight:800;background-color:#C0C0C0;'>&nbsp;&nbsp;" . $mydata['name'] . '</td></tr>';
+	if ( $zoneId != 0 && $zoneId != $mydata['zoneId'] ) continue;
+	echo "<tr><td colspan=7 style='font-size:16px;font-weight:800;color:black;background-color:#C0C0C0;'>&nbsp;&nbsp;" . $mydata['name'] . '</td></tr>';
 	$dsSunday = $mydata['schedule']['DailySchedules'][6];
 	$spSundayLast = $dsSunday['Switchpoints'][sizeof($dsSunday['Switchpoints'])-1];
 	$lastTemp = $spSundayLast['TargetTemperature'];
-	$d=1;
 	foreach ( $mydata['schedule']['DailySchedules'] as $ds ) {
 		echo "<tr>";
 		echo "<td";
-		if ( $ds['DayOfWeek'] == $currentDay ) echo " style='background-color:lightgreen;'";
+		if ( $ds['DayOfWeek'] == $currentDay ) echo " style='color:black;background-color:lightgreen;'";
 		echo ">&nbsp;" . $days[$ds['DayOfWeek']] . "</td>";
 		echo "<td width=100%>";
 		echo "<table border=1 width=100% style=\"font-family:'Open Sans', sans-serif;\">";
 		echo "<tr style='font-size:11px;'>";
-		for ( $i=1 ; $i <= sizeof($ds['Switchpoints']) ; $i++) {
-			$sp = $ds['Switchpoints'][$i-1];
-			if ( $i == 1 and $sp['TimeOfDay'] != "00:00:00" ) {
-				echo "<td>00:00</td>";
-			}
-			echo "<td>" . substr($sp['TimeOfDay'],0,5) . "</td>";
-		}
-		echo "</tr>";
-		echo "<tr>";
 		$mark = 0;
+		$midnightAdded = $ds['Switchpoints'][0]['TimeOfDay'] != '00:00:00';
+		if ( $midnightAdded ) {
+			array_unshift($ds['Switchpoints'], array('TimeOfDay'=>'00:00:00', 'TargetTemperature'=>$lastTemp));
+		}
 		for ( $i=1 ; $i <= sizeof($ds['Switchpoints']) ; $i++) {
 			$sp = $ds['Switchpoints'][$i-1];
-			$hm = substr($sp['TimeOfDay'],0,5);
 			if ( $ds['DayOfWeek'] == $currentDay ) {
 				if ( $i == sizeof($ds['Switchpoints']) ) {
-					//if ( $currentTime > $hm ) {
-						$mark++;
-					//}
+					$mark++;
 				} else {
 					$spNext = $ds['Switchpoints'][$i];
 					$hmNext = substr($spNext['TimeOfDay'],0,5);
@@ -101,12 +88,18 @@ foreach ( $scheduleToShow['zones'] as $mydata ) {
 					}
 				}
 			}
-			if ( $i == 1 and $hm != "00:00" ) {
-				$te = intval(substr($hm,0,2) . substr($hm,3,2));
-				$w = $te / 2400.0 * 100.0;
-				$bgc = evohome::getBackColorForConsigne($lastTemp);
-				echo "<td align=center style='width:".$w."%;color:white;background-color:".$bgc.";'>..." . number_format($lastTemp,1) . "</td>";
+			echo "<td";
+			if ( $mark == 1 ) {
+				echo " style='color:black;background-color:lightgreen;'";
+				$mark++;
 			}
+			echo ">" . substr($sp['TimeOfDay'],0,5) . "</td>";
+		}
+		echo "</tr>";
+		echo "<tr>";
+		for ( $i=1 ; $i <= sizeof($ds['Switchpoints']) ; $i++) {
+			$sp = $ds['Switchpoints'][$i-1];
+			$hm = substr($sp['TimeOfDay'],0,5);
 			$te = 2400;
 			if ( $i < sizeof($ds['Switchpoints']) ) {
 				$hmNext = substr($ds['Switchpoints'][$i]['TimeOfDay'],0,5);
@@ -114,14 +107,15 @@ foreach ( $scheduleToShow['zones'] as $mydata ) {
 			}
 			$td = intval(substr($hm,0,2) . substr($hm,3,2));
 			$w = ($te - $td) / 2400.0 * 100.0;
-			$bgc = evohome::getBackColorForConsigne($sp['TargetTemperature']);
-			echo "<td align=center style='width:".$w."%;color:white;background-color:".$bgc.";'>" . number_format($sp['TargetTemperature'],1) . "</td>";
+			$bgc = evohome::getBackColorForTemp($sp['TargetTemperature'],$mydata['units']);
+			$sTemp = ($midnightAdded ? '...' : '' ) . number_format($sp['TargetTemperature'],1);
+			$midnightAdded = false;
+			echo "<td align=center style='width:".$w."%;color:white;background-color:".$bgc.";'>" . $sTemp . "</td>";
 			$lastTemp = $sp['TargetTemperature'];
 		}
 		echo "</tr></table></td></tr>";
-		$d++;
 	}
-	$z++;
-	echo "</table><br/>";
+	echo "</table>";
+	if ( $zoneId == 0 && ++$zoneNum < count($scheduleToShow['zones']) ) echo "<br/>";
 }
 ?>

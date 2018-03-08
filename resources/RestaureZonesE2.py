@@ -24,7 +24,7 @@ else:
 			loc = tmp
 
 if loc == None:
-	print '{ "success" : false, "error" : "no location for ID = ' + LOCATION_ID + '"}'
+	print '{ "success":false, "errors" : [ { "code" : "UnknownLocation", "message" : "no location for ID ' + LOCATION_ID + '" } ] }'
 else:
 	tcs = loc._gateways[0]._control_systems[0]
 
@@ -36,13 +36,10 @@ else:
 		schedule_db = f.read()
 		schedules = json.loads(schedule_db)
 		for zone in schedules['zones']:
-			zone_id = zone['idZone']
-			zone_name = zone['name']
-			
 			zonesRet = zonesRet + '{'
-			zonesRet = zonesRet + '"idZone" : ' + str(zone_id)
-			zonesRet = zonesRet + ', "name" : "' + zone_name + '"'
-			retValue = tcs.zones_by_id[str(zone_id)].set_schedule(json.dumps(zone['schedule']))
+			zonesRet = zonesRet + '"zoneId" : ' + str(zone['zoneId'])
+			zonesRet = zonesRet + ', "name" : "' + zone['name'] + '"'
+			retValue = tcs.zones_by_id[str(zone['zoneId'])].set_schedule(json.dumps(zone['schedule']))
 			zonesRet = zonesRet + ', "result" : ' + json.dumps(retValue)
 			zonesRet = zonesRet + '}'
 			nb = nb + 1

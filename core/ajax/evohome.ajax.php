@@ -17,17 +17,31 @@
  */
 
 try {
-    require_once dirname(__FILE__) . '/../../../../core/php/core.inc.php';
-    include_file('core', 'authentification', 'php');
-    if (!isConnect('admin')) {
-        throw new Exception(__('401 - Accès non autorisé', __FILE__));
-    }
-    
-    ajax::init();
+	require_once dirname(__FILE__) . '/../../../../core/php/core.inc.php';
+	include_file('core', 'authentification', 'php');
+	if ( !isConnect('admin') ) {
+		throw new Exception(evohome::i18n('401 - Accès non autorisé'));
+	}
 
+	ajax::init();
 
-    throw new Exception(__('Aucune méthode correspondante à : ', __FILE__) . init('action'));
-    /*     * *********Catch exeption*************** */
+	if (init('action') == 'getCommentary') {
+		evohome::logDebug("IN>> - ajax.getCommentary");
+		$fileId = init('fileId');
+		if ( $fileId == '') {
+			throw new Exception(evohome::i18n("Aucun identifiant de sauvegarde spécifié"));
+		}
+		$schedule = evohome::getSchedule($fileId);
+		if ( $schedule == null ) {
+			throw new Exception(evohome::i18n("Impossible de lire la sauvegarde d'identifiant {0}", $fileId));
+		}
+		$comm = $schedule['comment'];
+		evohome::logDebug("<<OUT - ajax.getCommentary : " . json_encode($comm));
+		$result = array('comment'=>$comm);
+		ajax::success($result);
+	}
+
+	throw new Exception(__('Aucune méthode correspondante à : ', __FILE__) . init('action'));
 } catch (Exception $e) {
-    ajax::error(displayExeption($e), $e->getCode());
+	ajax::error(displayExeption($e), $e->getCode());
 }

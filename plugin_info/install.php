@@ -19,16 +19,12 @@
 require_once dirname(__FILE__) . '/../../../core/php/core.inc.php';
 
 function evohome_install() {
-    
 }
 
 function evohome_update() {
-    
 }
 
-
 function evohome_remove() {
-    
 }
 
 ?>

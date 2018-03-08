@@ -1,33 +1,34 @@
-<div data-cmd_id="#etatId#" style="margin-left:0px;margin-right:0px;text-align:center;xbackground-color:lightgray;display: #etatDisplay#;">
-	<img id="setMode#id#" style="cursor:pointer;height:30px;width:30px;" src="plugins/evohome/img/#etatImg#" />
+<div data-cmd_id="#etatId#" style="margin-left:0px;margin-right:0px;text-align:center;">
+	<div id="setModeIntegrated">
+	<img id="setMode#id#" style="display:#displaySetModePopup#;cursor:pointer;height:30px;width:30px;" src="plugins/evohome/img/#etatImg#" />
+	</div>
 	<span style="display: #etatUntilDisplay#;">&nbsp;&nbsp;&nbsp;&nbsp;</span>
 	<img style="display: #etatUntilDisplay#;height:15px;width:15px;" src="plugins/evohome/img/#etatUntilImg#" />
 	<span style="display: #etatUntilDisplay#;color:black;" title="#etatUntilFull#">&nbsp;#etatUntil#</span>
-	<br/>
-	<span style="font-size:12px;color:black;">#scheduleTitle#</span>
+	<span style="font-size:12px;color:black;">#scheduleTitle#</span><br/>
 	<select id="scheduleList#id#" style="width:146px;font-size:12px;color:black;">#options#</select>
 	<br/>
-	<a class="saveSchedule#id# btn btn-btn-sm" style="background-color:#cmd-background-color# !important;border-color:transparent !important;
+	<a class="saveSchedule#id# btn btn-btn-sm" style="background-color:#cmd-background-color#;border-color:transparent;
 			line-height: 14px;width: 14px;padding-left:8px;padding-right:18px;"
 			title="#title.save#">
 		<i class="fa fa-circle" style="color:#save.color#;"></i>
 	</a>
-	<a class="showCurrentSchedule#id# btn btn-btn-sm" style="background-color:#cmd-background-color# !important;border-color:transparent !important;
+	<a class="showCS showCurrentSchedule#id# btn btn-btn-sm" style="background-color:#cmd-background-color#;border-color:transparent;
 			line-height: 14px;width: 14px;padding-left:6px;padding-right:20px;"
 			title="#title.showCurrent#">
-		<i class="fa fxa-folder-open">Pa</i>
+		<i class="fa fxa-folder-open">Pc</i>
 	</a>
-	<a class="showSavedSchedule#id# btn btn-btn-sm" style="background-color:#cmd-background-color# !important;border-color:transparent !important;
+	<a class="showCS showSavedSchedule#id# btn btn-btn-sm" style="background-color:#cmd-background-color#;border-color:transparent;
 			line-height: 14px;width: 14px;padding-left:6px;padding-right:20px;"
 			title="#title.showSelected#">
-		<i class="fa fxa-folder-open">Ps</i>
+		<span class="fa fxa-folder-open showSavedScheduleCaption#id#">Ps</span>
 	</a>
-	<a class="restoreSchedule#id# btn btn-btn-sm" style="background-color:#cmd-background-color# !important;border-color:transparent !important;
+	<a class="restoreSchedule#id# btn btn-btn-sm" style="background-color:#cmd-background-color#;border-color:transparent;
 			line-height: 14px;width: 14px;padding-left:8px;padding-right:18px;"
 			title="#title.restore#">
 		<span class="fa fxa-folder-open restaureCaption#id#">R</span>
 	</a>
-	<a class="removeSchedule#id# btn btn-btn-sm" style="background-color:#cmd-background-color# !important;border-color:transparent !important;
+	<a class="removeSchedule#id# btn btn-btn-sm" style="background-color:#cmd-background-color#;border-color:transparent;
 			line-height: 14px;width: 14px;padding-left:8px;padding-right:18px;"
 			title="#title.delete#">
 		<span class="fa fxa-folder-open deleteCaption#id#">X</span>
@@ -36,109 +37,186 @@
 </div>
 
 <script>
+function waitingMessage(text) {
+	bootbox.dialog({ message: "<div class='text-center'>"+text+"...</div>", closeButton:false });
+	$('#md_modal').dialog('close');
+	$('#jqueryLoadingDiv').show();
+}
+
 $('#setMode#id#').on('click', function() {
 	var dialog = bootbox.prompt({
-		title: '#title.setMode#',
+		title: "#title.setMode#",
 		value: '',
-		callback: function (fileName) {}
+		callback: function () {}
 	});
 	dialog.init(function() {
-		var pairs = [ [#codeAuto#, 'i_calendar', '#modeAuto#'],
-					  [#codeEco#, 'i_economy', '#modeEco#'],
-					  [#codeAway#, 'i_away', '#modeAway#'],
-					  [#codeDayOff#, 'i_dayoff', '#modeDayOff#'],
-					  [#codeCustom#, 'i_custom', '#modeCustom#'],
-					  [#codeOff#, 'i_off', '#modeOff#'] ];
-		var buttons = '<br/><table width="100%"><tr>';
-		for ( i=0 ; i<pairs.length ; i++ ) {	// i == evohome::CODE_MODE_n
-			buttons += '<td align="center" width="'+(100/6)+'%"';
-			if ( #etatCode# != pairs[i][0] ) buttons += 'style="cursor:pointer;" onclick="setMode('+pairs[i][0]+',\''+pairs[i][2]+'\');"';
-			buttons += '><img style="height:40px;width:40px;color:red;" src="plugins/evohome/img/'+pairs[i][1]+'.svg"';
-			buttons += '/><br/><span style="';
-			if ( #etatCode# == pairs[i][0] ) buttons += 'background-color:green;color:white;';
-			buttons += '">&nbsp;'+pairs[i][2]+'&nbsp;</span></td>';
-		}
-		buttons += '</tr></table><br/>';
-		$('.bootbox-input-text').replaceWith(buttons);
+		$('.bootbox-input-text').replaceWith(getModesTable(2)+'<br/>');
 		$('.btn-primary').replaceWith('');
 	});
 });
 
-function setMode(mode,name) {
-	$('.btn-default[data-bb-handler="cancel"]').click();
-	changeScheduleList('#setModeInfoList#'.replace('{0}',name));
-	jeedom.cmd.execute({id: '#cmd_setmode_id#', notify: true, value : {#argCodeMode# : mode}});
+function getModesTable(showType) {
+	var pairs = [ [#codeAuto#, 'i_calendar', "#modeAuto#"],
+				  [#codeEco#, 'i_economy', "#modeEco#"],
+				  [#codeAway#, 'i_away', "#modeAway#"],
+				  [#codeDayOff#, 'i_dayoff', "#modeDayOff#"],
+				  [#codeCustom#, 'i_custom', "#modeCustom#"],
+				  [#codeOff#, 'i_off', "#modeOff#"] ];
+	var buttons = '<br/><table width="100%"';
+	if ( showType == 1 ) buttons += ' style="background-color:#background-color#;"';
+	buttons += '><tr>';
+	var _size = showType == 1 ? 30 : 40;
+	for ( i=0 ; i<pairs.length ; i++ ) {	// i == evohome::CODE_MODE_n
+		buttons += '<td align="center" width="'+(100/6)+'%"';
+		if ( #etatCode# != pairs[i][0] ) buttons += 'style="cursor:pointer;" onclick="setMode('+showType+','+pairs[i][0]+',\''+pairs[i][2]+'\');"';
+		bgc = #etatCode# == pairs[i][0] ? 'green' : showType == 1 ? "#background-color#" : 'lightgray';
+		buttons += '><img style="height:'+_size+'px;width:'+_size+'px;background-color:'+bgc+';" src="plugins/evohome/img/'+pairs[i][1]+'.svg"';
+		buttons += '/>';
+		if ( showType == 2 ) {
+			buttons += '<br/><span style="';
+			if ( #etatCode# == pairs[i][0] ) buttons += 'background-color:green;color:white;';
+			buttons += '">&nbsp;'+pairs[i][2]+'&nbsp;</span>';
+			}
+		buttons += '</td>';
+	}
+	buttons += '</tr></table>';
+	return buttons;
+}
+if ( "#displaySetModeConsole#" == '1' ) {
+	$('#setModeIntegrated').replaceWith(getModesTable(1));
+}
+
+function setMode(showType,mode,name) {
+	bootbox.confirm("#setModeConfirm#".replace('{0}', name), function (result) {
+		if (result) {
+			if ( showType == 2 ) $('.btn-default[data-bb-handler="cancel"]').click();
+			waitingMessage("#setModeInfoList#".replace('{0}',name));
+			jeedom.cmd.execute({id: "#cmd_setmode_id#", notify: true, value : {#argCodeMode# : mode}});
+		}
+	});
 }
 
 $('.saveSchedule#id#').on('click', function() {
-	bootbox.prompt({
-		title: '#saveAs#',
-		value: $('#scheduleList#id#').value() == 0 ? '' : $('#scheduleList#id# option:selected').text(),
+	var selectedFileId = $('#scheduleList#id#').value();
+	var dialog = bootbox.prompt({
+		title: "#saveAs#",
+		//inputType : 'textarea',
+		value: selectedFileId == 0 ? '' : $('#scheduleList#id# option:selected').text(),
 		callback: function (fileName) {
 			if ( fileName != null && fileName != '' ) {
-				var fileId = 0;
+				var updateFileId = 0;
 				$("#scheduleList#id# option").each(function() {
 					if (this.text == fileName) {
-						fileId = this.value;
+						updateFileId = this.value;
 					}
 				});
-				if ( fileId != 0 ) {
-					bootbox.confirm('#saveReplace#'.replace('{0}',fileName), function(ret2) {
+				var comm = $('#idComment').value();
+				if ( updateFileId != 0 ) {
+					bootbox.confirm("#saveReplace#".replace('{0}',fileName), function(ret2) {
 						if ( ret2 ) {
-							var fileId = $('#scheduleList#id#').value();
-							_save(fileName, fileId);
+							save(fileName, comm, updateFileId);
 						}
 					});
 				} else {
-					_save(fileName, 0);
+					save(fileName, comm, 0);
 				}
 			}
 		}
+	});
+	dialog.init(function() {
+		if ( $(".bootbox-input-text")[0].previousSibling != '<span>#saveName#</span>' ) {
+			$('<span>#saveName#</span>').insertBefore(".bootbox-input-text");
+			//bootbox-input bootbox-input-textarea form-control
+			$('<br/><br/><span>#saveRemark#</span><br/><textarea style="height:80px;width:100%;" id="idComment" />').insertAfter(".bootbox-input-text");
 		}
-	);
+		if ( selectedFileId > 0 ) {
+			loadCommentary(selectedFileId);
+		}
+	});
+	$('.bootbox-input-text').on('input', function() {
+		var newFileName = this.value;
+		$("#scheduleList#id# option").each(function() {
+			if (this.text == newFileName) {
+				loadCommentary(this.value);
+			}
+		});
+	});
 });
-
-function changeScheduleList(text) {
-	$('#scheduleList#id#').empty()
-	$('#scheduleList#id#').append(new Option(text, 0, false, false));
-	$('#scheduleList#id#').prop('disabled', 'disabled');
-	$('#jqueryLoadingDiv').show();
-}
-
-function _save(fileName, fileId) {
-	changeScheduleList('#saveInfoList#'.replace('{0}',fileName));
-	jeedom.cmd.execute({id:'#cmd_save_id#', notify:false, value:{#argFileName#:fileName, #argFileId#:fileId}});
+function loadCommentary(fileId) {
+	$.ajax({
+		type: 'POST',
+		url: 'plugins/evohome/core/ajax/evohome.ajax.php',
+		data: {
+			action: 'getCommentary',
+			fileId: fileId
+		},
+		dataType: 'json',
+		error: function (request, status, error) {
+			handleAjaxError(request, status, error);
+		},
+		success: function (data) {
+			if (data.state != 'ok') {
+				$('#div_alert').showAlert({message: data.result, level: 'danger'});
+			} else if ( data.result.comment != null ) {
+				$('#idComment').value(decodeURIComponent(data.result.comment));
+			} else {
+				$('#idComment').value('');
+			}
+		}
+	});
+ }
+function save(fileName, comm, fileId) {
+	waitingMessage("#saveInfoList#".replace('{0}',fileName));
+	var eComm = encodeURIComponent(comm);
+	jeedom.cmd.execute({id:"#cmd_save_id#", notify:false, value:{#argFileId#:fileId, #argFileName#:fileName, #argFileRem#:eComm}});
 }
 
 $('.showCurrentSchedule#id#').off().on('click', function () {
 	// show current schedule (from InfoAllZones)
-	showSchedule(0);
+	if ( lastFileId != 0 ) {
+		showSchedule(0);
+	} else {
+		$('#md_modal').dialog('close');
+	}
 });
 
 $('.showSavedSchedule#id#').off().on('click', function () {
-	// show saved schedule (from saved file)
-	showSchedule($('#scheduleList#id#').value());
+	if ( $('#scheduleList#id#').value() != 0 ) {
+		// show saved schedule (from saved file)
+		var fileId = $('#scheduleList#id#').value();
+		if ( lastFileId != fileId ) {
+			showSchedule(fileId);
+		} else {
+			$('#md_modal').dialog('close');
+		}
+	}
 });
 
-var lastMode = 'H';
+var lastMode = null;
+var lastFileId = -1;
 function showSchedule(fileId, mode) {
-  if ( mode == null ) mode = lastMode;
-  $('#md_modal').dialog({
-	title: "...",
-	height: jQuery(window).height() - (fileId == 0 ? 60 : 104),
-	width: (mode == 'H' ? Math.min(1000,jQuery(window).width()-16) : 620),
-	position: { my: "center bottom-"+(fileId == 0 ? "4" : "48"), at: "center bottom", of: window }});
-  $('#md_modal').load('index.php?v=d&plugin=evohome&modal=schedule'+mode+'&id=#id#&#argFileId#='+fileId+'&mode='+mode).dialog('open');
-  lastMode = mode;
+	lastMode = mode == null ? (lastMode == null ? "#evoDefaultShowingScheduleMode#" : lastMode) : mode;
+	$('#md_modal').dialog('close');
+	$('#md_modal').dialog({
+		title: "",
+		height: jQuery(window).height() - (fileId == 0 ? 60 : 104),
+		width: (lastMode == "#showHorizontal#" ? Math.min(1000,jQuery(window).width()-16) : 700),
+		position: { my: "center bottom-"+(fileId == 0 ? "4" : "48"), at: "center bottom", of: window }});
+	$('#md_modal').load('index.php?v=d&plugin=evohome&modal=schedule'+lastMode+'&id=#id#&#argZoneId#=0&#argFileId#='+fileId+'&mode='+lastMode).dialog('open');
+	$(fileId == 0 ? '.showCurrentSchedule#id#' : '.showSavedSchedule#id#').css("background-color", "rgb(16, 208, 16)");
+	lastFileId = fileId;
 }
+$('#md_modal').on('dialogclose', function () { $('.showCS').css("background-color", "#cmd-background-color#"); lastFileId = -1; });
 
-$('#scheduleList#id#').on('change', function() {
-	checkActions();
-});
+$('#scheduleList#id#').on('change', function() { checkActions(); });
 
 var isCurrent = false;
 function checkActions() {
-	isCurrent = '#scheduleFileId#' == $('#scheduleList#id#').value();
+	isCurrent = "#scheduleFileId#" == $('#scheduleList#id#').value();
+	if ( $('#scheduleList#id#').value() == 0 ) {
+		$('#scheduleList#id#').prop('disabled', 'disabled');
+	}
+	$('.showSavedScheduleCaption#id#').css('color', #scheduleFileId# == 0 ? 'gray' : 'white');
 	$('.restaureCaption#id#').css('color', isCurrent ? 'gray' : 'white');
 	$('.deleteCaption#id#').css('color', isCurrent ? 'gray' : 'white');
 }
@@ -147,11 +225,12 @@ checkActions();
 $('.restoreSchedule#id#').on('click', function() {
 	if ( !isCurrent ) {
 		var sl = document.getElementById('scheduleList#id#');
-		bootbox.confirm('#restoreConfirm#'.replace('{0}', sl.options[sl.selectedIndex].text), function (result) {
+		bootbox.confirm("#restoreConfirm#".replace('{0}', sl.options[sl.selectedIndex].text), function (result) {
 			if (result) {
 				var fileId = $('#scheduleList#id#').value();
-				changeScheduleList('#restoreInfoList#'.replace('{0}',sl.options[sl.selectedIndex].text));
-				jeedom.cmd.execute({id: '#cmd_restore_id#', notify: true, value : {#argFileId# :fileId}});
+				var fileId = $('#scheduleList#id#').value();
+				waitingMessage("#restoreInfoList#".replace('{0}',sl.options[sl.selectedIndex].text));
+				jeedom.cmd.execute({id: "#cmd_restore_id#", notify: true, value : {#argFileId# :fileId}});
 			}
 		});
 	}
@@ -160,14 +239,14 @@ $('.restoreSchedule#id#').on('click', function() {
 $('.removeSchedule#id#').on('click', function() {
 	if ( !isCurrent ) {
 		var sl = document.getElementById('scheduleList#id#');
-		bootbox.confirm('#deleteConfirm#'.replace('{0}', sl.options[sl.selectedIndex].text), function (result) {
+		bootbox.confirm("#deleteConfirm#".replace('{0}', sl.options[sl.selectedIndex].text), function (result) {
 			if (result) {
-				var fileId = $('#scheduleList#id#').value();
-				changeScheduleList('#deleteInfoList#'.replace('{0}',sl.options[sl.selectedIndex].text));
-				jeedom.cmd.execute({id: '#cmd_delete_id#', notify: true, value : {#argFileId# : fileId}});
+				waitingMessage("#deleteInfoList#".replace('{0}',sl.options[sl.selectedIndex].text));
+				jeedom.cmd.execute({id: "#cmd_delete_id#", notify: true, value : {#argFileId# : fileId}});
 			}
 		});
 	}
 });
 $('#jqueryLoadingDiv').hide();
+$('.bootbox').hide();
 </script>

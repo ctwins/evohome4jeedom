@@ -10,6 +10,7 @@ from evohomeclient2 import EvohomeClient
 USERNAME = sys.argv[1]
 PASSWORD = sys.argv[2]
 LOCATION_ID = sys.argv[3]
+READ_SCHEDULE = sys.argv[4]
 
 client = EvohomeClient(USERNAME, PASSWORD, False)
 
@@ -44,49 +45,55 @@ else:
 		if tmp.locationId == LOCATION_ID:
 			loc = tmp
 if loc == None:
-	print '{ "success" : false, "error" : "no location for ID = ' + LOCATION_ID + '"}'
+	print '{ "success": false, "errors" : [ { "code" : "UnknownLocation", "message" : "no location for ID ' + LOCATION_ID + '" } ] }'
 else:
 	tcs = loc._gateways[0]._control_systems[0]
 
-	jZones = '{ "success" : true'
+	jZones = '{ "success": true'
 	# examples : Auto (isPermanent=True) / 
 	jZones = jZones + ', "currentMode":"' + tcs.systemModeStatus['mode'] + '"'
-	jZones = jZones + ', "permanentMode" : '
+	jZones = jZones + ', "permanentMode": '
 	if tcs.systemModeStatus['isPermanent']:
 		jZones = jZones + 'true'
 	else:
 		jZones = jZones + 'false'
 	if tcs.systemModeStatus['isPermanent']:
-		jZones = jZones + ', "untilMode" : "NA"'
+		jZones = jZones + ', "untilMode": "NA"'
 	else:
-		jZones = jZones + ', "untilMode" : "' + tcs.systemModeStatus['timeUntil'] + '"'
+		jZones = jZones + ', "untilMode": "' + tcs.systemModeStatus['timeUntil'] + '"'
 
-	jZones = jZones + ', "zones" : ['
+	jZones = jZones + ', "zones": ['
 	nb = 0
 	nbItems = len(tcs._zones)
 	for zone in tcs._zones:
-		jZones = jZones + '{ "id" : ' + zone.zoneId
-		jZones = jZones + ', "name" : "' + zone.name + '"'
+		jZones = jZones + '{ "zoneId": ' + zone.zoneId
+		jZones = jZones + ', "name": "' + zone.name + '"'
 		if zone.temperatureStatus['isAvailable'] == False:
-			jZones = jZones + ', "temperature" : null'
-			jZones = jZones + ', "temperatureD5" : null'
+			jZones = jZones + ', "temperature": null'
+			jZones = jZones + ', "temperatureD5": null'
+			jZones = jZones + ', "units": "' + device['thermostat']['units'] + '"'
 		elif ACCURATE_MODE:
 			for device in accurateDevices:
 				if str(device['deviceID']) == zone.zoneId:
-					jZones = jZones + ', "temperature" : ' + str(device['thermostat']['indoorTemperature'])
-					jZones = jZones + ', "temperatureD5" : ' + str(zone.temperatureStatus['temperature'])
+					jZones = jZones + ', "temperature": ' + str(device['thermostat']['indoorTemperature'])
+					jZones = jZones + ', "units": "' + device['thermostat']['units'] + '"'
+					jZones = jZones + ', "temperatureD5": ' + str(zone.temperatureStatus['temperature'])
 		else:
-			jZones = jZones + ', "temperature" : ' + str(zone.temperatureStatus['temperature'])
-		jZones = jZones + ', "setPoint" : ' + str(zone.heatSetpointStatus['targetTemperature'])
+			jZones = jZones + ', "temperature": ' + str(zone.temperatureStatus['temperature'])
+			jZones = jZones + ', "units": "Celsius"'
+		jZones = jZones + ', "setPoint": ' + str(zone.heatSetpointStatus['targetTemperature'])
 		# example 'FollowSchedule' / PermanentOverride (manual or permanent) / TemporaryOverride+nextTime (until xx)
-		jZones = jZones + ', "status" : "' + zone.heatSetpointStatus['setpointMode'] + '"'
+		jZones = jZones + ', "status": "' + zone.heatSetpointStatus['setpointMode'] + '"'
 		if zone.heatSetpointStatus['setpointMode'] == 'TemporaryOverride':
 			# example : 2018-01-25T08:00:00
-			jZones = jZones + ', "until" : "' + zone.heatSetpointStatus['until'] + '"'
+			jZones = jZones + ', "until": "' + zone.heatSetpointStatus['until'] + '"'
 		else:
-			jZones = jZones + ', "until" : "NA"'
-		# add schedule infos (NB : each call to zone.schedule() takes ~1 sec because of an API request)
-		jZones = jZones + ', "schedule":' + json.dumps(zone.schedule())
+			jZones = jZones + ', "until": "NA"'
+		if READ_SCHEDULE == '0':
+			jZones = jZones + ', "schedule":null'
+		else:
+			# add schedule infos (NB : each call to zone.schedule() takes ~1 sec because of an API request)
+			jZones = jZones + ', "schedule":' + json.dumps(zone.schedule())
 		jZones = jZones + "}"
 		# {'id' : 1567715, 'name' : 'Sejour', 'temperature' : 20.0, 'setPoint' : 17.0, 'status' : 'FollowSchedule'}
 		nb = nb + 1
