@@ -1,6 +1,6 @@
 # evohome4jeedom
 This is a plugin for Jeedom 3.0 platform, regarding the Honeywell Evohome system.<br/>
-State is : advanced prototype
+State is : v0.1 - dashboard version 1 - stable (on my Jeedom)
 
 Written in php, the Jeedom main langage, a bit of javascript and of course some html, and, at this time,  some python bridges because all will be nothing without the excellent python library "evohome" from watchforstock.<br/>
 Great thanks to him and it's implementation you can find here : https://github.com/watchforstock/evohome-client
@@ -14,7 +14,8 @@ On the general properties page, you have to set your username and password, whic
 
 Install and try, with your favorite FTP client. You must have the possibility to remove the plugin in case of general crash.<br/>
 So, to install from the downloaded zip file :<br/>
-Just unzip in a folder named 'evohome' inside the plugins folder, then grant to www-data for owner and group part, with the "rwx" rights, set "r-x" for others (or 0775 when under www-data user)<br/>
+1. Follow the installation by zip file, as seen in botom of https://jeedom.github.io/core/en_US/plugin
+2. Just unzip in a folder named 'evohome' inside the plugins folder, then grant to www-data for owner and group part, with the "rwx" rights, set "r-x" for others (or 0775 when under www-data user)<br/>
 
 
 As you will see, the configuration is very simple.<br/>
