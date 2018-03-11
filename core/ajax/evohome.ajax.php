@@ -36,7 +36,9 @@ try {
 			throw new Exception(evohome::i18n("Impossible de lire la sauvegarde d'identifiant {0}", $fileId));
 		}
 		$comm = $schedule['comment'];
-		evohome::logDebug("<<OUT - ajax.getCommentary : " . json_encode($comm));
+		if ( evohome::isDebug() ) {
+			evohome::logDebug("<<OUT - ajax.getCommentary : " . json_encode($comm));
+		}
 		$result = array('comment'=>$comm);
 		ajax::success($result);
 	}

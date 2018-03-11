@@ -1,11 +1,11 @@
 {
 	"id" : "evohome",
-	"name" : "Evohome",
+	"name" : "Evohome 0.1.1",
 	"description" : "Plugin EVOHOME",
 	"licence" : "AGPL",
 	"author" : "ctwins",
-	"version" : "coucou",
-	"require" : "3.0b",
+	"version" : "0.1.1",
+	"require" : "3.0",
 	"category" : "wellness",
 	"hasDependency" : true,
 	"hasOwnDeamon" : false

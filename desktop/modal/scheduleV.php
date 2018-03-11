@@ -28,13 +28,6 @@ if ($evohome->getEqType_name() != 'evohome') {
 	throw new Exception(inner::i18n("Cet équipement n'est pas du type attendu : {0}", $evohome->getEqType_name()));
 }
 
-if ( $scheduleToShow['comment'] != '') {
-	echo "<table width=100% style='background-color:white;color:black;'><tr>";
-	echo "<td style='vertical-align:top;'>Commentaire&nbsp;:&nbsp;</td>";
-	echo "<td width=90%>" . urldecode(str_replace('%0A','<br/>',$scheduleToShow['comment'])) . "</td>";
-	echo "</tr><tr style='height:6px;'><td colspan=2></td></tr></table>";
-}
-
 $scheduleToShow = evohome::getSchedule($fileId);
 $zoneId = init(evohome::ARG_ZONE_ID);
 $subTitle = evohome::getScheduleSubTitle($fileId,$scheduleToShow,evohome::CFG_SCH_MODE_HORIZONTAL,$zoneId);
@@ -44,9 +37,9 @@ echo "$('#md_modal')[0].previousSibling.firstChild.innerHTML = \"$subTitle\";";
 echo "if ( $('#md_modal')[0].style.cssText.search('background') == -1 ) $('#md_modal')[0].style.cssText += 'background-color:white !important'";
 echo "</script>";
 
-if ( $scheduleToShow['comment'] != '') {
+if ( array_key_exists('comment', $scheduleToShow) && $scheduleToShow['comment'] != '') {
 	echo "<table width=100% style='background-color:white;color:black;'><tr>";
-	echo "<td style='vertical-align:top;'>" . inner::i18n('Commentaire') . "&nbsp;&nbsp;</td>";
+	echo "<td style='vertical-align:top;'>" . inner::i18n('Commentaire') . "&nbsp;:&nbsp;</td>";
 	echo "<td width=90%>" . urldecode(str_replace('%0A','<br/>',$scheduleToShow['comment'])) . "</td>";
 	echo "</tr><tr style='height:6px;'><td colspan=2></td></tr></table>";
 }
@@ -97,7 +90,7 @@ foreach ( $scheduleToShow['zones'] as $mydata ) {
 			echo "<tr><td align=center width=7.15%";
 			if ( $mark == 1 ) echo " style='color:black;background-color:lightgreen;'";
 			echo ">$hm</td>";
-			$bgc = evohome::getBackColorForTemp($sp['TargetTemperature'],$mydata['units']);
+			$bgc = evohome::getBackColorForTemp($sp['TargetTemperature']);
 			$sTemp = ($midnightAdded ? '...' : '' ) . number_format($sp['TargetTemperature'],1);
 			$midnightAdded = false;
 			echo "<td align=center width=7.15% style='color:white;background-color:$bgc;'>$sTemp</td></tr>";

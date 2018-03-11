@@ -200,8 +200,9 @@ class evohome extends eqLogic {
 		config::save($paramName, $value, __CLASS__);
 	}
 
-	static function getParam($paramName) {
-		return config::byKey($paramName, __CLASS__);
+	static function getParam($paramName, $defValue=null) {
+		$cfgValue = config::byKey($paramName, __CLASS__);
+		return $cfgValue == null /*|| $cfgValue == ""*/ ? $defValue : $cfgValue;
 	}
 
 	static function lockCron() {
@@ -242,11 +243,9 @@ class evohome extends eqLogic {
 	}
 
 	static function runPython($prgName, $parameters=null) {
-		$credential = self::getParam(self::CFG_USER_NAME) . ' ' . self::getParam(self::CFG_PASSWORD);
+		$credential = self::getParam(self::CFG_USER_NAME,'') . ' ' . self::getParam(self::CFG_PASSWORD,'');
 		if ( $credential === ' ' ) {
-			if ( self::isDebug() ) {
-				self::logDebug('runPython too early : account is not set yet : [' . $credential . ']');
-			}
+			self::logDebug('runPython too early : account is not set yet');
 			return null;
 		}
 		return shell_exec(
@@ -319,7 +318,7 @@ class evohome extends eqLogic {
 					}
 					$infosZones = null;
 				} else {
-					$cacheDuration = intVal(self::getParam(self::CFG_LOADING_INTERVAL)) * 60 - $delay - 5;
+					$cacheDuration = intVal(self::getParam(self::CFG_LOADING_INTERVAL,10)) * 60 - $delay - 5;
 					self::cacheData(self::CACHE_IAZ, $zones, $cacheDuration);
 					if ( $readSchedule == 1 ) {
 						self::refreshAll($infosZones);
@@ -357,7 +356,7 @@ class evohome extends eqLogic {
 					                0=>'#247eb2');
 	public static function getBackColorForTemp($consigne,$isOff=false) {
 		if ( $isOff ) return 'black';
-		$X2BG = self::getParam(self::CFG_TEMP_UNIT) == self::CFG_UNIT_CELSIUS ? self::C2BG : self::F2BG;
+		$X2BG = self::getParam(self::CFG_TEMP_UNIT,self::CFG_UNIT_CELSIUS) == self::CFG_UNIT_CELSIUS ? self::C2BG : self::F2BG;
 		foreach ( $X2BG as $ref=>$bgRef ) {
 			if ($consigne >= $ref) {
 				$bg = $bgRef;
@@ -528,7 +527,7 @@ class evohome extends eqLogic {
 		if ( $temp == null ) {
 			return null;
 		}
-		if ( substr($unitsFrom,0,1) == self::getParam(self::CFG_TEMP_UNIT) ) {
+		if ( substr($unitsFrom,0,1) == self::getParam(self::CFG_TEMP_UNIT,self::CFG_UNIT_CELSIUS) ) {
 			return $temp;
 		}
 		if ( $unitsFrom == 'Celsius' ) {
@@ -614,7 +613,7 @@ class evohome extends eqLogic {
 	private function applyRounding($temperatureNative) {
 		$valRound = round($temperatureNative*100)/100;
 		list($entier, $decRound) = explode('.', number_format($valRound,2));
-		switch ( self::getParam(self::CFG_ACCURACY) ) {
+		switch ( self::getParam(self::CFG_ACCURACY,1) ) {
 			case 1:
 			// ceil to 0.5 (EvoHome native computation)
 			if ( $decRound >= 50 ) $dec50 = 0.5; else $dec50 = 0;
@@ -745,7 +744,7 @@ class evohome extends eqLogic {
 			}
 
 			$options = '';
-			$scheduleFileId = self::getParam(self::iCFG_SCHEDULE_ID);
+			$scheduleFileId = self::getParam(self::iCFG_SCHEDULE_ID,0);
 			$jsScheduleFileId = 0;
 			foreach ( self::getHebdoNames() as $hn) {
 				$options .= '<option value="' . $hn['id'] . '"';
@@ -798,12 +797,12 @@ class evohome extends eqLogic {
 			$replace_action['#codeOff#'] = self::CODE_MODE_OFF;
 			$replace_action['#showHorizontal#'] = self::CFG_SCH_MODE_HORIZONTAL;
 			// configuration
-			$replace_action['#displaySetModePopup#'] = self::getParam(self::CFG_SHOWING_MODES) == self::CFG_SHOWING_MODES_POPUP ? "visible" : "none";
-			$replace_action['#displaySetModeConsole#'] = self::getParam(self::CFG_SHOWING_MODES) == self::CFG_SHOWING_MODES_CONSOLE ? "1" : "0";
-			$replace_action['#evoDefaultShowingScheduleMode#'] = self::getParam(self::CFG_DEF_SHOW_SCHEDULE_MODE);
+			$replace_action['#displaySetModePopup#'] = self::getParam(self::CFG_SHOWING_MODES,self::CFG_SHOWING_MODES_CONSOLE) == self::CFG_SHOWING_MODES_POPUP ? "visible" : "none";
+			$replace_action['#displaySetModeConsole#'] = self::getParam(self::CFG_SHOWING_MODES,self::CFG_SHOWING_MODES_CONSOLE) == self::CFG_SHOWING_MODES_CONSOLE ? "1" : "0";
+			$replace_action['#evoDefaultShowingScheduleMode#'] = self::getParam(self::CFG_DEF_SHOW_SCHEDULE_MODE,self::CFG_SCH_MODE_HORIZONTAL);
 			$replace_action['#background-color#'] = $replace['#background-color#'];
 			// i18n
-			$rbs = self::getParam(self::CFG_REFRESH_BEFORE_SAVE);
+			$rbs = self::getParam(self::CFG_REFRESH_BEFORE_SAVE,0);
 			$msg = array('scheduleTitle'=>"Programmes hebdo.",
 				'title.setMode'=>"Réglage du mode de présence",
 				'modeAuto'=>"Planning",
@@ -861,7 +860,7 @@ class evohome extends eqLogic {
 			$consigne = is_object($cmdConsigne) ? $cmdConsigne->execCmd() : 0;
 			$_etat = self::getEtat();
 			$aEtat = $_etat == null ? null : explode(';',$_etat);
-			$isOff = ($aEtat != null) && ($aEtat[0] == self::MODE_OFF);
+			$isOff = $aEtat != null && $aEtat[0] == self::MODE_OFF;
 			$isEco = $aEtat != null && $aEtat[0] == self::MODE_ECO;
 			$isAway = $aEtat != null && $aEtat[0] == self::MODE_AWAY;
 			$isDayOff = $aEtat != null && $aEtat[0] == self::MODE_DAYOFF;
@@ -927,14 +926,6 @@ class evohome extends eqLogic {
 				$replace_temp['#consigneTypeUntilFull#'] = $consigneTypeUntilFull;
 				$replace_temp['#consigneTip#'] = $consigneTip;
 				$replace_temp['#zoneId#'] = $zoneId;
-				$console = self::getConsole();
-				if ( $console != null ) {
-					$replace_temp['#showCurrentScheduleDisplay#'] = 'visible';
-					$replace_temp['#consigneMarginLeft#'] = '36';
-				} else {
-					$replace_temp['#showCurrentScheduleDisplay#'] = 'none';
-					$replace_temp['#consigneMarginLeft#'] = '10';
-				}
 			}
 			$replace_temp['#consigneTypeImg#'] = $consigneTypeImg == null ? 'empty.svg' : $consigneTypeImg;
 			$replace_temp['#consigneTypeDisplay#'] = $consigneTypeImg == null ? 'none' : 'visible';
@@ -944,7 +935,7 @@ class evohome extends eqLogic {
 			// codes
 			$replace_temp['#showHorizontal#'] = self::CFG_SCH_MODE_HORIZONTAL;
 			// configuration
-			$replace_temp['#evoDefaultShowingScheduleMode#'] = self::getParam(self::CFG_DEF_SHOW_SCHEDULE_MODE);
+			$replace_temp['#evoDefaultShowingScheduleMode#'] = self::getParam(self::CFG_DEF_SHOW_SCHEDULE_MODE,self::CFG_SCH_MODE_HORIZONTAL);
 
 			$replace['#consoleContent#'] = '';
 			$replace['#temperatureContent#'] = template_replace($replace_temp, getTemplate('core', $version, 'temperature_content', __CLASS__));
@@ -1169,7 +1160,7 @@ class evohome extends eqLogic {
 			self::logDebug('launch save action with fileName=' . $filePath);
 		}
 		// force refresh inside getInformationsAllZonesE2
-		$rbs = self::getParam(self::CFG_REFRESH_BEFORE_SAVE);
+		$rbs = self::getParam(self::CFG_REFRESH_BEFORE_SAVE,0);
 		$schedule = self::getSchedule(self::CURRENT_SCHEDULE_ID,$dateTime,$rbs==1);
 		if ( $schedule == null ) {
 			self::logDebug('<<OUT - saveSchedule - error while getSchedule (see above)');

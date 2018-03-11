@@ -28,8 +28,6 @@ if ($evohome->getEqType_name() != 'evohome') {
 	throw new Exception(inner::i18n("Cet équipement n'est pas du type attendu : {0}", $evohome->getEqType_name()));
 }
 
-echo "<div id='div_scheduleAlert' style='display: none;'></div>";
-
 $scheduleToShow = evohome::getSchedule($fileId);
 $zoneId = init(evohome::ARG_ZONE_ID);
 $subTitle = evohome::getScheduleSubTitle($fileId,$scheduleToShow,evohome::CFG_SCH_MODE_VERTICAL,$zoneId);
@@ -39,7 +37,7 @@ echo "$('#md_modal')[0].previousSibling.firstChild.innerHTML = \"$subTitle\";";
 echo "if ( $('#md_modal')[0].style.cssText.search('background') == -1 ) $('#md_modal')[0].style.cssText += 'background-color:white !important'";
 echo "</script>";
 
-if ( $scheduleToShow['comment'] != '') {
+if ( array_key_exists('comment', $scheduleToShow) && $scheduleToShow['comment'] != '') {
 	echo "<table width=100% style='background-color:white;color:black;'><tr>";
 	echo "<td style='vertical-align:top;'>" . inner::i18n('Commentaire') . "&nbsp;:&nbsp;</td>";
 	echo "<td width=90%>" . urldecode(str_replace('%0A','<br/>',$scheduleToShow['comment'])) . "</td>";
@@ -107,7 +105,7 @@ foreach ( $scheduleToShow['zones'] as $mydata ) {
 			}
 			$td = intval(substr($hm,0,2) . substr($hm,3,2));
 			$w = ($te - $td) / 2400.0 * 100.0;
-			$bgc = evohome::getBackColorForTemp($sp['TargetTemperature'],$mydata['units']);
+			$bgc = evohome::getBackColorForTemp($sp['TargetTemperature']);
 			$sTemp = ($midnightAdded ? '...' : '' ) . number_format($sp['TargetTemperature'],1);
 			$midnightAdded = false;
 			echo "<td align=center style='width:".$w."%;color:white;background-color:".$bgc.";'>" . $sTemp . "</td>";

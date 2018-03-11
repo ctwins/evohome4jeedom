@@ -27,13 +27,13 @@ if (!isConnect('admin')) {
 		<div class="form-group">
 			<label class="col-lg-3 control-label">{{Nom d'utilisateur}}</label>
 			<div class="col-lg-2">
-				<input type="text" class="configKey form-control" data-l1key="<?php evohome::CFG_USER_NAME?>" />
+				<?php echo '<input id="usnm" type="text" class="configKey form-control" data-l1key="' . evohome::CFG_USER_NAME . '" />'; ?>
 			</div>
 		<!--</div>
 		<div class="form-group">-->
 			<label class="col-lg-1 control-label">{{Mot de passe}}</label>
 			<div class="col-lg-2">
-				<input type="password" class="configKey form-control" data-l1key="<?php evohome::CFG_PASSWORD?>" />
+				<?php echo '<input id="pswd" type="password" class="configKey form-control" data-l1key="' . evohome::CFG_PASSWORD . '" />'; ?>
 			</div>
 		</div>
 		<div class="form-group">
@@ -175,18 +175,32 @@ setTimeout(function() {
 	echo "var modeConsole = '" . evohome::CFG_SHOWING_MODES_CONSOLE . "';";
 	echo "var modePopup = '" . evohome::CFG_SHOWING_MODES_POPUP . "';";
 	?>
+	
 	var evoTempUnit = $('#evoTempUnit').val();
-	if ( evoTempUnit !== unitCelsius && evoTempUnit !== unitFahrenheit ) evoTempUnit = unitCelsius;
+	if ( evoTempUnit === '' || evoTempUnit == null ) {
+		$('#usnm').val('');
+		$('#pswd').val('');
+	}
+	if ( evoTempUnit !== unitCelsius && evoTempUnit !== unitFahrenheit ) {
+		evoTempUnit = unitCelsius;
+		$('#evoTempUnit').val(unitCelsius);
+	}
 	document.getElementById('etu'+evoTempUnit).checked = true;
 
 	var evoDefaultShowingScheduleMode = $('#evoDefaultShowingScheduleMode').val();
-	if ( evoDefaultShowingScheduleMode !== showHorizontal && evoDefaultShowingScheduleMode !== showVertical ) evoDefaultShowingScheduleMode = showHorizontal;
+	if ( evoDefaultShowingScheduleMode !== showHorizontal && evoDefaultShowingScheduleMode !== showVertical ) {
+		evoDefaultShowingScheduleMode = showHorizontal;
+		$('#evoDefaultShowingScheduleMode').val(showHorizontal);
+	}
 	document.getElementById('eshm'+evoDefaultShowingScheduleMode).checked = true;
 
 	var evoShowingModes = $('#evoShowingModes').val();
-	if ( evoShowingModes !== modeConsole && evoShowingModes !== modePopup ) evoShowingModes = modeConsole;
+	if ( evoShowingModes !== modeConsole && evoShowingModes !== modePopup ) {
+		evoShowingModes = modeConsole;
+		$('#evoShowingModes').val(modeConsole);
+	}
 	document.getElementById('esm'+evoShowingModes).checked = true;
-}, 100);
+}, 250);
 $('input[name=etu]').on('click', function (event) { $('#evoTempUnit').val($('input[name=etu]:checked').val()); });
 $('input[name=eshm]').on('click', function (event) { $('#evoDefaultShowingScheduleMode').val($('input[name=eshm]:checked').val()); });
 $('input[name=esm]').on('click', function (event) { $('#evoShowingModes').val($('input[name=esm]:checked').val()); });

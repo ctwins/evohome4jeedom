@@ -1,5 +1,15 @@
 # Changelog - evohome4jeedom
 
+## [version 0.1.1] - 2018-03-11 - the 'INIT fix' (and some more)
+### Fixes
+- general configuration panel :
+	1. sorry for that, I missed the "just after the installation" and a big misatake in the user/password fields
+	2. still for these fields, something fills with your jeedom account when configuration has not been saved yet ; attempt to reset them in this case
+	3. miss the saving of the 3 radio inputs ; there was needed to click or change value so it was taken into account
+- a dummy value was stayed in the field version of the info.json
+- the two files temperature_content.html was saved with BOM marker
+- about the two schedule php file : add a check for a optional field in the scheduleToShow array to avoid http.error logs
+
 ## [version 0.1] - 2018-03-08 - dashboard version v1
 ### Added
 - general configuration panel :
