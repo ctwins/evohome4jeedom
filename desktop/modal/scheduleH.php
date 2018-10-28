@@ -13,16 +13,17 @@ class inner {
 if (!isConnect()) {
 	throw new Exception(inner::i18n('401 - Accès non autorisé'));
 }
-if (init('id') == '') {
+$id = init('id');
+if ($id == '') {
 	throw new Exception(inner::i18n("L'id ne peut être vide"));
 }
 $fileId = init(evohome::ARG_FILE_ID);
 if ($fileId == '') {
 	throw new Exception(inner::i18n("L'id du fichier programme ne peut être vide"));
 }
-$evohome = evohome::byId(init('id'));
+$evohome = evohome::byId($id);
 if (!is_object($evohome)) {
-	throw new Exception(inner::i18n("L'équipement Evohome est introuvable sur l'ID {0}", init('id')));
+	throw new Exception(inner::i18n("L'équipement Evohome est introuvable sur l'ID {0}", $id));
 }
 if ($evohome->getEqType_name() != 'evohome') {
 	throw new Exception(inner::i18n("Cet équipement n'est pas du type attendu : {0}", $evohome->getEqType_name()));
@@ -59,7 +60,8 @@ foreach ( $scheduleToShow['zones'] as $mydata ) {
 	echo "<tr><td colspan=7 style='font-size:16px;font-weight:800;color:black;background-color:#C0C0C0;'>&nbsp;&nbsp;" . $mydata['name'] . '</td></tr>';
 	$dsSunday = $mydata['schedule']['DailySchedules'][6];
 	$spSundayLast = $dsSunday['Switchpoints'][sizeof($dsSunday['Switchpoints'])-1];
-	$lastTemp = $spSundayLast['TargetTemperature'];
+	// 0.1.2 - TargetTemperature becomes heatSetpoint (evohome-client-2.07/evohomeclient2)
+	$lastTemp = $spSundayLast['heatSetpoint'];
 	foreach ( $mydata['schedule']['DailySchedules'] as $ds ) {
 		echo "<tr>";
 		echo "<td";
@@ -71,7 +73,7 @@ foreach ( $scheduleToShow['zones'] as $mydata ) {
 		$mark = 0;
 		$midnightAdded = $ds['Switchpoints'][0]['TimeOfDay'] != '00:00:00';
 		if ( $midnightAdded ) {
-			array_unshift($ds['Switchpoints'], array('TimeOfDay'=>'00:00:00', 'TargetTemperature'=>$lastTemp));
+			array_unshift($ds['Switchpoints'], array('TimeOfDay'=>'00:00:00', 'heatSetpoint'=>$lastTemp));
 		}
 		for ( $i=1 ; $i <= sizeof($ds['Switchpoints']) ; $i++) {
 			$sp = $ds['Switchpoints'][$i-1];
@@ -105,11 +107,11 @@ foreach ( $scheduleToShow['zones'] as $mydata ) {
 			}
 			$td = intval(substr($hm,0,2) . substr($hm,3,2));
 			$w = ($te - $td) / 2400.0 * 100.0;
-			$bgc = evohome::getBackColorForTemp($sp['TargetTemperature']);
-			$sTemp = ($midnightAdded ? '...' : '' ) . number_format($sp['TargetTemperature'],1);
+			$bgc = evohome::getBackColorForTemp($sp['heatSetpoint']);
+			$sTemp = ($midnightAdded ? '...' : '' ) . number_format($sp['heatSetpoint'],1);
 			$midnightAdded = false;
 			echo "<td align=center style='width:".$w."%;color:white;background-color:".$bgc.";'>" . $sTemp . "</td>";
-			$lastTemp = $sp['TargetTemperature'];
+			$lastTemp = $sp['heatSetpoint'];
 		}
 		echo "</tr></table></td></tr>";
 	}

@@ -61,7 +61,8 @@ foreach ( $scheduleToShow['zones'] as $mydata ) {
 	echo '</td></tr><tr>';
 	$dsSunday = $mydata['schedule']['DailySchedules'][6];
 	$spSundayLast = $dsSunday['Switchpoints'][sizeof($dsSunday['Switchpoints'])-1];
-	$lastTemp = $spSundayLast['TargetTemperature'];
+	// 0.1.2 - TargetTemperature becomes heatSetpoint (evohome-client-2.07/evohomeclient2)
+	$lastTemp = $spSundayLast['heatSetpoint'];
 	foreach ( $mydata['schedule']['DailySchedules'] as $ds ) {
 		echo "<td valign='top'>";
 		echo "<table border=1 style=\"font-family:'Open Sans', sans-serif;\">";
@@ -71,7 +72,7 @@ foreach ( $scheduleToShow['zones'] as $mydata ) {
 		$mark = 0;
 		$midnightAdded = $ds['Switchpoints'][0]['TimeOfDay'] != '00:00:00';
 		if ( $midnightAdded ) {
-			array_unshift($ds['Switchpoints'], array('TimeOfDay'=>'00:00:00', 'TargetTemperature'=>$lastTemp));
+			array_unshift($ds['Switchpoints'], array('TimeOfDay'=>'00:00:00', 'heatSetpoint'=>$lastTemp));
 		}
 		for ( $i=1 ; $i <= sizeof($ds['Switchpoints']) ; $i++) {
 			$sp = $ds['Switchpoints'][$i-1];
@@ -90,11 +91,11 @@ foreach ( $scheduleToShow['zones'] as $mydata ) {
 			echo "<tr><td align=center width=7.15%";
 			if ( $mark == 1 ) echo " style='color:black;background-color:lightgreen;'";
 			echo ">$hm</td>";
-			$bgc = evohome::getBackColorForTemp($sp['TargetTemperature']);
-			$sTemp = ($midnightAdded ? '...' : '' ) . number_format($sp['TargetTemperature'],1);
+			$bgc = evohome::getBackColorForTemp($sp['heatSetpoint']);
+			$sTemp = ($midnightAdded ? '...' : '' ) . number_format($sp['heatSetpoint'],1);
 			$midnightAdded = false;
 			echo "<td align=center width=7.15% style='color:white;background-color:$bgc;'>$sTemp</td></tr>";
-			$lastTemp = $sp['TargetTemperature'];
+			$lastTemp = $sp['heatSetpoint'];
 		}
 		echo "</table></td>";
 	}

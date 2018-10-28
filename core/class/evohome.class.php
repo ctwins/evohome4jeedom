@@ -160,7 +160,7 @@ class evohome extends eqLogic {
 		$x = 'which avconv | wc -l';
 		$r = exec($x);
 		if ( self::isDebug() ) {
-			self::logDebug("dependancy_info 1/4 [$x] = [$r]");
+			self::logDebug("dependancy_info 1/3 [$x] = [$r]");
 		}
 		if ($r == 0) {
 			$return['state'] = 'nok';
@@ -169,12 +169,13 @@ class evohome extends eqLogic {
 		$x = system::getCmdSudo() . system::get('cmd_check') . ' gd | grep php | wc -l';
 		$r = exec($x);
 		if ( self::isDebug() ) {
-			self::logDebug("dependancy_info 2/4 [$x] = [$r]");
+			self::logDebug("dependancy_info 2/3 [$x] = [$r]");
 		}
 		if ($r == 0) {
 			$return['state'] = 'nok';
 		}
 
+		/* 0.1.2 - skip the python-pip check
 		$x = system::getCmdSudo() . system::get('cmd_check') . ' python-pip | wc -l';
 		$r = exec($x);
 		if ( self::isDebug() ) {
@@ -182,12 +183,12 @@ class evohome extends eqLogic {
 		}
 		if ($r == 0) {
 			$return['state'] = 'nok';
-		}
+		}*/
 
 		$x = system::getCmdSudo() . 'pip list | grep evohomeclient | wc -l';
 		$r = exec($x);
 		if ( self::isDebug() ) {
-			self::logDebug("dependancy_info 4/4 [$x] = [$r]");
+			self::logDebug("dependancy_info 3/3 [$x] = [$r]");
 		}
 		if ( $r == 0) {
 			$return['state'] = 'nok';
@@ -593,7 +594,8 @@ class evohome extends eqLogic {
 				$tmp->event($consigneType);
 			}
 
-			if ( self::isDebug() ) {self::logDebug('zone ' . $zoneId . '=' . $infosZone['name'] . ' : temp = ' . $infosZone['temperature'] . ', consigne = ' . $infosZone['setPoint'] . ', type = ' . $consigneType);
+			if ( self::isDebug() ) {
+				self::logDebug('zone ' . $zoneId . '=' . $infosZone['name'] . ' : temp = ' . $infosZone['temperature'] . ', consigne = ' . $infosZone['setPoint'] . ', type = ' . $consigneType);
 			}
 		}
 		self::logDebug("<<OUT - injectInformationsFromZone");
@@ -635,9 +637,12 @@ class evohome extends eqLogic {
 	}
 
 	function getCurrentConsigne($currentSchedule,$zoneId) {
-		foreach ( $currentSchedule['zones'] as $myData ) {
-			if ( $myData['zoneId'] == $zoneId ) {
-				return self::getCurrentConsigneForZone($myData);
+		// 0.1.2 - check the param before the loop
+	    if ( $currentSchedule != null ) {
+			foreach ( $currentSchedule['zones'] as $myData ) {
+				if ( $myData['zoneId'] == $zoneId ) {
+					return self::getCurrentConsigneForZone($myData);
+				}
 			}
 		}
 		return null;
@@ -648,12 +653,13 @@ class evohome extends eqLogic {
 		$currentTime = strftime('%H:%M', time());
 		$dsSunday = $myData['schedule']['DailySchedules'][6];
 		$spSundayLast = $dsSunday['Switchpoints'][sizeof($dsSunday['Switchpoints'])-1];
-		$lastTemp = $spSundayLast['TargetTemperature'];
+		// 0.1.2 - TargetTemperature becomes heatSetpoint (evohome-client-2.07/evohomeclient2)
+		$lastTemp = $spSundayLast['heatSetpoint'];
 		foreach ( $myData['schedule']['DailySchedules'] as $ds ) {
 			$mark = 0;
 			$midnightAdded = $ds['Switchpoints'][0]['TimeOfDay'] != '00:00:00';
 			if ( $midnightAdded ) {
-				array_unshift($ds['Switchpoints'], array('TimeOfDay'=>'00:00:00', 'TargetTemperature'=>$lastTemp));
+				array_unshift($ds['Switchpoints'], array('TimeOfDay'=>'00:00:00', 'heatSetpoint'=>$lastTemp));
 			}
 			for ( $i=1 ; $i <= sizeof($ds['Switchpoints']) ; $i++) {
 				$sp = $ds['Switchpoints'][$i-1];
@@ -669,7 +675,7 @@ class evohome extends eqLogic {
 						}
 					}
 				}
-				$lastTemp = $sp['TargetTemperature'];
+				$lastTemp = $sp['heatSetpoint'];
 				if ( $mark == 1 ) return $lastTemp;
 			}
 		}
