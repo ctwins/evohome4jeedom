@@ -1,5 +1,17 @@
 # Changelog - evohome4jeedom
 
+## [version 0.1.2] - 2018-10-28 - the 'evohomeclient fix' (+ minors)
+### Fixes
+- evohome-client-2.07/evohomeclient2 ; Zone and schedule data :
+	* heatSetpointStatus becomes setpointStatus
+	* targetTemperature becomes targetHeatTemperature
+### More
+- InfosZonesE2.py
+	* some dummy prints during the reading to avoid the broken pipe potential error
+	* decoding zones infos protected under try/catch
+- evohome.class.php / dependancy_info
+	* no more check python-pip (fails now after some upgrade in my conf)
+
 ## [version 0.1.1] - 2018-03-11 - the 'INIT fix' (and some more)
 ### Fixes
 - general configuration panel :
