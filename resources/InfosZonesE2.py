@@ -91,10 +91,10 @@ try:
 				jZones = jZones + ',"temperature":' + str(zone.temperatureStatus['temperature'])
 				jZones = jZones + ',"units":"Celsius"'
 
-		    // 0.1.2 - evohome-client-2.07/evohomeclient2 :
-            // - heatSetpointStatus becomes setpointStatus
-            // - targetTemperature becomes targetHeatTemperature
-            jZones = jZones + ',"setPoint":' + str(zone.setpointStatus['targetHeatTemperature'])
+			# 0.1.2 - evohome-client-2.07/evohomeclient2 :
+			# - heatSetpointStatus becomes setpointStatus
+			# - targetTemperature becomes targetHeatTemperature
+			jZones = jZones + ',"setPoint":' + str(zone.setpointStatus['targetHeatTemperature'])
 			# example 'FollowSchedule' / PermanentOverride (manual or permanent) / TemporaryOverride+nextTime (until xx)
 			jZones = jZones + ',"status":"' + zone.setpointStatus['setpointMode'] + '"'
 			if zone.setpointStatus['setpointMode'] == 'TemporaryOverride':
