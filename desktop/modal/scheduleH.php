@@ -52,7 +52,7 @@ if ( $edit ) { ?>
 .myInput{width:42px;font-size:16px;font-weight:600;}
 </style>
 <table width="100%">
-	<tr style="height:80px";>
+	<tr style="height:80px;">
 		<td style="vertical-align:top;width:100px;">
 			<a id="copyBtn" class="btn btn-primary btn-sm" style="width:80px;" onclick="evoSchedule.copyDays();" disabled><?php echo inner::i18n("Copier")?></a>
 		</td>
@@ -61,7 +61,7 @@ if ( $edit ) { ?>
 				<td>
 					<a id="prevSlice" class="btn btn-default glyphicon glyphicon-chevron-left myButton" onclick="evoSchedule.goSlice(-1);" />
 				</td>
-				<td style="width:20px"; />
+				<td style="width:20px;"/>
 				<td>
 					<a class="btn btn-default glyphicon glyphicon-minus myButton" onclick="evoSchedule.adjustHours(-1);" />
 				</td>
@@ -86,21 +86,21 @@ if ( $edit ) { ?>
 				<td>
 					<a class="btn btn-default glyphicon glyphicon-plus myButton" onclick="evoSchedule.adjustMinutes(1);" />
 				</td>
-				<td style="width:20px"; />
+				<td style="width:20px;"/>
 				<td>
-					<a class="btn btn-default glyphicon glyphicon-minus myButton" onclick="evoSchedule.adjustSetpoint(-1);">
+					<a class="btn btn-default glyphicon glyphicon-minus myButton" onclick="evoSchedule.adjustSetpoint(-1);" />
 				</td>
 				<td style="vertical-align:top;">
 					<input id="setpoint" type="text" onchange="evoSchedule.checkAppendAndValid();" class="form-control text-center myInput" value="18.5">
 				</td>
 				<td>
-					<a class="btn btn-default glyphicon glyphicon-plus myButton" onclick="evoSchedule.adjustSetpoint(1);">
+					<a class="btn btn-default glyphicon glyphicon-plus myButton" onclick="evoSchedule.adjustSetpoint(1);" />
 				</td>
-				<td style="width:20px"; />
+				<td style="width:20px;"/>
 				<td>
 					<a id="nextSlice" class="btn btn-default glyphicon glyphicon-chevron-right myButton" onclick="evoSchedule.goSlice(1);" />
 				</td>
-				<td style="width:50px"; />
+				<td style="width:50px;"/>
 				<td>
 					<a id="btnAppend" class="btn btn-primary btn-sm" style="width:80px;background-color:orangered !important;" onclick="evoSchedule.append();" disabled><?php echo inner::i18n("Ajouter")?></a>
 					&nbsp;&nbsp;
