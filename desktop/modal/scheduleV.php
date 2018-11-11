@@ -1,28 +1,29 @@
 <?php
 class inner {
-	static function i18n($txt, $arg=null) {
+	static function i18n($txt, $args=null) {
 		if ( substr($txt,-1) == '}' ) $txt .= '__';
-		$txt = __($txt, 'schedule');
+		$txt = __($txt, "plugins/evohome/desktop/modal/schedule");
 		if ( substr($txt,-2) == '__' ) $txt = substr($txt,0,-2);
-		if ( $arg == null ) return $txt;
-		if ( !is_array($arg) ) return str_replace('{0}', $arg, $txt);
-		for ( $i=0 ; $i<count($arg) ; $i++ ) $txt = str_replace("{".$i."}", $arg[$i], $txt);
+		if ( $args == null ) return $txt;
+		if ( !is_array($args) ) return str_replace('{0}', $args, $txt);
+		for ( $i=0 ; $i<count($args) ; $i++ ) $txt = str_replace("{".$i."}", $args[$i], $txt);
 		return $txt;
 	}
 }
 if (!isConnect()) {
 	throw new Exception(inner::i18n('401 - Accès non autorisé'));
 }
-if (init('id') == '') {
+$id = init('id');
+if ($id == '') {
 	throw new Exception(inner::i18n("L'id ne peut être vide"));
 }
 $fileId = init(evohome::ARG_FILE_ID);
 if ($fileId == '') {
 	throw new Exception(inner::i18n("L'id du fichier programme ne peut être vide"));
 }
-$evohome = evohome::byId(init('id'));
+$evohome = evohome::byId($id);
 if (!is_object($evohome)) {
-	throw new Exception(inner::i18n("L'équipement Evohome est introuvable sur l'ID {0}", init('id')));
+	throw new Exception(inner::i18n("L'équipement Evohome est introuvable sur l'ID {0}", $id));
 }
 if ($evohome->getEqType_name() != 'evohome') {
 	throw new Exception(inner::i18n("Cet équipement n'est pas du type attendu : {0}", $evohome->getEqType_name()));
@@ -30,11 +31,12 @@ if ($evohome->getEqType_name() != 'evohome') {
 
 $scheduleToShow = evohome::getSchedule($fileId);
 $zoneId = init(evohome::ARG_ZONE_ID);
-$subTitle = evohome::getScheduleSubTitle($fileId,$scheduleToShow,evohome::CFG_SCH_MODE_HORIZONTAL,$zoneId);
+$typeSchedule = init("typeSchedule");
+$subTitle = evohome::getScheduleSubTitle($fileId,$scheduleToShow,evohome::CFG_SCH_MODE_HORIZONTAL,$zoneId,$typeSchedule);
 echo "<script>";
 echo "$('#md_modal')[0].previousSibling.firstChild.innerHTML = \"$subTitle\";";
 // so the background is really white (and not transparent) when printing
-echo "if ( $('#md_modal')[0].style.cssText.search('background') == -1 ) $('#md_modal')[0].style.cssText += 'background-color:white !important'";
+//echo "if ( $('#md_modal')[0].style.cssText.search('background') == -1 ) $('#md_modal')[0].style.cssText += 'background-color:white !important'";
 echo "</script>";
 
 if ( array_key_exists('comment', $scheduleToShow) && $scheduleToShow['comment'] != '') {
@@ -44,24 +46,26 @@ if ( array_key_exists('comment', $scheduleToShow) && $scheduleToShow['comment'] 
 	echo "</tr><tr style='height:6px;'><td colspan=2></td></tr></table>";
 }
 
+const cDays = ["Lundi","Mardi","Mercredi","Jeudi","Vendredi","Samedi","Dimanche"];
 $days = array();
 for ( $i=1; $i<=7 ;$i++ ) {
 	$ts = mktime(0, 0, 0, 2, 10+$i, 2018);
-	$days[strftime('%u', $ts)-1] = inner::i18n(strftime('%A', $ts));
+	$days[strftime('%u', $ts)-1] = inner::i18n(cDays[date('N', $ts)-1]);
 }
 $currentDay = strftime('%u', time())-1;
 $currentTime = strftime('%H:%M', time());
 
 $zoneNum = 0;
+$equNamesById = evohome::getEquNamesAndId();
 foreach ( $scheduleToShow['zones'] as $mydata ) {
 	if ( $zoneId != 0 && $zoneId != $mydata['zoneId'] ) continue;
+	if ( $equNamesById[$mydata['zoneId']] == null ) continue;
 	echo "<table border=0 width=100%>";
 	echo "<tr><td colspan=7 style='font-size:14px;font-weight:800;color:black;background-color:#C0C0C0;'>&nbsp;&nbsp;";
-	echo $mydata['name'];
+	echo $equNamesById[$mydata['zoneId']];
 	echo '</td></tr><tr>';
 	$dsSunday = $mydata['schedule']['DailySchedules'][6];
 	$spSundayLast = $dsSunday['Switchpoints'][sizeof($dsSunday['Switchpoints'])-1];
-	// 0.1.2 - TargetTemperature becomes heatSetpoint (evohome-client-2.07/evohomeclient2)
 	$lastTemp = $spSundayLast['heatSetpoint'];
 	foreach ( $mydata['schedule']['DailySchedules'] as $ds ) {
 		echo "<td valign='top'>";

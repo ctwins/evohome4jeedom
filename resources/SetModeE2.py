@@ -24,7 +24,7 @@ else:
 			loc = tmp
 
 if loc == None:
-	print '{ "success": false, "errors" : [ { "code" : "UnknownLocation", "message" : "no location for ID ' + LOCATION_ID + '" } ] }'
+	print '{ "success":false, "errors" : [ { "code" : "UnknownLocation", "message" : "no location for ID ' + LOCATION_ID + '" } ] }'
 else:
 	tcs = loc._gateways[0]._control_systems[0]
 	systemId = tcs.systemId;
@@ -33,7 +33,7 @@ else:
 	#tcs._set_status(CODE_MODE);
 	#tcs._set_status(CODE_MODE, UNTIL);
 
-	headers = dict(client.headers)
+	headers = dict(client._headers)
 	headers['Content-Type'] = 'application/json'
 
 	if UNTIL is None:

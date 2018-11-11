@@ -86,7 +86,10 @@ if (!isConnect('admin')) {
 			</div>
 		</div>
 		<div class="form-group">
-			<label class="col-lg-4 control-label">{{Type d'affichage par défaut des programmes}}</label>
+			<label class="col-lg-3 control-label" style="font-size:15px;"><u>{{Programmes}}</u></label>
+		</div>
+		<div class="form-group">
+			<label class="col-lg-4 control-label">{{Type d'affichage par défaut}}</label>
 			<input type="hidden" class="configKey" id="evoDefaultShowingScheduleMode" data-l1key="evoDefaultShowingScheduleMode" />
 			<div class="col-lg-2" style="width:auto;">
 				<label>
@@ -100,6 +103,15 @@ if (!isConnect('admin')) {
 					<?php echo '<input class="form-control" type="radio" id="eshm' . evohome::CFG_SCH_MODE_VERTICAL . '" name="eshm"
 							value="' . evohome::CFG_SCH_MODE_VERTICAL . '" style="height:24px;width:24px;display:inline;
     vertical-align:middle">'; ?>&nbsp;&nbsp;{{Vertical}}
+				</label>
+			</div>
+		</div>
+		<div class="form-group">
+			<div class="col-lg-4">&nbsp;</div>
+			<div class="col-lg-5">
+				<label>
+					<input class="configKey" type="checkbox" style="height:24px;width:24px;" data-l1key="evoEditAvailable" />
+					{{Mode édition disponible}}
 				</label>
 			</div>
 		</div>

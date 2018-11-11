@@ -1,12 +1,17 @@
-<div style="height:18px;"></div>
+<div style="height:6px;"></div>
 <div style="margin-left:10px;margin-right:10px;text-align:center;background-color:lightgray;display:#temperatureDisplay#;">
-	<span data-cmd_id="#temperatureId#" class="history cursor" style="display:#temperatureDisplay2#;color:black;font-size:36px;font-weight:400;font-family:'Open Sans', sans-serif;">#temperature#</span>
+	<span data-cmd_id="#temperatureId#" class="history cursor" style="display:#temperatureDisplay2#;color:black;font-size:32px;font-weight:400;font-family:'Open Sans', sans-serif;">#temperature#</span>
 	<img data-cmd_id="#temperatureId#" class="history cursor" style="display:#temperatureImgDisplay#" src="plugins/evohome/img/#temperatureImg#" />
 </div>
 
-<div class="showCurrentSchedule#id# showCS" style="display:#consigneDisplay#;float:left;border-radius:4px;margin-left:10px;width:28px;height:30px;background-color:#cmd-background-color#;">
-	<a class="btn btn-btn-sm" style="padding-left:11px;padding-top:6px;">
-		<i class="fa fxa-folder-open">P</i>
+<div class="showCurrentScheduleC#zoneId# showCS" style="display:#consigneDisplay#;float:left;border-radius:4px;margin-left:10px;width:28px;height:30px;background-color:#cmd-background-color#;">
+	<a class="btn btn-btn-sm" style="padding-left:6px;padding-top:6px;">
+		<i class="fa fxa-folder-open">Pc</i>
+	</a>
+</div>
+<div class="showCurrentScheduleS#zoneId# showCS" style="display:#consigneDisplay#;float:left;border-radius:4px;width:28px;height:30px;background-color:#cmd-background-color#;">
+	<a class="btn btn-btn-sm" style="padding-left:6px;padding-top:6px;">
+		<i class="fa fxa-folder-open showSavedScheduleCaption#zoneId#">Ps</i>
 	</a>
 </div>
 <div style="border:#consigneBorder#px solid black;margin-left:36px;margin-right:10px;height:30px;text-align:center;background-color:#consigneBG#;display:#consigneDisplay#;">
@@ -17,22 +22,31 @@
 	</span>
 </div>
 <script>
-var lastMode = null;
-$('.showCurrentSchedule#id#').off().on('click', function () {
-	if ( $('.showCurrentSchedule#id#').css("background-color") != "rgb(16, 208, 16)" ) {
-		showSchedule_#zoneId#();
+$('.showCurrentScheduleC#zoneId#').off().on('click', function () {
+	_showSchedule_#zoneId#('C');
+});
+$('.showCurrentScheduleS#zoneId#').off().on('click', function () {
+	if ( $('#scheduleList'+genConsoleId).value() > 0 ) {
+		_showSchedule_#zoneId#('S');
+	}
+});
+function _showSchedule_#zoneId#(type) {
+	if ( $('.showCurrentSchedule'+type+'#zoneId#').css("background-color") != "rgb(16, 208, 16)" ) {
+		showSchedule_#zoneId#(type);
 	} else {
 		$('#md_modal').dialog('close');
 	}
-});
-function showSchedule_#zoneId#(mode) {
-	lastMode = mode == null ? (lastMode == null ? '#evoDefaultShowingScheduleMode#' : lastMode) : mode;
+}
+function showSchedule_#zoneId#(type,mode) {
+	generalLastMode = mode == null ? (generalLastMode == null ? '#evoDefaultShowingScheduleMode#' : generalLastMode) : mode;
 	$('#md_modal').dialog('close');
 	$('#md_modal').dialog({
-		title: "", height: 'auto', width: (lastMode == '#showHorizontal#' ? Math.min(1000,jQuery(window).width()-16) : 700),
+		title: "", height: 'auto', width: (generalLastMode == '#showHorizontal#' ? Math.min(1000,jQuery(window).width()-16) : 700),
 		position: { my: "center top", at: "center top+50", of: window }});
-	$('#md_modal').load('index.php?v=d&plugin=evohome&modal=schedule'+lastMode+'&id=#id#&#argZoneId#=#zoneId#&#argFileId#=0&mode='+lastMode).dialog('open');
-	$('.showCurrentSchedule#id#').css("background-color", "rgb(16, 208, 16)");
+
+	var fileId = type == 'C' ? 0 : $('#scheduleList'+genConsoleId+' option:selected').value();
+	$('#md_modal').load('index.php?v=d&plugin=evohome&modal=schedule'+generalLastMode+'&id=#id#&#argZoneId#=#zoneId#&#argFileId#='+fileId+'&edit=0&mode='+generalLastMode+'&typeSchedule='+type).dialog('open');
+	$('.showCurrentSchedule'+type+'#zoneId#').css("background-color", "rgb(16, 208, 16)");
 }
-$('#md_modal').on('dialogclose', function () { $('.showCS').css("background-color", "#cmd-background-color#"); });
+$('.showSavedScheduleCaption#zoneId#').css('color', $('#scheduleList'+genConsoleId).value() == 0 ? 'gray' : 'white');
 </script>
