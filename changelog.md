@@ -1,5 +1,9 @@
 # Changelog - evohome4jeedom
 
+## [version 0.2.1] - 2018-12-09 - View history fix
+### Fix
+- History graphs are now also displayable from the View mode
+
 ## [version 0.2.0] - 2018-11-10 - the 'schedule edition'
 ### NEWS
 - Schedules edition mode (thanks to ecc for pre-testing)<br/>
