@@ -1,6 +1,6 @@
 # Changelog - evohome4jeedom
 
-## [version 0.2.1] - 2018-12-11 - View history fix
+## [version 0.2.1] - 2018-12-11 - the 'schedule edition' 1.1
 ### Improvements
 - Schedules edition mode
 	1. indicator '*' added after the zone name in the zones list, when schedule for it has changed<br/>
