@@ -7,7 +7,7 @@
 	2. you can now revert the changes on a day with the small button which appears on the right when changes has done<br/>
 
 ### Change
-	1. Category of the plugin becomes Energy<br/>
+- Category of the plugin becomes Energy
 
 ### Fix
 - History graphs are now also displayable from the View mode
