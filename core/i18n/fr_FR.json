@@ -59,6 +59,7 @@
         "Jamais": "Jamais",
         "jour": "jour",
         "jours": "jours",
+        "Mode édition disponible": "Mode édition disponible",
         "Modes de présence": "Modes de présence",
         "mois": "mois",
         "Mot de passe": "Mot de passe",
@@ -70,8 +71,7 @@
         "Unité de température": "Unité de température",
         "Vertical": "Vertical",
         "Programmes": "Programmes",
-        "Type d'affichage par défaut": "Type d'affichage par défaut",
-        "Mode édition disponible": "Mode édition disponible"
+        "Type d'affichage par défaut": "Type d'affichage par défaut"
     },
     "plugins\/evohome\/core\/class\/evohome.class.php": {
         "Affiche la programmation courante": "Affiche la programmation courante",

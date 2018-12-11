@@ -6,7 +6,10 @@
 	"author" : "ctwins",
 	"version" : "0.2.1",
 	"require" : "3.0",
-	"category" : "wellness",
+	"category" : "energy",
 	"hasDependency" : true,
-	"hasOwnDeamon" : false
+	"hasOwnDeamon" : false,
+	"issue" : "https://github.com/ctwins/evohome4jeedom/issues",
+	"documentation": "https://github.com/ctwins/evohome4jeedom/blob/master/README.md",
+	"changelog": "https://github.com/ctwins/evohome4jeedom/blob/master/changelog.md"
 }

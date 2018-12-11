@@ -1,6 +1,14 @@
 # Changelog - evohome4jeedom
 
-## [version 0.2.1] - 2018-12-09 - View history fix
+## [version 0.2.1] - 2018-12-11 - View history fix
+### Improvements
+- Schedules edition mode
+	1. indicator '*' added after the zone name in the zones list, when schedule for it has changed<br/>
+	2. you can now revert the changes on a day with the small button which appears on the right when changes has done<br/>
+
+### Change
+	1. Category of the plugin becomes Energy<br/>
+
 ### Fix
 - History graphs are now also displayable from the View mode
 

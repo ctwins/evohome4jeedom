@@ -1,6 +1,6 @@
 # evohome4jeedom
 This is a plugin for Jeedom 3.0 platform, regarding the Honeywell Evohome system.<br/>
-State is : v0.2.1 - Schedules edition version 1 - FIX #4
+State is : v0.2.1 - Schedules edition version 1.1 - FIX #4
 
 Written in php, the Jeedom main langage, a bit of javascript and of course some html, and, at this time,  some python bridges because all will be nothing without the excellent python library "evohome" from watchforstock.<br/>
 Great thanks to him and it's implementation you can find here : https://github.com/watchforstock/evohome-client

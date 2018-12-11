@@ -7,7 +7,9 @@
 	<author>ctwins</author>
     <version>0.2.1</version>
 	<require>3.0</require>
-	<category>wellness</category>
+	<category>energy</category>
 	<hasDependency>1</hasDependency>
 	<hasOwnDeamon>0</hasOwnDeamon>
+	<documentation>https://github.com/ctwins/evohome4jeedom/blob/master/README.md</documentation>
+	<changelog>https://github.com/ctwins/evohome4jeedom/blob/master/changelog.md</changelog>
 </info>

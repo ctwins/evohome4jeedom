@@ -1,6 +1,6 @@
-= Camera
+= Evohome
 
-Plugin permetant de créer et gerer ses cameras (affichage et enregistrement)
+Plugin permetant de monitorer son système Evohome, éditer et piloter ses programmes hebdomadaires
 
 include::configuration.asciidoc[]
 
