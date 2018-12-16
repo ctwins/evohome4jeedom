@@ -1,10 +1,10 @@
 {
 	"id" : "evohome",
-	"name" : "Evohome 0.2.1",
+	"name" : "Evohome 0.2.2",
 	"description" : "Plugin EVOHOME",
 	"licence" : "AGPL",
 	"author" : "ctwins",
-	"version" : "0.2.1",
+	"version" : "0.2.2",
 	"require" : "3.0",
 	"category" : "energy",
 	"hasDependency" : true,
