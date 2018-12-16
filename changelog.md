@@ -1,8 +1,25 @@
 # Changelog - evohome4jeedom
 
+## [version 0.2.2] - 2018-12-16 - fix #5
+### Improvements
+- Temperature tile<br/>
+	1. adjust display of icon and additional information 
+
+### Fixes
+- Schedules edition mode<br/>
+	1. adding a slice with the hh:mm after all existing was badly inserted<br/>
+	2. bad color when leaving a virtual slice (00:00 without setting)<br/>
+	3. could not remove any slice when only 2 slice defined with the first at 00:00
+	4. revert just after adding a slice caused js error (and no effect)  
+
+### Incoming
+- Schedules edition mode<br/>
+	1. saving change on the current schedule should activate the loading button<br/>
+	consider the active schedule has not to be loaded
+
 ## [version 0.2.1] - 2018-12-11 - the 'schedule edition' 1.1
 ### Improvements
-- Schedules edition mode
+- Schedules edition mode<br/>
 	1. indicator '*' added after the zone name in the zones list, when schedule for it has changed<br/>
 	2. you can now revert the changes on a day with the small button which appears on the right when changes has done<br/>
 
@@ -12,7 +29,7 @@
 ### Fix
 - History graphs are now also displayable from the View mode
 
-## [version 0.2.0] - 2018-11-10 - the 'schedule edition'
+## [version 0.2.0] - 2018-11-10 - the 'schedule edition' 1.0
 ### NEWS
 - Schedules edition mode (thanks to ecc for pre-testing)<br/>
 	1. the Edition mode has to be activated in the General configuration before to use it<br/>
@@ -106,9 +123,6 @@
 ### Underground
 - better manipulation of json data, in case of null or KO content (more log, no more bad effects)
 - after restore, refresh only temp. & setPoint data, and merge restored schedule (speed up process)
-
-### To be followed
-- render 'mobile' widgets with actions and popup available
 
 ## [beta 2] - 2018-02-25 - the 'ECC FIXES'
 

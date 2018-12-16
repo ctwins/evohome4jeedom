@@ -893,19 +893,19 @@ class evohome extends eqLogic {
 			$temperatureNative = is_object($cmdTemperature) ? $cmdTemperature->execCmd() : 0;
 			if ( $temperatureNative == null ) {
 				$replace_temp['#temperature#'] = '';
-				$replace_temp['#temperatureImgDisplay#'] = 'visible;height:36px;width:36px;margin-top:8px;margin-bottom:8px;';
+				$replace_temp['#temperatureImgDisplay#'] = 'inline;height:36px;width:36px;margin-top:8px;margin-bottom:8px;';
 				$replace_temp['#temperatureDisplay2#'] = 'none';
 			} else {
 				$temperature = self::applyRounding($temperatureNative);
 				$replace_temp['#temperature#'] = $temperature . '°';
-				$replace_temp['#temperatureImgDisplay#'] = 'visible;height:15px;width:15px;';
+				$replace_temp['#temperatureImgDisplay#'] = 'inline;height:15px;width:15px;margin-top:20px;';
 				$replace_temp['#temperatureDisplay2#'] = 'visible';
 			}
 
 			// *** CONSIGNE
 			$cmdConsigne = $this->getCmd(null,self::CMD_CONSIGNE_ID);
 			$replace_temp['#consigneId#'] = is_object($cmdConsigne) ? $cmdConsigne->getId() : '';
-			$replace_temp['#consigneDisplay#'] = (is_object($cmdConsigne) && $cmdConsigne->getIsVisible()) ? "visible" : "none";
+			$replace_temp['#consigneDisplay#'] = (is_object($cmdConsigne) && $cmdConsigne->getIsVisible()) ? "block" : "none";
 			$consigne = is_object($cmdConsigne) ? $cmdConsigne->execCmd() : 0;
 			$_etat = self::getEtat();
 			$aEtat = $_etat == null ? null : explode(';',$_etat);
@@ -978,7 +978,7 @@ class evohome extends eqLogic {
 				$replace_temp['#fileId#'] = self::getParam(self::iCFG_SCHEDULE_ID,0);
 			}
 			$replace_temp['#consigneTypeImg#'] = $consigneTypeImg == null ? 'empty.svg' : $consigneTypeImg;
-			$replace_temp['#consigneTypeDisplay#'] = $consigneTypeImg == null ? 'none' : 'visible';
+			$replace_temp['#consigneTypeDisplay#'] = $consigneTypeImg == null ? 'none' : 'inline';
 			// arguments names
 			$replace_temp['#argFileId#'] = self::ARG_FILE_ID;
 			$replace_temp['#argZoneId#'] = self::ARG_ZONE_ID;
