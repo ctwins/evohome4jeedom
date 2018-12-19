@@ -1,22 +1,23 @@
 # evohome4jeedom
 This is a plugin for Jeedom 3.0 platform, regarding the Honeywell Evohome system.<br/>
-State is : v0.2.2 - Schedules edition version 1.1 - FIX #5
+State is : v0.2.3 - 'pictures adjustments'
 
 Written in php, the Jeedom main langage, a bit of javascript and of course some html, and, at this time,  some python bridges because all will be nothing without the excellent python library "evohome" from watchforstock.<br/>
 Great thanks to him and it's implementation you can find here : https://github.com/watchforstock/evohome-client
 
 Features just cover my needs to get a triggerable injection of full week scheduling in the main evotouch console.<br/>
 Of course, the temperatures and setpoints are showed inside room components, with history availability.<br/>
-One connection is made per 10 mn to obtain full informations like temp. but also schedule for all the rooms.
 
 On the general properties page, you have to set your username and password, which pair is the account you have to create/created on the official Honeywell web application (same as one linked with the phone's application).
+In the same page, upoi can adjust the period of refresh, so full informations like temp. but also schedule for all the rooms are read.
 
+NEW : since 0.2.0 : you can now edit full schedule, one zone and full week at a time
 
-Install and try, with your favorite FTP client. You must have the possibility to remove the plugin in case of general crash.<br/>
-So, to install from the downloaded zip file :<br/>
-1. Follow the installation by zip file, as seen in botom of https://jeedom.github.io/core/en_US/plugin
+Install and try, from GIT with your favorite FTP client, so you have the possibility to remove the plugin in case of general crash.<br/>
+1. Follow the installation by zip file, as seen in bottom of https://jeedom.github.io/core/en_US/plugin
 2. Just unzip in a folder named 'evohome' inside the plugins folder, then grant to www-data for owner and group part, with the "rwx" rights, set "r-x" for others (or 0775 when under www-data user)<br/>
 
+NEW : since 2018-12, plugin is published on the Market, in 'stable' status ;) 
 
 As you will see, the configuration is very simple.<br/>
 **Warning : some operations take times, more than 30 seconds for the setting mode, just be patient when you see the rolling picture..**

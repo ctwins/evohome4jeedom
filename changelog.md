@@ -1,5 +1,12 @@
 # Changelog - evohome4jeedom
 
+## [version 0.2.3] - 2018-12-19 - pictures adjustments
+### Changes
+- icon of the plugin to go out of the official Jeedom chart<br/>
+- changing of the 'Console' photo + the 2 photos ahve now a transparent background
+- adding the missing 'reverse' icon (needed since 0.2.1)
+- adding version info in the title of the conf. page (never visible elsewhere)
+
 ## [version 0.2.2] - 2018-12-16 - fix #5
 ### Improvements
 - Temperature tile<br/>

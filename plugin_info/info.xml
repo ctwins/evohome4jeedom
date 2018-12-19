@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <info>
 	<id>evohome</id>
-    <name>Evohome</name>
+    <name>Evohome 0.2.3</name>
 	<description>Plugin EVOHOME</description>
 	<licence>AGPL</licence>
-	<author>ctwins</author>
-    <version>0.2.2</version>
+	<author>ctwins95</author>
+    <version>0.2.3</version>
 	<require>3.0</require>
 	<category>energy</category>
 	<hasDependency>1</hasDependency>
