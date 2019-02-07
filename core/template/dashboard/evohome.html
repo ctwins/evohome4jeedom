@@ -1,13 +1,28 @@
-<div id="plugin_container" class="eqLogic-widget eqLogic allowResize" style="width:#width#;height:#height#;background-color: #background-color#;color: #color#; #style#" data-category="" data-eqLogic_id="#id#" data-version="#version#" >
+<div id="plugin_container" class="eqLogic-widget eqLogic allowResize" style="width:#width#;height:#height#;background-color:#background-color#;color:#color#;#style#" data-category="" data-eqLogic_id="#id#" data-version="#version#">
 	<div style="height:4px;"></div>
-	<center class="widget-name">
-		<a href="#eqLink#" style="color:black;font-size:1.1em;#hideEqLogicName#"><strong>#name_display#</strong></a>
-		<!-- <span style="font-size: 0.85em;position: relative;top:-2px;">#object_name#</span> -->
-	</center>
+	<div>
+		<div style="display:block;float:right;margin-right:4px;">
+			<span id="hoverTLRShowA#id#" class="fa #iazIcon#" style="cursor:pointer;font-size:#iazIconSize#px;vertical-align:top;color:#iazColorState#;"/>
+			<div id="hoverTLRShowB#id#" class="hoverTLRShow"><span nobreak>&nbsp;#iazLastRead#&nbsp;</span></div>
+			<script type="text/javascript" src="plugins/evohome/core/template/dashboard/dashboard_min.js"></script>
+			<script>
+			$('#hoverTLRShowA#id#').off().on('click', function() { flipTLR(#id#); } );
+			$('#hoverTLRShowB#id#').off().on('click', function() { hideTLR(#id#); } );
+			var evoMsgInfo = '#evoMsgInfo#'; if ( evoMsgInfo != '' ) {
+				var level = 'danger';
+				if ( evoMsgInfo.substring(0,1) == '1' ) { evoMsgInfo = evoMsgInfo.substring(1); level = 'success'; }
+				$('#div_alert').showAlert({message:evoMsgInfo, level:level});
+			}
+			</script>
+		</div>
+		<div class="widget-name" style="display:block;text-align:center;">
+			<a href="#eqLink#" style="color:black;font-size:1.1em;#hideEqLogicName#"><strong>#name_display#</strong></a>
+		</div>
+	</div>
 
-	<!-- Mode console -->
-	<span>#consoleContent#</span>
+	<!-- Widget console -->
+	#consoleContent#
 
-	<!-- Mode température -->
-	<span>#temperatureContent#</span>
+	<!-- Widget température -->
+	#temperatureContent#
 </div>

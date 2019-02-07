@@ -26,24 +26,39 @@ try {
 	ajax::init();
 
 	if (init('action') == 'getCommentary') {
-		evohome::logDebug("IN>> - ajax.getCommentary");
 		$fileId = init('fileId');
 		if ( $fileId == '') {
 			throw new Exception(evohome::i18n("Aucun identifiant de sauvegarde spécifié"));
 		}
+		if ( evohome::isDebug() ) evohome::logDebug("IN>> - ajax.getCommentary($fileId)");
 		$schedule = evohome::getSchedule($fileId);
 		if ( $schedule == null ) {
 			throw new Exception(evohome::i18n("Impossible de lire la sauvegarde d'identifiant {0}", $fileId));
 		}
 		$comm = $schedule['comment'];
-		if ( evohome::isDebug() ) {
-			evohome::logDebug("<<OUT - ajax.getCommentary : " . json_encode($comm));
+		if ( evohome::isDebug() ) evohome::logDebug("<<OUT - ajax.getCommentary : " . json_encode($comm));
+		ajax::success(array('comment'=>$comm));
+	}
+	else if (init('action') == 'setStatScope') {
+		$statScope = init('statScope');
+		if ( $statScope == '') {
+			throw new Exception("statScope unknown");
 		}
-		$result = array('comment'=>$comm);
-		ajax::success($result);
+		if ( evohome::isDebug() ) evohome::logDebug("IN>> - ajax.setStatScope($statScope)");
+		evohome::ajaxChangeStatScope($statScope);
+		ajax::success();
+	}
+	else if (init('action') == 'synchronizeTH') {
+		$locationId = init('locationId');
+		$sZones = init('zones');
+		$resizeWhenSynchronize = init('resizeWhenSynchronize') == '1';
+		if ( evohome::isDebug() ) evohome::logDebug("IN>> - ajax.synchronize($locationId)");
+		$added = evohome::ajaxSynchronizeTH($locationId,$sZones,$resizeWhenSynchronize);
+		ajax::success(array('added'=>$added));
 	}
 
 	throw new Exception(__('Aucune méthode correspondante à : ', __FILE__) . init('action'));
 } catch (Exception $e) {
 	ajax::error(displayExeption($e), $e->getCode());
+
 }

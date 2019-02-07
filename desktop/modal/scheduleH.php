@@ -30,30 +30,56 @@ if ($evohome->getEqType_name() != 'evohome') {
 }
 
 $scheduleToShow = evohome::getSchedule($fileId);
+if ( !is_array($scheduleToShow) ) {
+	echo "Erreur de lecture<br/><br/>";
+	return;
+}
+$currentSchedule = evohome::getSchedule(evohome::CURRENT_SCHEDULE_ID);
 $zoneId = init(evohome::ARG_ZONE_ID);
 $edit = init('edit') === "1";
 $typeSchedule = init("typeSchedule");
-$subTitle = evohome::getScheduleSubTitle($fileId,$scheduleToShow,evohome::CFG_SCH_MODE_VERTICAL,$zoneId,$typeSchedule,$edit);
-$editAvailable = evohome::getParam(evohome::CFG_SCH_EDIT_AVAILABLE,0) == 1;
+$subTitle = evohome::getScheduleSubTitle($id,$fileId,$currentSchedule,$scheduleToShow,evohome::CFG_SCH_MODE_VERTICAL,$zoneId,$typeSchedule,$edit);
+$editAvailable = evohome::isAdmin() == 'true' && evohome::getParam(evohome::CFG_SCH_EDIT_AVAILABLE,0) == 1;
 if ( $editAvailable && !$edit && /*$fileId != 0 &&*/ $zoneId > 0 ) {
 	$subTitle .= "<a id='btnEdit' style='position:absolute;right:50px;' class='btn btn-success btn-sm' onclick='evoSchedule.openEdit($zoneId);'>" . inner::i18n("Editer") . "</a>";
 	//echo "if ( $('#md_modal')[0].style.cssText.search('background') == -1 ) $('#md_modal')[0].style.cssText += 'background-color:white !important';";
 }
 if ( !$edit && array_key_exists('comment', $scheduleToShow) && $scheduleToShow['comment'] != '') {
 	echo "<table width=100% style='background-color:white;color:black;'><tr>";
-	echo "<td style='vertical-align:top;'>" . inner::i18n('Commentaire') . "&nbsp;:&nbsp;</td>";
+	echo "<td class='_vtop'>" . inner::i18n('Commentaire') . "&nbsp;:&nbsp;</td>";
 	echo "<td width=90%>" . urldecode(str_replace('%0A','<br/>',$scheduleToShow['comment'])) . "</td>";
 	echo "</tr><tr style='height:6px;'><td colspan=2></td></tr></table>";
 }
 echo "<div id='scheduleTable'></div>";
-if ( $edit ) { ?>
+?>
 <style>
+._vtop{vertical-align:top;}
+._t1{border-left:1px solid lightgray;}
+._t2{border:1px solid lightgray;}
+._t3{height:34px;font-size:16px;font-weight:600;color:black;background-color:#C0C0C0 !important;}
+._t4{font-family:'Open Sans', sans-serif;font-size:12px;cursor:default;}
+._t4e{font-family:'Open Sans', sans-serif;font-size:12px;cursor:pointer;}
+._virtual{background-color:#A0A0A0;}
+._rowTdA{border-bottom:1px solid lightgray;}
+._rowTdB{color:black;background-color:lightgreen;}
+._slice1{color:black;background-color:lightgreen;}
+._slice2{background-color:#F0F0F0;color:gray;}
+._edit{position:absolute;right:20px;font-weight:600;color:black;padding-bottom:2px;padding-top:3px;}
+<?php if ( $edit ) { ?>
 .myButton{padding-left:11px;padding-right:11px;top:0px;}
 .myInput{width:42px;font-size:16px;font-weight:600;}
+.myAppend{width:80px;background-color:orangered !important;}
+.myValid{width:80px;background-color:#42b142 !important;}
+.mySave{width:120px;background-color:#42b142 !important;}
+.myComment{vertical-align:top;padding-left:4px;}
+._nocheck1{border-radius:5px;background-color:lightgray;cursor:pointer;}
+._nocheck2{height:14px;width:14px;}
+<?php } ?>
 </style>
+<?php if ( $edit ) { ?>
 <table width="100%">
-	<tr style="height:80px;">
-		<td style="vertical-align:top;width:100px;">
+	<tr style="height:80px">
+		<td class="_vtop" style="width:100px;">
 			<a id="copyBtn" class="btn btn-primary btn-sm" style="width:80px;" onclick="evoSchedule.copyDays();" disabled><?php echo inner::i18n("Copier")?></a>
 		</td>
 		<td style="text-align:-webkit-center;">
@@ -65,7 +91,7 @@ if ( $edit ) { ?>
 				<td>
 					<a class="btn btn-default glyphicon glyphicon-minus myButton" onclick="evoSchedule.adjustHours(-1);" />
 				</td>
-				<td style="vertical-align:top;">
+				<td class="_vtop" >
 					<input id="hours" type="text" onchange="evoSchedule.checkAppendAndValid();" class="form-control text-center myInput" value="01">
 				</td>
 				<td>
@@ -80,7 +106,7 @@ if ( $edit ) { ?>
 				<td>
 					<a class="btn btn-default glyphicon glyphicon-minus myButton" onclick="evoSchedule.adjustMinutes(-1);" />
 				</td>
-				<td style="vertical-align:top;">
+				<td class="_vtop">
 					<input id="minutes" type="text" onchange="evoSchedule.checkAppendAndValid();" class="form-control text-center myInput" value="10">
 				</td>
 				<td>
@@ -90,7 +116,7 @@ if ( $edit ) { ?>
 				<td>
 					<a class="btn btn-default glyphicon glyphicon-minus myButton" onclick="evoSchedule.adjustSetpoint(-1);" />
 				</td>
-				<td style="vertical-align:top;">
+				<td class="_vtop">
 					<input id="setpoint" type="text" onchange="evoSchedule.checkAppendAndValid();" class="form-control text-center myInput" value="18.5">
 				</td>
 				<td>
@@ -102,9 +128,9 @@ if ( $edit ) { ?>
 				</td>
 				<td style="width:50px;"/>
 				<td>
-					<a id="btnAppend" class="btn btn-primary btn-sm" style="width:80px;background-color:orangered !important;" onclick="evoSchedule.append();" disabled><?php echo inner::i18n("Ajouter")?></a>
+					<a id="btnAppend" class="btn btn-primary btn-sm myAppend" onclick="evoSchedule.append();" disabled><?php echo inner::i18n("Ajouter")?></a>
 					&nbsp;&nbsp;
-					<a id="btnValid" class="btn btn-success btn-sm" style="width:80px;background-color:#42b142 !important;" onclick="evoSchedule.validate();"><?php echo inner::i18n("Valider")?></a>
+					<a id="btnValid" class="btn btn-success btn-sm myValid" onclick="evoSchedule.validate();"><?php echo inner::i18n("Valider")?></a>
 				</td>
 			</tr>
 			</table>
@@ -117,11 +143,11 @@ if ( $edit ) { ?>
 					<td style="width:160px;padding-left:4px;"><?php echo inner::i18n("Nom du fichier")?></td>
 					<td><input type="text" id="saveName" /></td>
 					<td rowspan=2 style="text-align:center;">
-						<a id="btnSave" class="btn btn-success btn-sm" style="width:120px;background-color:#42b142 !important;" onclick="evoSchedule.saveSchedule();"><?php echo inner::i18n("Sauvegarder")?></a>&nbsp;
+						<a id="btnSave" class="btn btn-success btn-sm mySave" onclick="evoSchedule.saveSchedule();"><?php echo inner::i18n("Sauvegarder")?></a>&nbsp;
 					</td>
 				</tr>
 				<tr>
-					<td style='vertical-align:top;padding-left:4px;'><?php echo inner::i18n("Commentaire")?></td>
+					<td class="myComment"><?php echo inner::i18n("Commentaire")?></td>
 					<td colspan=2><textarea style="height:80px;width:400px;" id="idComment"><?php
 					if ( array_key_exists('comment', $scheduleToShow) && $scheduleToShow['comment'] != '') {
 						echo urldecode(str_replace('%0A',chr(10),$scheduleToShow['comment']));
@@ -142,9 +168,7 @@ if ( $edit ) { ?>
 		</td>
 	</tr>
 </table>
-<?php
-}
-?>
+<?php } ?>
 <script type="text/javascript" src="plugins/evohome/desktop/js/scheduleH-min.js"></script>
 <script>
 var evoPoints = null;
@@ -156,32 +180,38 @@ if ( $edit ) {
 }
 $iZone = 0;
 $equNamesById = evohome::getEquNamesAndId();
-foreach ( $scheduleToShow['zones'] as $mydata ) {
-	$myZoneId = $mydata['zoneId'];
-	if ( !$edit && $zoneId != 0 && $zoneId != $myZoneId ) continue;
-	if ( $equNamesById[$myZoneId] == null ) continue;
-	echo "evoSchedule.zones[" . $iZone++ . "] = new evoSchedule.EvoZone($myZoneId,\"" . $mydata['name'] . "\",\"" . $equNamesById[$myZoneId] . "\",[\n";
-	$iSchedule = 0;
-	$dsSunday = $mydata['schedule']['DailySchedules'][6];	// ATTENTION, valable si Schedule semaine complète
-	$spSundayLast = $dsSunday['Switchpoints'][sizeof($dsSunday['Switchpoints'])-1];
-	$lastTemp = $spSundayLast['heatSetpoint'];
-	foreach ( $mydata['schedule']['DailySchedules'] as $ds ) {
-		if ( $iSchedule++ > 0 ) echo ",\n";
-		echo "new evoSchedule.EvoSchedule(" . $ds['DayOfWeek'] . ", [";
-		$iSetpoint = 0;
-		if ( $ds['Switchpoints'][0]['TimeOfDay'] != '00:00:00' ) {
-			//echo "new evoSchedule.EvoPoint(" . $lastTemp . ",'00:00:00',true)";
-			echo "evoSchedule.buildVirtualPoint()";
-			$iSetpoint++;
+if ( is_array($scheduleToShow) ) {
+	foreach ( $scheduleToShow['zones'] as $mydata ) {
+		$myZoneId = $mydata['zoneId'];
+		if ( !$edit && $zoneId != 0 && $zoneId != $myZoneId ) continue;
+		if ( $equNamesById[$myZoneId] == null ) continue;
+		echo 'evoSchedule.zones[' . $iZone++ . '] = new evoSchedule.EvoZone(' . $myZoneId . ',"' . $mydata['name'] . '","' . $equNamesById[$myZoneId];
+		if ( !$edit && $fileId != evohome::CURRENT_SCHEDULE_ID && json_encode($mydata) != json_encode(evohome::extractZone($currentSchedule,$myZoneId)) ) {
+			echo ' *';
 		}
-		foreach ( $ds['Switchpoints'] as $sp) {
-			if ( $iSetpoint++ > 0 ) echo ",\n";
-			echo "new evoSchedule.EvoPoint(" . $sp['heatSetpoint'] . ",'" . $sp['TimeOfDay'] . "',false)";
+		echo "\",[\n";
+		$iSchedule = 0;
+		$dsSunday = $mydata['schedule']['DailySchedules'][6];	// ATTENTION, valable si Schedule semaine complète
+		$spSundayLast = $dsSunday['Switchpoints'][sizeof($dsSunday['Switchpoints'])-1];
+		$lastTemp = $spSundayLast['heatSetpoint'];
+		foreach ( $mydata['schedule']['DailySchedules'] as $ds ) {
+			if ( $iSchedule++ > 0 ) echo ",\n";
+			echo "new evoSchedule.EvoSchedule(" . $ds['DayOfWeek'] . ", [";
+			$iSetpoint = 0;
+			if ( $ds['Switchpoints'][0]['TimeOfDay'] != '00:00:00' ) {
+				//echo "new evoSchedule.EvoPoint(" . $lastTemp . ",'00:00:00',true)";
+				echo "evoSchedule.buildVirtualPoint()";
+				$iSetpoint++;
+			}
+			foreach ( $ds['Switchpoints'] as $sp) {
+				if ( $iSetpoint++ > 0 ) echo ",\n";
+				echo "new evoSchedule.EvoPoint(" . $sp['heatSetpoint'] . ",'" . $sp['TimeOfDay'] . "',false)";
+			}
+			echo "])";
+			$lastTemp = $ds['Switchpoints'][sizeof($ds['Switchpoints'])-1]['heatSetpoint'];
 		}
-		echo "])";
-		$lastTemp = $ds['Switchpoints'][sizeof($ds['Switchpoints'])-1]['heatSetpoint'];
+		echo "]);\n";
 	}
-	echo "]);\n";
 }
 const cDays = ["Lundi","Mardi","Mercredi","Jeudi","Vendredi","Samedi","Dimanche"];
 for ( $i=1; $i<=7 ;$i++ ) {

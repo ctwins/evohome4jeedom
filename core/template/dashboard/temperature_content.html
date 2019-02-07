@@ -1,52 +1,61 @@
 <div style="height:6px;"></div>
-<div style="margin-left:10px;margin-right:10px;text-align:center;background-color:lightgray;display:#temperatureDisplay#;">
-	<span data-cmd_id="#temperatureId#" class="cmd-widget history cursor" style="display:#temperatureDisplay2#;color:black;font-size:32px;font-weight:400;font-family:'Open Sans', sans-serif;">#temperature#</span>
-	<img data-cmd_id="#temperatureId#" class="cursor" style="display:#temperatureImgDisplay#" src="plugins/evohome/img/#temperatureImg#" />
+<div class="TH1" style="display:#temperatureDisplay#;">
+	<div class="hoverTH" style="display:#minMaxDisplay#;">
+		<table id="hoverTHShowA#id#" class="THSAt">
+			<tr><td class="fa fa-thermometer-full THSAd1">#statThMax#</td></tr>
+			<tr><td class="fa fa-thermometer-half THSAd2">#statThAvg#</td></tr>
+			<tr><td class="fa fa-thermometer-empty THSAd3">#statThMin#</td></tr>
+		</table>
+		<div class="hoverTHShow" id="hoverTHShowB#id#">
+			<table border="1" width=97% style="background-color:unset;margin:6px;"><tbody>
+				<tr><td colspan="4" class="THSBd1">#name_display# : #statTitle#</td></tr>
+				<tr><td colspan="2">#statRazTimeTitle#</td><td colspan="2">#statRazTime#</td></tr>
+				<tr><td colspan="2">#statLastReadTitle#</td><td colspan="2">#statLastRead#</td></tr>
+				<tr><td class="fa fa-thermometer-full" style="padding-left:8px;">&nbsp;#statMaxTitle#&nbsp;</td><td colspan="2">#statThMax#&nbsp;<span style="font-style:italic;">(#statWhenMax#)</span></td><td style="width:90px;" align=center>-1°&nbsp;>&nbsp;#statWhenMinus1#</td></tr>
+				<tr><td class="fa fa-thermometer-half" style="padding-left:8px;">&nbsp;#statAvgTitle#&nbsp;</td><td colspan="3">#statThAvg#&nbsp;<span style="font-style:italic;">(#statNbPoints#)</span></td></tr>
+				<tr><td class="fa fa-thermometer-empty" style="padding-left:8px;">&nbsp;#statMinTitle#&nbsp;</td><td colspan="2">#statThMin#&nbsp;<span style="font-style:italic;">(#statWhenMin#)</span></td><td align=center>+1°&nbsp;>&nbsp;#statWhenPlus1#</td></tr>
+			</tbody></table>
+		 </div>
+	</div>
+	<span data-cmd_id="#temperatureId#" class="cmd-widget history cursor TH1s"
+		style="display:#temperatureDisplay2#;color:#evoTemperatureColor#;">#temperature#</span>
+	<img style="display:#temperatureImgDisplay#" src="plugins/evohome/img/#temperatureImg#"/>
 </div>
 
-<div class="showCurrentScheduleC#zoneId# showCS" style="display:#consigneDisplay#;float:left;border-radius:4px;margin-left:10px;width:28px;height:30px;background-color:#cmd-background-color#;">
-	<a class="btn btn-btn-sm" style="padding-left:6px;padding-top:6px;">
-		<i class="fa fxa-folder-open">Pc</i>
-	</a>
-</div>
-<div class="showCurrentScheduleS#zoneId# showCS" style="display:#consigneDisplay#;float:left;border-radius:4px;width:28px;height:30px;background-color:#cmd-background-color#;">
-	<a class="btn btn-btn-sm" style="padding-left:6px;padding-top:6px;">
-		<i class="fa fxa-folder-open showSavedScheduleCaption#zoneId#">Ps</i>
-	</a>
-</div>
-<div style="border:#consigneBorder#px solid black;margin-left:36px;margin-right:10px;height:30px;text-align:center;background-color:#consigneBG#;display:#consigneDisplay#;">
-	<span data-cmd_id="#consigneId#" class="cmd-widget history cursor" style="color:white;font-size:15px;font-family:'Open Sans', sans-serif;line-height:30px;" title="#consigneTip#">#consigne#</span>
-	<span style="display:#consigneTypeDisplay#;line-height:30px;" title="#consigneTypeUntilFull#">
-		<img style="display:#consigneTypeDisplay#;height:18px;width:18px;" src="plugins/evohome/img/#consigneTypeImg#" />
-		&nbsp;#consigneTypeUntil#
+<table class="tableCmd TH2t" style="display:#consigneDisplay#;"><tr>
+<td class="showCurrentScheduleC#id# showCS TH2d1">
+	<a class="btn btn-sm TH2d1a"><i class="fa fxa-folder-open">Pc</i></a>
+</td>
+<td class="showCurrentScheduleS#id# showCS TH2d2">
+	<a class="btn btn-sm TH2d2a"><i class="fa fxa-folder-open showSavedScheduleCaption#id#">Ps</i></a>
+</td>
+<td id="zidBackConsigne#zoneId#" width="100%" style="text-align:center;background-color:#consigneBG#">
+	<span id="zidConsigne#zoneId#" data-cmd_id="#consigneId#" class="cmd-widget history cursor TH2d3s1" style="color:#evoConsigneColor#;" title="#consigneTip#">#consigne#</span>
+	<span id="zidSpDisplayImg#zoneId#" class="TH2d3s2" style="display:#consigneTypeDisplay#;" title="#consigneTypeUntilFull#">
+		<img id="zidSpImg#zoneId#" class="TH2d3s2i" src="plugins/evohome/img/#consigneTypeImg#"/>
+		<span id="zidConsigneTypeUntil#zoneId#">&nbsp;#consigneTypeUntil#</span>
 	</span>
-</div>
+	<span id="zidSetTempSpinner#zoneId#" class="fa fa-spinner fa-pulse" style="display:none;margin-top:9px;margin-left:4px;"/>
+</td>
+<td style="display:#setConsigneDisplay#;">
+	<a id="zidAdjustPlus#zoneId#" class="btn btn-sm TH2d4a1"><span id="zidAdjustPlusIcon#zoneId#" class="glyphicon glyphicon-chevron-up"/></a>
+	<a id="zidAdjustMinus#zoneId#" class="btn btn-sm TH2d4a2"><span id="zidAdjustMinusIcon#zoneId#" class="glyphicon glyphicon-chevron-down"/></a>
+</td>
+<td class="TH2d5" style="display:#setConsigneDisplay#;" title="#backScheduleTitle#">
+	<a id="zidAdjustReset#zoneId#" class="btn btn-sm TH2d5a"><span id="zidAdjustResetIcon#zoneId#" class="glyphicon glyphicon-repeat"/></a>
+</td>
+</tr></table>
 <script>
-$('.showCurrentScheduleC#zoneId#').off().on('click', function () {
-	_showSchedule_#zoneId#('C');
-});
-$('.showCurrentScheduleS#zoneId#').off().on('click', function () {
-	if ( $('#scheduleList'+genConsoleId).value() > 0 ) {
-		_showSchedule_#zoneId#('S');
-	}
-});
-function _showSchedule_#zoneId#(type) {
-	if ( $('.showCurrentSchedule'+type+'#zoneId#').css("background-color") != "rgb(16, 208, 16)" ) {
-		showSchedule_#zoneId#(type);
-	} else {
-		$('#md_modal').dialog('close');
-	}
+initVarsTH(#id#,'#evoBackgroundColor#','#evoCmdBackgroundColor#',#apiAvailable#,"#msgApiUnavailable#",'#evoDefaultShowingScheduleMode#','#showHorizontal#','#argZoneId#','#argFileId#');
+$('.showCurrentScheduleC#id#').on('click', function() { _showScheduleTH('#id#','#zoneId#','C'); });
+$('.showCurrentScheduleS#id#').on('click', function() { if ( getScheduleListId() > 0 ) _showScheduleTH('#id#','#zoneId#','S'); });
+if ( '#setConsigneDisplay#' != 'none' ) {
+	// adjust setPoint
+	initVarsAC('#adjustAvailable#',"#msgAdjustConsigneUnavailable#","#msgEnforceConsigne#",'#zoneId#','#currentConsigne#','#consigne#'.replace('°',''),'#adjustLow#','#adjustHigh#','#adjustStep#','#cmd_setConsigne_id#',"#canReset#" == "1");
+	$('#zidAdjustMinus#zoneId#').on('click', function() { adjust('#zoneId#',-1); });
+	$('#zidAdjustPlus#zoneId#').on('click', function() { adjust('#zoneId#',1); });
+	$('#zidAdjustReset#zoneId#').on('click', function() { resetConsigne('#zoneId#'); });
 }
-function showSchedule_#zoneId#(type,mode) {
-	generalLastMode = mode == null ? (generalLastMode == null ? '#evoDefaultShowingScheduleMode#' : generalLastMode) : mode;
-	$('#md_modal').dialog('close');
-	$('#md_modal').dialog({
-		title: "", height: 'auto', width: (generalLastMode == '#showHorizontal#' ? Math.min(1000,jQuery(window).width()-16) : 700),
-		position: { my: "center top", at: "center top+50", of: window }});
-
-	var fileId = type == 'C' ? 0 : $('#scheduleList'+genConsoleId+' option:selected').value();
-	$('#md_modal').load('index.php?v=d&plugin=evohome&modal=schedule'+generalLastMode+'&id=#id#&#argZoneId#=#zoneId#&#argFileId#='+fileId+'&edit=0&mode='+generalLastMode+'&typeSchedule='+type).dialog('open');
-	$('.showCurrentSchedule'+type+'#zoneId#').css("background-color", "rgb(16, 208, 16)");
-}
-$('.showSavedScheduleCaption#zoneId#').css('color', $('#scheduleList'+genConsoleId).value() == 0 ? 'gray' : 'white');
+$('#hoverTHShowA#id#').on('click', function() { flipTH(#id#); });
+$('#hoverTHShowB#id#').on('click', function() { hideTH(#id#); });
 </script>

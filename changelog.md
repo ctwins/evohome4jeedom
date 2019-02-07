@@ -1,5 +1,66 @@
 # Changelog - evohome4jeedom
 
+## [version 0.3.0] - 2019-02-07 - the "+/- edition"
+### Added
+- General configuration
+	- A Synchronize button appears in the general configuration<br/>
+		a. For the new installations : set your account, save => the location should appear in the list, choose it, then Synchronize<br/>
+		b. For existing installations : it's convenient to use it to auto-upgrade the commands added in all the equipements (see below..)
+	- a new option "Synchronize with clock" appears right to the Interval choice.<br/>
+	Check it if you want the cron launches the reading at 'precise time'<br/>
+  That means, for example, if the interval is set to 10mn, the cron will trigger the reading at HH:00, HH:10, HH:20....<br/>
+  Let's say, it will beautify the history graph ;)
+
+- In the up-right corner of each widget, a small color circle appears which shows the status of synchronization with the system (auto-off after 4 sec)
+	- green : all is right, when click (*) on it, a tip is showed with the last and the next time of synchronization
+	- orange : applies only when the display accuracy is other than the default one : the native values could not be retrieved
+	- red broken-link icon (+ grayed values on the TH widget) : synchronization did not work on the last attempt. When click, the tip shows the last time it worked.<br/>
+	In this situation, no command could be send to the system (SetMode, Restore schedule, Adjusting)
+	- a spinning icon : when reading is running
+
+- **(SO WAITED !)** Adjust buttons appear on the TH widgets<br/>
+  up/down/reset (reset will set to the scheduled heatpoint value)<br/>
+  Please note that the displaying of these buttons are under control of the (new) command "Set heatpoint" / showing in the commands of the TH equipment, command which appears after re-save the equipement (or by using the Synchronize action in the general configuration).<br/>
+  That means that you can control the heatpoint by Scenario too (with a selectable list, from 5 to 25 by 0.5) ;)<br/>
+  How to : adjust as you want ; after a delay of 4 sec next to the last action, the command is sent to the system<br/>
+  At this time, the sepoint is background grayed with a spinning icon. After a while (waiting for system state), the right background appears (and status bar on the top of screen shows the result of command, so, successful, or error message)<br/>
+  You can adjust more then one TH at at time, as each sending is internally serialized<br/>
+
+- a new option 'Statistics' appears in the Console commands (corresponding to the new Statistics command which appears after re-save the equipment - or do a SYnchronize action, see above - and if you have chosen to Show it)<br/>
+  So, a select list appears in the Console widget, with the choices : Deactivated, Day, Week, Month.<br/>
+  A click (*) on the small grid displayed on each TH widget makes appear a more detailed bigger grid (auto-off after 10 sec)
+
+(*) : no mouse hover, so the smartphone compatibility
+
+### Improvements
+- When editing Scenario, the SetMode, RestoreSchedule (and Adjustment) use now a selectable list<br/>
+  Please note that if a Schedule file is used in a Scenario, it could no more be deleted from the Console
+- A status bar appears now on the top of the window after sending command to the system<br/>
+  like SetMode, Restore schedule, Adjust heatpoint
+- Schedule panels (all zones and individual views) : showing now a '*' on the right of the zone name which current content is different of the current (or last read) one<br/>
+  This is a more detailed state which completes the "different of the current schedule" ;)
+- The 'incoming' of the 0.2.2 is now available (Schedule edition : saving changes on the current - selected - schedule activates now the loading button)
+
+### Changes
+- now, only the admin profile has the possibility to do these things regarding the schedules :
+	1. Editing, Saving, Restore, Remove schedule
+
+### Under the hood
+- The extra module evohomeclient is now embedded inside the plugin itself ('forked' to introduce the token cache and custom logs)<br/>
+  If you restart the dependency (not mandatory) under the General configuration, the module will be removed in the OS (by a pip command)
+- So, all the API requests use now cached session information (session for V1 API, token for V2 API)<br/>
+  This is this major improvement which made the heatpoint adjustment possible, and has also the effect to fight the "Too many requests" errors (by the way, few ones could persist)
+- All the structural commands (SetMode, Restore schedule and now Adjust.) use know the waiting status of task<br/>
+  Please note this is experimental cause sometimes, status will not terminate with the waited "Succedeed"<br/>
+  In this case, the loop terminates by a timeout to avoid blocking the plugin (and status bar will show that)<br/>
+  In Debug mode, you can follow the waiting in the 'http.error' log
+- All requests made against the Python layer are serialized, to avoid collision, and potentially "Too many requests" situations
+- Most of functions on the TH widget become unique in a .js file
+- Most of widget and schedule panel html style becomes classes
+- The Python layers logs now verbously under control of the Debug level of the plugin
+
+
+
 ## [version 0.2.3] - 2018-12-19 - pictures adjustments
 ### Changes
 - icon of the plugin to go out of the official Jeedom chart<br/>
@@ -37,7 +98,7 @@
 - History graphs are now also displayable from the View mode
 
 ## [version 0.2.0] - 2018-11-10 - the 'schedule edition' 1.0
-### NEWS
+### Added
 - Schedules edition mode (thanks to ecc for pre-testing)<br/>
 	1. the Edition mode has to be activated in the General configuration before to use it<br/>
 	2. first, use the Pc button (or Ps if you have already saved a full schedule) on console of any component, then Click on Edit button on the top right (or on the right on each zone name), and let's go !<br/>

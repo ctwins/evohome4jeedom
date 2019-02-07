@@ -28,20 +28,28 @@ $('.eqLogicAttr[data-l1key=configuration][data-l2key=zoneId]').on('change', func
  * Fonction pour l'ajout de commande, appellé automatiquement par plugin.evohome
  */
 function addCmdToTable(_cmd) {
+	//console.log(JSON.stringify(_cmd));
 	if (!isset(_cmd)) {
 		var _cmd = {configuration: {}};
 	}
 	if (!isset(_cmd.configuration)) {
 		_cmd.configuration = {};
 	}
+	if ( _cmd.logicalId == "etat" ) {
+		// Console
+		$("#_idSH").html(_msgShow);
+	} else if ( _cmd.logicalId == "temperature" ) {
+		// TH
+		$("#_idSH").html(_msgShow + "/" + _msgHistorize);
+	}
 	var tr = '<tr class="cmd" data-cmd_id="' + init(_cmd.id) + '">';
 	// ID
 	tr += '<td>';
-	tr += '<span class="cmdAttr" data-l1key="id" ></span>';
+	tr += '<span class="cmdAttr" data-l1key="id"></span>';
 	tr += '</td>';
 	// NOM
 	tr += '<td>';
-	tr += '<span class="cmdAttr" data-l1key="name" style="width : 140px;">{{Nom}}</span>';
+	tr += '<span class="cmdAttr" data-l1key="name" style="width:140px;"></span>';
 	tr += '</td>';
 	// TYPE
 	tr += '<td>';
@@ -50,7 +58,7 @@ function addCmdToTable(_cmd) {
 	tr += '</td>';
 
 	// AFFICHER/HISTORISER
-	tr += '<td style="width: 200px;">';
+	tr += '<td style="width:200px;">';
 	if ( _cmd.configuration['canBeVisible'] == '1' ) {
 		tr += '<span><input type="checkbox" class="cmdAttr" data-size="mini" data-l1key="isVisible" checked/> {{Afficher}}</span><br/>';
 	}

@@ -161,7 +161,7 @@ $eqLogics = eqLogic::byType($plugin->getId());
 							<th style="width : 70px;">Id</th>
 							<th>{{Nom}}</th>
 							<th>{{Type}}</th>
-							<th>{{Afficher}}/{{Historiser}}</th>
+							<th id="_idSH">-</th>
 							<th>{{Action}}</th>
 						</tr>
 					</thead>
@@ -173,5 +173,12 @@ $eqLogics = eqLogic::byType($plugin->getId());
 	</div>
 </div>
 
-<?php include_file('desktop', 'evohome', 'js', 'evohome');?>
-<?php include_file('core', 'plugin.template', 'js');?>
+<script>
+<?php 
+echo "var _msgShow = '{{Afficher}}';\n";
+echo "var _msgHistorize = '{{Historiser}}';\n";
+?>
+</script>
+<?php include_file('desktop', 'evohome', 'js', 'evohome');
+include_file('core', 'plugin.template', 'js');
+?>

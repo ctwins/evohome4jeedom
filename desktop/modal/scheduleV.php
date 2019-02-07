@@ -30,9 +30,14 @@ if ($evohome->getEqType_name() != 'evohome') {
 }
 
 $scheduleToShow = evohome::getSchedule($fileId);
+if ( !is_array($scheduleToShow) ) {
+	echo "Erreur de lecture<br/><br/>";
+	return;
+}
+$currentSchedule = evohome::getSchedule(evohome::CURRENT_SCHEDULE_ID);
 $zoneId = init(evohome::ARG_ZONE_ID);
 $typeSchedule = init("typeSchedule");
-$subTitle = evohome::getScheduleSubTitle($fileId,$scheduleToShow,evohome::CFG_SCH_MODE_HORIZONTAL,$zoneId,$typeSchedule);
+$subTitle = evohome::getScheduleSubTitle($id,$fileId,$currentSchedule,$scheduleToShow,evohome::CFG_SCH_MODE_HORIZONTAL,$zoneId,$typeSchedule);
 echo "<script>";
 echo "$('#md_modal')[0].previousSibling.firstChild.innerHTML = \"$subTitle\";";
 // so the background is really white (and not transparent) when printing
@@ -63,6 +68,9 @@ foreach ( $scheduleToShow['zones'] as $mydata ) {
 	echo "<table border=0 width=100%>";
 	echo "<tr><td colspan=7 style='font-size:14px;font-weight:800;color:black;background-color:#C0C0C0;'>&nbsp;&nbsp;";
 	echo $equNamesById[$mydata['zoneId']];
+	if ( $fileId != evohome::CURRENT_SCHEDULE_ID && json_encode($mydata) != json_encode(evohome::extractZone($currentSchedule,$mydata['zoneId'])) ) {
+		echo "&nbsp;*";
+	}
 	echo '</td></tr><tr>';
 	$dsSunday = $mydata['schedule']['DailySchedules'][6];
 	$spSundayLast = $dsSunday['Switchpoints'][sizeof($dsSunday['Switchpoints'])-1];

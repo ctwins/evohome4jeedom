@@ -1,50 +1,127 @@
-# Script to read the zones available in the device 0
-
-# Load required libraries
 import sys
 import requests
 import json
-from evohomeclient2 import EvohomeClient
+import time
+from evohomeClientSC import EvohomeClientSC
+import logging
+
+logging.basicConfig()
+evohome_log = logging.getLogger("evohomeBridge-RestaureZones")
+
+def addTokenTags():
+	if CLIENT != None:
+		ret = ', "access_token":"' + CLIENT.access_token + '"'
+		ret = ret + ', "token_state":' + ('2' if SESSION_ID_V2 != CLIENT.access_token else '1')
+		ret = ret + ', "access_token_expires":' + str(CLIENT.access_token_expires)
+	else:
+		ret = ', "access_token":"0"'
+		ret = ret + ', "token_state":0'
+		ret = ret + ', "access_token_expires":0'
+	return ret
+
+baseUrl = 'https://tccna.honeywell.com/WebAPI/emea/api/v1/'
 
 # Ser login details in the 2 fields below
 USERNAME = sys.argv[1]
 PASSWORD = sys.argv[2]
-LOCATION_ID = sys.argv[3]
-FILE_PATH = sys.argv[4]
-#print 'locid = [' + LOCATION_ID + ']',
+# payload A
+# -- a1
+#SESSION_ID_V1 = sys.argv[3]
+#USER_ID_V1 = sys.argv[4]
+# -- a2
+SESSION_ID_V2 = None if sys.argv[5] == '0' else sys.argv[5]
+SESSION_EXPIRES_V2 = sys.argv[6]
+# -- a3
+DEBUG = sys.argv[7] == '1'
+# -- a4
+LOCATION_ID = sys.argv[8]
+# payload B
+FILE_PATH = sys.argv[9]
 
-client = EvohomeClient(USERNAME, PASSWORD, False)
+CLIENT = None
 
-loc = None
-if LOCATION_ID == '-1':
-	loc = client.locations[0]
-else:
-	for tmp in client.locations:
-		if tmp.locationId == LOCATION_ID:
-			loc = tmp
+lastReceived = None
 
-if loc == None:
-	print '{ "success":false, "errors" : [ { "code" : "UnknownLocation", "message" : "no location for ID ' + LOCATION_ID + '" } ] }'
-else:
-	tcs = loc._gateways[0]._control_systems[0]
+try:
+	CLIENT = EvohomeClientSC(USERNAME, PASSWORD, SESSION_ID_V2, DEBUG)
 
-	zonesRet = '['
-	nb = 0
-	nbItems = len(tcs._zones)
-	#print ' - nbItems=' + str(nbItems),
-	with open(FILE_PATH, 'r') as f:
-		schedule_db = f.read()
-		schedules = json.loads(schedule_db)
-		for zone in schedules['zones']:
-			zonesRet = zonesRet + '{'
-			zonesRet = zonesRet + '"zoneId" : ' + str(zone['zoneId'])
-			zonesRet = zonesRet + ', "name" : "' + zone['name'] + '"'
-			retValue = tcs.zones_by_id[str(zone['zoneId'])].set_schedule(json.dumps(zone['schedule']))
-			zonesRet = zonesRet + ', "result" : ' + json.dumps(retValue)
-			zonesRet = zonesRet + '}'
-			nb = nb + 1
-			if nb < nbItems:
-				zonesRet = zonesRet + ','
-	zonesRet = zonesRet + "]"
-	# 2018-02-24 - same as InfosZonesE2 - fix to correctly send some non ascii characters
-	print '{ "success" : true, "resultByZone" : ' + zonesRet.encode('utf-8') + ' }'
+	loc = None
+	if LOCATION_ID == '-1':
+		loc = CLIENT.locations[0]
+	else:
+		for tmp in CLIENT.locations:
+			if tmp.locationId == LOCATION_ID:
+				loc = tmp
+				break
+
+	if loc == None:
+		print ('{"success":false,"code":"UnknownLocation","message":"no location for ID %s %s}' % (LOCATION_ID, addTokenTags()))
+	else:
+		tcs = loc._gateways[0]._control_systems[0]
+
+		zonesRet = '['
+		nb = 0
+		taskId = []
+		with open(FILE_PATH,'r') as f:
+			schedule_db = f.read()
+			schedules = json.loads(schedule_db)
+			for zone in schedules['zones']:
+				nb = nb + 1
+				if nb > 1:
+					zonesRet = zonesRet + ','
+				zonesRet = zonesRet + '{'
+				zonesRet = zonesRet + '"zoneId":' + str(zone['zoneId'])
+				#zonesRet = zonesRet + ', "name" : "' + zone['name'] + '"'
+				r = tcs.zones_by_id[str(zone['zoneId'])].set_schedule(json.dumps(zone['schedule']))
+				print (' ')
+				# save "id of task" from r :
+				taskId.append([r["id"], False])
+				zonesRet = zonesRet + ',"taskId":' + str(r["id"])
+				zonesRet = zonesRet + '}'
+		zonesRet = zonesRet + "]"
+
+		# loop on the "id of task", and get out when each is finished
+		nbTasks = len(taskId)
+		td = time.time()
+		more = True
+		while more:
+			nbOk = 0
+			for pair in taskId:
+				if pair[1]:
+					nbOk = nbOk + 1
+				else:
+					if DEBUG:
+						evohome_log.warning("request for taskId = %s" % pair[0])
+					r = requests.get(baseUrl+'commTasks?commTaskId=%s' % pair[0], headers=CLIENT.headers())
+					lastReceived = r.text
+					ct = json.loads(lastReceived)
+					if DEBUG:
+						evohome_log.warning(" > gives : " + ct['state'])
+					if ct['state'] == 'Succeeded':
+						nbOk = nbOk + 1
+						pair[1] = True
+			if nbOk == nbTasks:
+				more = False
+				# 2018-02-24 - same as InfosZonesE2 - fix to correctly send some non ascii characters
+				#print '{"success":true, "resultByZone":' + zonesRet.encode('utf-8') + ', "access_token":"%s"}' % SESSION_ID_V2
+				print ('{"success":true, "resultByZone":%s %s}' % (zonesRet, addTokenTags()))
+			elif time.time() - td > 120:
+				if DEBUG:
+					evohome_log.warning("waiting loop stopped after 2mn.")
+				print ('{"success":false,"code":"TreatmentError","message":"Waiting state time exceeded 2mn" %s}' % addTokenTags())
+				more = False
+			else:
+				print (' ')	# avoid broken pipe in the php caller
+				if DEBUG:
+					evohome_log.warning("Wait 2s for next loop..")
+				time.sleep(2)
+
+except Exception as e:
+	evohome_log.exception("Exception")
+	if lastReceived != None:
+		evohome_log.error("Last received = <%s>" % lastReceived)
+	print ('{"success":false,"code":"Exception","message":"%s" %s}' % ("{0}".format(e), addTokenTags()))
+
+finally:
+	if DEBUG:
+		evohome_log.warning('done')
