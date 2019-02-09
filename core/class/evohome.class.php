@@ -105,10 +105,18 @@ class evohome extends eqLogic {
 	public static function isDebug() {
 		return log::getLogLevel(__CLASS__) == 100;
 	}
-	public static function logDebug($msg) {
+	public static function logDebug($msg, $addInfos="") {
+		if ($addInfos !== "" ) {
+			 if ( is_array($addInfos) ) $addInfos = json_encode($addInfos);
+			 $msg .= " : <$addInfos>";
+		}
 		log::add(__CLASS__, 'debug', $msg);
 	}
-	public static function logError($msg) {
+	public static function logError($msg, $addInfos="") {
+		if ($addInfos !== "" && !self::isDebug() ) {
+			 if ( is_array($addInfos) ) $addInfos = json_encode($addInfos);
+			 $msg .= " : <$addInfos>";
+		}
 		log::add(__CLASS__, 'error', $msg);
 	}
 
@@ -171,7 +179,7 @@ class evohome extends eqLogic {
 		$aValue = json_decode($text, true);
 		if ( json_last_error() != JSON_ERROR_NONE ) {
 			$aValue = null;
-			self::logError('Error while ' . $fnName . ' : json error=' . json_last_error() . ', input was = <' . $text . '>');
+			self::logError("Error while $fnName : json error=" . json_last_error() . ", input was $text");
 		} else if ( self::isDebug() ) {
 			self::logDebug("jsonDecode OK for $fnName");
 		}
@@ -232,13 +240,13 @@ class evohome extends eqLogic {
 		return $cfgValue == null ? $defValue : $cfgValue;
 	}
 
-	static function lockCron() {
+	/*static function lockCron() {
 		self::setParam('functionality::cron::enable', 0);
 	}
 
 	static function unlockCron() {
 		self::setParam('functionality::cron::enable', 1);
-	}
+	}*/
 
 	static function setCacheData($cacheName, $content, $duration=null) {
 		cache::set($cacheName, $content, $duration == null ? 9*60 : $duration);
@@ -314,18 +322,20 @@ class evohome extends eqLogic {
 	static function razPythonRunning() {
 		self::doCacheRemove('PYTHON_RUNNING');
 	}
-	static function runPython($prgName, $parameters=null) {
-		while ( ($prev=self::isPythonRunning()) != '' ) {
-			if ( self::isDebug() ) self::logDebug("another runPython ($prev) is running, wait 5sec before launching a new one ($prgName)");
+	static function runPython($prgName, $taskName, $parameters=null) {
+		$td = time();
+		while ( ($prevTask=self::isPythonRunning()) != '' ) {
+			if ( self::isDebug() ) self::logDebug("another runPython ($prevTask) is running, wait 5sec before launching a new one ($taskName)");
+			if ( time() - $td > 300 ) return "Timeout (5mn) while waiting another python task ($prevTask) to end";
 			sleep(5);
 		}
-		self::setPythonRunning($prgName);
 		$credential = self::getParam(self::CFG_USER_NAME,'') . ' ' . self::getParam(self::CFG_PASSWORD,'');
 		if ( $credential === ' ' ) {
-			self::logDebug('runPython too early : account is not set yet');
-			razPythonRunning();
-			return null;
+			self::logDebug("runPython too early : account is not set yet");
+			return "runPython too early : account is not set yet";
 		}
+
+		self::setPythonRunning($taskName);
 		$cmd = 'python ' . dirname(__FILE__) . '/../../resources/' . $prgName . ' ' . $credential;
 
 		// -- inject access_token/session from cachedInfosAPI
@@ -350,31 +360,33 @@ class evohome extends eqLogic {
 		$json = trim(shell_exec($cmd));
 
 		// cache API infos (access_token/session)
-		$jsonDec = self::jsonDecode($json, 'runPython('. $prgName . ')');
-		if ( !is_null($jsonDec) ) {
+		$jsonRet = self::jsonDecode($json, 'runPython('. $prgName . ')');
+		if ( is_null($jsonRet) ) {
+			$jsonRet = $json;	// will be not an array, and will be treated as an error (log report this content)
+		} else {
 			$updated = false;
-			if ( array_key_exists(self::IZ_SESSION_ID_V1,$jsonDec) && array_key_exists(self::IZ_USER_ID_V1,$jsonDec) ) {
-				$cachedInfosAPI[self::IZ_SESSION_ID_V1] = $jsonDec[self::IZ_SESSION_ID_V1];
-				$cachedInfosAPI[self::IZ_USER_ID_V1] = $jsonDec[self::IZ_USER_ID_V1];
+			if ( array_key_exists(self::IZ_SESSION_ID_V1,$jsonRet) && array_key_exists(self::IZ_USER_ID_V1,$jsonRet) ) {
+				$cachedInfosAPI[self::IZ_SESSION_ID_V1] = $jsonRet[self::IZ_SESSION_ID_V1];
+				$cachedInfosAPI[self::IZ_USER_ID_V1] = $jsonRet[self::IZ_USER_ID_V1];
 				$updated = true;
-				if ( self::isDebug() ) self::logDebug('runPython : session_v1 state=' . array('undefined', 'same', 'new', 'toBeRemoved')[$jsonDec[self::IZ_SESSION_STATE_V1]]);
+				if ( self::isDebug() ) self::logDebug('runPython : session_v1 state=' . array('undefined', 'same', 'new', 'toBeRemoved')[$jsonRet[self::IZ_SESSION_STATE_V1]]);
 			}
-			if ( array_key_exists(self::IZ_SESSION_ID_V2,$jsonDec) && array_key_exists(self::IZ_SESSION_EXPIRES_V2,$jsonDec) ) {
-				$cachedInfosAPI[self::IZ_SESSION_ID_V2] = $jsonDec[self::IZ_SESSION_ID_V2];
-				$cachedInfosAPI[self::IZ_SESSION_EXPIRES_V2] = $jsonDec[self::IZ_SESSION_EXPIRES_V2];
+			if ( array_key_exists(self::IZ_SESSION_ID_V2,$jsonRet) && array_key_exists(self::IZ_SESSION_EXPIRES_V2,$jsonRet) ) {
+				$cachedInfosAPI[self::IZ_SESSION_ID_V2] = $jsonRet[self::IZ_SESSION_ID_V2];
+				$cachedInfosAPI[self::IZ_SESSION_EXPIRES_V2] = $jsonRet[self::IZ_SESSION_EXPIRES_V2];
 				$updated = true;
-				if ( self::isDebug() ) self::logDebug('runPython : access_token state=' . array('undefined', 'same', 'new')[$jsonDec[self::IZ_SESSION_STATE_V2]]);
+				if ( self::isDebug() ) self::logDebug('runPython : access_token state=' . array('undefined', 'same', 'new')[$jsonRet[self::IZ_SESSION_STATE_V2]]);
 			}
 			if ( $updated ) {
 				self::setCacheData(self::CACHE_INFOS_API, $cachedInfosAPI, self::CACHE_IAZ_DURATION);
 				// IZ_SESSION_ID_V1 is the first key of the API session infos bloc (even when IZ_SESSION_ID_V2 is present)
-				$pos = array_search(self::IZ_SESSION_ID_V1, array_keys($jsonDec));
+				$pos = array_search(self::IZ_SESSION_ID_V1, array_keys($jsonRet));
 				if ( is_numeric($pos) ) {
-					array_splice($jsonDec, $pos);
+					array_splice($jsonRet, $pos);
 				} else {
 					// if IZ_SESSION_ID_V1 not here, IZ_SESSION_ID_V2 could be
-					$pos = array_search(self::IZ_SESSION_ID_V2, array_keys($jsonDec));
-					if ( is_numeric($pos) ) array_splice($jsonDec, $pos);
+					$pos = array_search(self::IZ_SESSION_ID_V2, array_keys($jsonRet));
+					if ( is_numeric($pos) ) array_splice($jsonRet, $pos);
 				}
 			} else {
 				self::logDebug('runPython : WARNING : no token nor sessionId received');
@@ -382,7 +394,7 @@ class evohome extends eqLogic {
 		}
 
 		self::razPythonRunning();
-		return $jsonDec;
+		return $jsonRet;
 	}
 
 	/*
@@ -393,16 +405,19 @@ class evohome extends eqLogic {
 		$locations = self::getCacheData(self::CACHE_LIST_LOCATIONS);
 		if ( $locations == '') {
 			$td = time();
-			$locations = self::runPython('LocationsInfosE2.py');
+			$locations = self::runPython("LocationsInfosE2.py","LocationsInfosE2_$td");
+			if ( self::isDebug() ) self::logDebug("python.LocationsInfosE2_$td done in " . (time() - $td) . "sec", $locations);
 			if ( !is_array($locations)  ) {
-				self::logDebug('Erreur while LocationsInfosE2 : response was empty or malformed');
+				self::logError('Erreur while LocationsInfosE2 : response was empty or malformed', $locations);
+				$locations = null;
 			} else if ( !$locations[self::PY_SUCCESS] ) {
-				if ( self::isDebug() ) self::logDebug('Erreur while LocationsInfosE2 : <' . json_encode($locations) . '>');
+				self::logError('Erreur while LocationsInfosE2', $locations);
+				$locations = null;
 			} else {
 				$locations = $locations['locations'];
 				self::setCacheData(self::CACHE_LIST_LOCATIONS, $locations);
 			}
-			if ( self::isDebug() ) self::logDebug('<<OUT - listLocations from python in ' . (time() - $td) . ' sec.');
+			if ( self::isDebug() ) self::logDebug('<<OUT - listLocations from python');
 		} else {
 			self::logDebug('<<OUT - listLocations from cache');
 		}
@@ -447,8 +462,13 @@ class evohome extends eqLogic {
 				// a reading has just been done
 			} else {
 				// Wait if another python is running
+				$tdw = time();
 				while ( ($prev=self::isPythonRunning()) != '' ) {
-					if ( self::isDebug() ) self::logDebug("another runPython ($prev) is running, wait 5sec before launching a new one (InfosZonesE2.py)");
+					if ( self::isDebug() ) self::logDebug("another runPython ($prev) is running, wait 5sec before launching a new one (InfosZonesE2_$execUnitId)");
+					if ( time() - $tdw > 300 ) {
+						self::logError("Previous call to python ($prev) is blocking other requests");
+						return null;
+					}
 					sleep(5);
 				}
 				self::activateIAZReentrance(15*60);	// was 120 - now 15mn against cloud freezing
@@ -457,26 +477,23 @@ class evohome extends eqLogic {
 					self::refreshAll($infosZonesBefore);
 				}
 				$td = time();
-				$infosZones = self::runPython('InfosZonesE2.py', $readSchedule ? "1" : "0");
-				if ( self::isDebug() ) self::logDebug('got getInformationsAllZonesE2[' . $execUnitId . '] from python in ' . (time() - $td) . ' sec.');
+				$infosZones = self::runPython('InfosZonesE2.py', "InfosZonesE2_$execUnitId", $readSchedule ? "1" : "0");
+				if ( self::isDebug() ) self::logDebug('python.InfosZonesE2[' . $execUnitId . '] done in ' . (time() - $td) . 'sec', $infosZones);
 				self::deactivateIAZReentrance();
 				if ( !is_array($infosZones) ) {
-					self::logError('Error while getInformationsAllZonesE2 : <' . json_encode($infosZones) . '>');
+					self::logError('Error while getInformationsAllZonesE2 : response was empty of malformed', $infosZones);
 					if ( $infosZonesBefore != null ) {
 						self::refreshAll($infosZonesBefore,false,$msgInfo);
 					}
 				} else if ( !$infosZones[self::PY_SUCCESS] ) {
-					if ( self::isDebug() ) self::logError('Error while getInformationsAllZonesE2 = <' . json_encode($infosZones) . '>');
+					self::logError('Error while getInformationsAllZonesE2', $infosZones);
 					if ( $infosZonesBefore != null ) {
 						self::refreshAll($infosZonesBefore,false,$msgInfo);
 					}
 				} else {
-					if ( self::isDebug() ) self::logDebug('getInformationsAllZonesE2 : ' . json_encode($infosZones));
 					self::setCacheData(self::CACHE_IAZ, $infosZones, self::CACHE_IAZ_DURATION);
 					// refresh if needed
-					if ( $readSchedule ) {
-						self::refreshAll($infosZones,true,$msgInfo);
-					}
+					if ( $readSchedule ) self::refreshAll($infosZones,true,$msgInfo);
 					$infosZones[self::IZ_CACHED] = false;
 				}
 				$useCachedData = false;
@@ -1656,21 +1673,21 @@ class evohome extends eqLogic {
 			self::logDebug('IN>><<OUT - setMode called without code');
 			return;
 		}
-		self::waitingIAZReentrance('SetMode-' . rand(0,10000));
-		self::lockCron();
+		$execUnitId = rand(0,10000);
+		//self::waitingIAZReentrance("SetMode-$execUnitId");
+		//self::lockCron();
 		if ( self::isDebug() ) self::logDebug('IN>> - setMode with code=' . $codeMode);
 
 		// Call python function
 		self::logDebug('setMode : call python');
 		$td = time();
-		$aRet = self::runPython('SetModeE2.py', $codeMode);
-		if ( self::isDebug() ) self::logDebug('setMode : python return in ' . (time() - $td) . 'sec');
+		$aRet = self::runPython("SetModeE2.py", "SetModeE2_$execUnitId", $codeMode);
+		if ( self::isDebug() ) self::logDebug("python.SetModeE2_$execUnitId done in " . (time() - $td) . "sec", $aRet);
 		if ( !is_array($aRet) ) {
-			self::logError("Error while setMode : response was empty or malformed");
+			self::logError("Error while setMode : response was empty or malformed", $aRet);
 			$msgInfo = self::i18n("Erreur en changement de mode");
 		} else if ( !$aRet[self::PY_SUCCESS] ) {
-			self::logError("Error while setMode : <" . json_encode($aRet) . ">");
-			if ( self::isDebug() ) self::logDebug(' -- datas = : ' . $retValue);
+			self::logError("Error while setMode", $aRet);
 			$msgInfo = self::i18n("Erreur en changement de mode : {0} - {1}", [$aRet["code"], $aRet["message"]]);
 		} else {
 			sleep(10);	// wait a bit before loading new values
@@ -1679,7 +1696,7 @@ class evohome extends eqLogic {
 		self::getInformationsAllZonesE2(true,true,$msgInfo);
 
 		self::logDebug('<<OUT - setMode');
-		self::unlockCron();
+		//self::unlockCron();
 	}
 
 	function saveSchedule($parameters) {
@@ -1687,9 +1704,9 @@ class evohome extends eqLogic {
 		$fileId = $parameters[self::ARG_FILE_ID];
 		$commentary = $parameters[self::ARG_FILE_REM];
 		$newSchedule = $parameters[self::ARG_FILE_NEW_SCHEDULE];
-		if ( self::isDebug() ) self::logDebug('IN>> - saveSchedule(' . $fileName . ', ' . $fileId . ', ' . ($newSchedule == null ? '<currentSchedule>' : '<newSchedule>') . ')');
-		self::waitingIAZReentrance('SaveSChedule-' . rand(0,10000));
-		self::lockCron();
+		if ( self::isDebug() ) self::logDebug("IN>> - saveSchedule($fileName, $fileId, " . ($newSchedule == null ? '<currentSchedule>' : '<newSchedule>') . ')');
+		//self::waitingIAZReentrance('SaveSChedule-' . rand(0,10000));
+		//self::lockCron();
 		$dateTime = time();
 		if ( (int)$fileId == self::CURRENT_SCHEDULE_ID ) {
 			$fileId = $dateTime;
@@ -1725,7 +1742,7 @@ class evohome extends eqLogic {
 			self::logDebug('<<OUT - saveSchedule');
 		}
 		self::updateRestoreList();
-		self::unlockCron();
+		//self::unlockCron();
 	}
 
 	function restoreSchedule($parameters) {
@@ -1735,21 +1752,22 @@ class evohome extends eqLogic {
 			self::logError('restoreSchedule on unknown ID=' . $fileId);
 			return;
 		}
-		self::waitingIAZReentrance('RestoreSchedule-' . rand(0,10000));
-		self::lockCron();
+		$execUnitId = rand(0,10000);
+		//self::waitingIAZReentrance("RestoreSchedule-$execUnitId");
+		//self::lockCron();
 		if ( self::isDebug() ) self::logDebug('restoreSchedule on saving ID=' . $fileId . ', name=' . $fileInfos['name']);
 		// Call python function
 		self::logDebug('restoreSchedule : call python');
 		$td = time();
-		$aRet = self::runPython('RestaureZonesE2.py', '"' . $fileInfos['fullPath'] . '"');
-		if ( self::isDebug() ) self::logDebug('restoreSchedule : python return in ' . (time() - $td) . 'sec : ' . json_encode($aRet));
+		$aRet = self::runPython("RestaureZonesE2.py", "RestaureZonesE2_$execUnitId", '"' . $fileInfos['fullPath'] . '"');
+		if ( self::isDebug() ) self::logDebug("python.RestaureZonesE2_$execUnitId done in " . (time() - $td) . "sec", $aRet);
 		if ( !is_array($aRet) ) {
-			self::logError('Error while restoreSchedule : response was empty or malformed');
+			self::logError("Error while restoreSchedule : response was empty or malformed", $aRet);
 			// this call used to remove the loading mask on the screen
 			self::refreshConsole(self::i18n("Erreur pendant l'envoi de la programmation"));
 		}
 		else if ( !$aRet[self::PY_SUCCESS] ) {
-			self::logError('Error while restoreSchedule : <' . json_encode($aRet) . '>');
+			self::logError("Error while restoreSchedule", $aRet);
 			// this call used to remove the loading mask on the screen
 			self::refreshConsole(self::i18n("Erreur pendant l'envoi de la programmation : {0} : {1}", [$aRet["code"], $aRet["message"]]));
 		} else {
@@ -1759,7 +1777,7 @@ class evohome extends eqLogic {
 			fclose($fp);
 			self::updateScheduleFileId($fileId, "1".self::i18n("L'envoi de la programmation s'est correctement effectué"), $schedule);
 		}
-		self::unlockCron();
+		//self::unlockCron();
 	}
 
 	function deleteSchedule($parameters) {
@@ -1811,16 +1829,19 @@ class evohome extends eqLogic {
 		if ( self::isDebug() ) self::logDebug("setConsigne with " . $cmdParam);
 
 		// ...appel python...
-		$infos = self::runPython('SetTempE2.py', $cmdParam);
+		$execUnitId = rand(0,10000);
+		//self::waitingIAZReentrance("setConsigne-$execUnitId");
+		$td = time();
+		$infos = self::runPython("SetTempE2.py", "SetTempE2_$execUnitId", $cmdParam);
 		$updated = false;
-		if ( self::isDebug() ) self::logDebug("retour setTemp = " . json_encode($infos));
+		if ( self::isDebug() ) self::logDebug("python.SetTempE2_$execUnitId done in " . (time() - $td) . "sec", $infos);
 		if ( !is_array($infos) ) {
-			self::logError('Error while setConsigne : response was empty or malformed');
+			self::logError("Error while SetTempE2 : response was empty or malformed", $infos);
 		} else {
 			$infosZones = self::getInformationsAllZonesE2();
 			$msgInfo = null;
 			if ( !$infos[self::PY_SUCCESS] ) {
-				if ( self::isDebug() ) self::logDebug("Error while SetTempE1 : <" . json_encode($infos) . ">");
+				self::logError("Error while SetTempE2", $infos);
 				$msgInfo = self::i18n("Erreur pendant l'envoi de la consigne : {0} - {1}", [$infos["code"], $infos["message"]]);
 			} else if ( is_array($infosZones) ) {
 				// Refresh zoneId

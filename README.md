@@ -1,9 +1,10 @@
 # evohome4jeedom
+<img align="left" src="plugin_info/evohome_icon.png" width="120" style="padding-right:16px;">
 This is a plugin for Jeedom 3.0 platform, regarding the Honeywell Evohome system.<br/>
 State is : v0.3.0 - the "+/- edition"
 
 Written in php, the Jeedom main langage, a bit of javascript, of course some html, and, at this time, a forked (NEW 0.3.0 \*) python bridge from the excellent python library "evohome" from watchforstock.<br/>
-Great thanks to him (his implementation can be found here : https://github.com/watchforstock/evohome-client)<br/>
+Great thanks to him. His implementation can be ***[found here](https://github.com/watchforstock/evohome-client)*** <br/>
 *(\*) : see "Under the hood" of the changelog file*
 
 Features covered first my needs to get a triggerable injection of full week scheduling in the main evotouch console<br/>

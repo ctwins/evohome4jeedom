@@ -209,6 +209,8 @@ setTimeout(function() {
 	echo "var showVertical = '" . evohome::CFG_SCH_MODE_VERTICAL . "';";
 	echo "var modeConsole = '" . evohome::CFG_SHOWING_MODES_CONSOLE . "';";
 	echo "var modePopup = '" . evohome::CFG_SHOWING_MODES_POPUP . "';";
+	$data = json_decode(file_get_contents(dirname(__FILE__) . "/info.json"), true);
+	echo "var version = '" . (is_array($data) ? $data["version"] : null) . "';";
 	?>
 	var evoTempUnit = $('#evoTempUnit').val();
 	if ( evoTempUnit === '' || evoTempUnit == null ) {
@@ -232,6 +234,7 @@ setTimeout(function() {
 		$('#evoShowingModes').val(modeConsole);
 	}
 	document.getElementById('esm'+evoShowingModes).checked = true;
+	if ( version  != null ) $('#span_plugin_install_date').html(version);
 }, 250);
 $('input[name=etu]').on('click', function(event) { $('#evoTempUnit').val($('input[name=etu]:checked').val()); });
 $('input[name=eshm]').on('click', function(event) { $('#evoDefaultShowingScheduleMode').val($('input[name=eshm]:checked').val()); });
@@ -239,9 +242,10 @@ $('input[name=esm]').on('click', function(event) { $('#evoShowingModes').val($('
 $('#btnSync').on('click', function() {
 	var locId = $('.configuration[data-l1key="evoLocationId"]').value();
 	if ( locId == locDefaultId ) {
-		alert("{{Indisponible sur la localisation par défaut}}");
+		bootbox.alert({message:"{{Indisponible sur la localisation par défaut}}", closeButton:false});
 		return;
 	}
+	$('#bt_savePluginConfig').click();
 	$.ajax({
 		type:"POST",
 		url:"plugins/evohome/core/ajax/evohome.ajax.php",
@@ -255,10 +259,10 @@ $('#btnSync').on('click', function() {
 				$('#div_alert').showAlert({message:data.result, level:'danger'});
 			} else {
 				$('#div_alert').showAlert({message:'{{Synchronisation effectuée}}', level:'success'});
-				if ( data.result.added ) {
+				/*if ( data.result.added ) {
 					// reload the page if some component were added
 					document.location.href += '';
-				}
+				}*/
 			}
 		}
 	});

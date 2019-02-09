@@ -1,5 +1,18 @@
 # Changelog - evohome4jeedom
 
+## [version 0.3.1] - 2019-02-09 - fix #6
+### Fix
+- Correction of regression for new installation (or user/password blanks)
+additional : introduce a timeout (5mn) in the "waiting for python loops" to avoid general blockings
+
+### Improvement
+- The version (here 0.3.1) appears now after the Version label on the General configuration (and has been removed from the title)
+
+### Under the hood
+- Revision of logging around call of the method runPython, in case of internal and python error appears
+This could be have to effect to show additional errors in the "Jeedom messages" panel
+
+
 ## [version 0.3.0] - 2019-02-07 - the "+/- edition"
 ### Added
 - General configuration
