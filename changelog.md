@@ -58,6 +58,9 @@ This could be have to effect to show additional errors in the "Jeedom messages" 
 - now, only the admin profile has the possibility to do these things regarding the schedules :
 	1. Editing, Saving, Restore, Remove schedule
 
+### Fix
+- Python/reading informations : better check of the Heating zone (fix the reported error by "jaktens")
+
 ### Under the hood
 - The extra module evohomeclient is now embedded inside the plugin itself ('forked' to introduce the token cache and custom logs)<br/>
   If you restart the dependency (not mandatory) under the General configuration, the module will be removed in the OS (by a pip command)
