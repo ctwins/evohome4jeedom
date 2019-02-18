@@ -64,7 +64,7 @@ class evohome extends eqLogic {
 	const MODE_PERMANENT_OFF = '0';
 	const ARG_CODE_MODE = 'select';	// 0.2.1 : codeMode' replaced by 'select' for compatibility with parameter of scenario
 	const ARG_FILE_NAME = 'fileName';
-	const ARG_FILE_ID = 'fileId';
+	const ARG_FILE_ID = 'select';	// 0.3.2 : fix (was fileId) for compatibility with scenario select field
 	const ARG_FILE_REM = 'remark';
 	const ARG_FILE_NEW_SCHEDULE = 'scheduleData';
 	const ARG_ZONE_ID = 'zoneId';
@@ -80,6 +80,7 @@ class evohome extends eqLogic {
 	const LOG_INFO_ZONES = false;
 	// Caches names
 	const CACHE_CRON_TIMER = 'cronTimer';
+	const CACHE_CRON_ACTIF = 'cronActive';
 	const CACHE_IAZ = 'evohomegetInformationsAllZonesE2';
 	const CACHE_INFOS_API = 'evohomeInfosApi';
 	const CACHE_IAZ_DURATION = 86400;
@@ -88,6 +89,9 @@ class evohome extends eqLogic {
 	const CACHE_STATES_DURATION = 30;
 	const CACHE_STATES = 'evohomeStates';
 	const CACHE_CURRENT_SCHEDULE = 'evohomeCurrentSchedule';
+	const CACHE_PYTHON_RUNNING = 'PYTHON_RUNNING';
+	const CACHE_STAT_PREV_VISIBLE = 'STAT_PREV_VISIBLE';
+	const CACHE_SCHEDULE_DELTA = 'SCHEDULE_DELTA';
 	const PY_SUCCESS = 'success';
 	// InfosZones
 	const IZ_TIMESTAMP = 'timestamp';
@@ -100,7 +104,30 @@ class evohome extends eqLogic {
 	const IZ_SESSION_EXPIRES_V2 = 'access_token_expires';
 	const IZ_SESSION_STATE_V2 = 'token_state';
 	# -- unused
-	const IZ_CACHED = 'cached';
+	//const IZ_CACHED = 'cached';
+
+	const C2BG = array(25=>'#f21f1f',
+					   22=>'#ff5b1a',
+					   19=>'#fa9e2d',
+					   16=>'#2e9985',
+					    0=>'#247eb2');
+	const F2BG = array((25* 9/5 + 32)=>'#f21f1f',
+					   (22* 9/5 + 32)=>'#ff5b1a',
+					   (19* 9/5 + 32)=>'#fa9e2d',
+					   (16* 9/5 + 32)=>'#2e9985',
+					                0=>'#247eb2');
+
+	private static function getModeName($code) {
+		switch ( $code ) {
+			case self::CODE_MODE_AUTO:	return self::i18n('Planning');
+			case self::CODE_MODE_ECO:	return self::i18n('Economie');
+			case self::CODE_MODE_AWAY:	return self::i18n('Innocupé');
+			case self::CODE_MODE_DAYOFF:	return self::i18n('Congé');
+			case self::CODE_MODE_CUSTOM:	return self::i18n('Personnalisé');
+			case self::CODE_MODE_OFF:	return self::i18n('Arrêt');
+		}
+		return "";
+	}
 
 	public static function isDebug() {
 		return log::getLogLevel(__CLASS__) == 100;
@@ -130,11 +157,16 @@ class evohome extends eqLogic {
 		$date->setTimestamp($ts);
 		return $date->format('H:i:s');
 	}
-	static function tsToAbsoluteHMS($ts) {
+	static function tsToAbsoluteHM($ts) {
 		$date = new DateTime();
 		$date->setTimestamp($ts);
 		$date->setTimezone(new DateTimeZone('UTC'));
-		return $date->format('H:i:s');
+		return $date->format('H:i');
+	}
+	static function tsToLocalMS($ts) {
+		$date = new DateTime();
+		$date->setTimestamp($ts);
+		return $date->format('i:s');
 	}
 	static function tsToLocalHMS($ts) {
 		$date = new DateTime();
@@ -171,7 +203,7 @@ class evohome extends eqLogic {
 
 	static function jsonDecode($text, $fnName) {
 		if ( $text == null || $text == '' ) {
-			if ( self::isDebug() ) self::logDebug('jsonDecode null for ' . $fnName);
+			if ( self::isDebug() ) self::logDebug("jsonDecode null for $fnName");
 			return null;
 		}
 		// 2018-02-24 - fix for compatibility with PHP 7.xx (useless for PHP 5.xx)
@@ -179,7 +211,7 @@ class evohome extends eqLogic {
 		$aValue = json_decode($text, true);
 		if ( json_last_error() != JSON_ERROR_NONE ) {
 			$aValue = null;
-			self::logError("Error while $fnName : json error=" . json_last_error() . ", input was $text");
+			if ( self::isDebug() ) self::logError("Error while $fnName : json error=" . json_last_error() . ", input was <" . $text . ">");
 		} else if ( self::isDebug() ) {
 			self::logDebug("jsonDecode OK for $fnName");
 		}
@@ -240,13 +272,13 @@ class evohome extends eqLogic {
 		return $cfgValue == null ? $defValue : $cfgValue;
 	}
 
-	/*static function lockCron() {
+	static function lockCron() {
 		self::setParam('functionality::cron::enable', 0);
 	}
 
 	static function unlockCron() {
 		self::setParam('functionality::cron::enable', 1);
-	}*/
+	}
 
 	static function setCacheData($cacheName, $content, $duration=null) {
 		cache::set($cacheName, $content, $duration == null ? 9*60 : $duration);
@@ -269,64 +301,133 @@ class evohome extends eqLogic {
 		return intVal(self::getParam(self::CFG_LOADING_INTERVAL,10));
 	}
 
+	static function isCronActive() {
+		return /*config::byKey('functionality::cron::enable', 'evohome', 1) == 1 &&*/ self::getCacheData(self::CACHE_CRON_ACTIF) == "1";
+	}
+
 	public static function cron() {
-		self::logDebug('IN>> - cron');
-		if ( self::isIAZrunning() ) {
-			self::logDebug('<<OUT - cron - reading still running. exit now');
-			return;
-		}
-		$mark = self::getCacheData(self::CACHE_CRON_TIMER);
-		$tsRemain = self::getCacheRemaining(self::CACHE_CRON_TIMER);
-		if ( false || $mark == '' || $tsRemain <= 5 ) {
-			if ( self::getParam(self::CFG_LOADING_SYNC,0) == 1 ) {
-				// adjust fine time :
-				$interval = self::getLoadingInterval();
-				$min = intVal(date("i"));
-				if ( $min % $interval != 0 ) {
-					// 10 = 0/10/20/30/40/50
-					// 15 = 0/15/30/45
-					// 20 = 0/20/40
-					// 30 = 0/30
-					// So, we adjust by checking : currentMin % interval == 0
-					self::logDebug("<<OUT - cron - synchronize interval ($interval) on time (current $min)");
-					return;
-				}
-				self::logDebug("synchronize time is requested and was right ;)");
+		self::logDebug('IN>> - cron : ' . cache::byKey('plugin::cron::inprogress')->getValue(0));
+		try {
+			self::setCacheData(self::CACHE_CRON_ACTIF, "1", 62);
+			$forcage = false;	// for tests only
+			if ( $forcage ) {
+				self::deactivateIAZReentrance();
+				self::razPythonRunning();
 			}
-			$di = self::dependancy_info();
-			if ( $di['state'] != 'ok' ) {
-				self::logDebug('<<OUT - cron - plugin not ready (dependency_info=NOK)');
-			} else {
-				if ( self::isDebug() ) {
-					// error level to enforce reporting
-					log::add('cron_execution', 'warning', 'Launching getInformationsAllZonesE2 with refresh');
-				}
-				$td = time();
-				evohome::getInformationsAllZonesE2(true);
-				$delay = time() - $td;
-				$cacheDuration = evohome::getLoadingInterval()*60 - $delay - 2;
-				evohome::setCacheData(evohome::CACHE_CRON_TIMER, "dummy", $cacheDuration);
+			if ( self::isIAZrunning() ) {
+				self::logDebug('<<OUT - cron - reading still running. exit now');
+				return;
 			}
-		} else if ( self::isDebug() ) {
-			self::logDebug("cron : wait for $tsRemain sec.");
+			$mark = self::getCacheData(self::CACHE_CRON_TIMER);
+			$tsRemain = self::getCacheRemaining(self::CACHE_CRON_TIMER);
+			if ( $forcage || $mark == '' || $tsRemain <= 5 ) {
+				if ( !$forcage && self::getParam(self::CFG_LOADING_SYNC,0) == 1 ) {
+					// adjust fine time :
+					$interval = self::getLoadingInterval();
+					$min = intVal(date("i"));
+					if ( $min % $interval != 0 ) {
+						// 10 = 0/10/20/30/40/50
+						// 15 = 0/15/30/45
+						// 20 = 0/20/40
+						// 30 = 0/30
+						// So, we adjust by checking : currentMin % interval == 0
+						self::logDebug("<<OUT - cron - synchronize interval ($interval) on time (current $min)");
+						return;
+					}
+					self::logDebug("synchronize time is requested and was right ;)");
+				}
+				$di = self::dependancy_info();
+				if ( $di['state'] != 'ok' ) {
+					self::logDebug('<<OUT - cron - plugin not ready (dependency_info=NOK)');
+				} else {
+					if ( self::isDebug() ) {
+						// warning level to enforce reporting
+						log::add('cron_execution', 'warning', 'Launching getInformationsAllZonesE2 with refresh');
+					}
+					$td = time();
+					self::getInformationsAllZonesE2(true);
+					$delay = time() - $td;
+					$cacheDuration = self::getLoadingInterval()*60 - $delay - 2;
+					self::setCacheData(self::CACHE_CRON_TIMER, "dummy", $cacheDuration);
+				}
+			} else if ( self::isDebug() ) {
+				self::logDebug("cron : wait for $tsRemain sec.");
+			}
+		} catch (Exception $e ) {
+			self::logError('Exception while cron');
 		}
 		self::logDebug('<<OUT - cron');
 	}
 
 	static function setPythonRunning($name) {
-		self::setCacheData('PYTHON_RUNNING', $name, 86400);
+		self::setCacheData(self::CACHE_PYTHON_RUNNING, $name, 86400);
 	}
 	static function isPythonRunning() {
-		return self::getCacheData('PYTHON_RUNNING');
+		//return self::getCacheData(self::CACHE_PYTHON_RUNNING);
+		$nb = exec("ps -ef | grep 'python /var/www/html/plugins/evohome/' | wc -l");
+		if ( self::isDebug() ) self::logDebug('running python process : nb=' . ($nb/2 - 1));
+		return $nb != 2;
 	}
 	static function razPythonRunning() {
-		self::doCacheRemove('PYTHON_RUNNING');
+		self::doCacheRemove(self::CACHE_PYTHON_RUNNING);
 	}
-	static function runPython($prgName, $taskName, $parameters=null) {
+
+	static function __execute($cmd, $data, &$stdout, $timeout=0) {
 		$td = time();
-		while ( ($prevTask=self::isPythonRunning()) != '' ) {
-			if ( self::isDebug() ) self::logDebug("another runPython ($prevTask) is running, wait 5sec before launching a new one ($taskName)");
-			if ( time() - $td > 300 ) return "Timeout (5mn) while waiting another python task ($prevTask) to end";
+		$pipes = array();
+		$process = proc_open($cmd, array(array('pipe','r'),array('pipe','w'),array('pipe','w')), $pipes);
+		if ( !is_resource($process) ) {
+			$stdout = "Error while proc_open";
+			log::add("cron_execution", "error", $stdout);
+			return 1;
+		}
+		//stream_set_blocking($pipes[0], 0);
+		stream_set_blocking($pipes[1], 0);
+		stream_set_blocking($pipes[2], 0);
+		//fwrite($pipes[0], $stdin);
+		fclose($pipes[0]);
+
+		$start = time();
+		while ( $timeout == 0 || (time() - $start < $timeout) ) {
+			set_time_limit(60);	// any value (0 could be a bad idea)
+			$stdout .= stream_get_contents($pipes[1]);
+			while ( ($buffer = fgets($pipes[2])) !== false ) {
+				if ( $data != null && ($p=strpos($buffer, "Waiting for")) !== false ) {
+					self::refreshComponent($data,
+						"1"
+						. $data["task"] . " : " . str_replace("\n","",substr($buffer,$p))
+						. " (".self::tsToLocalMS(time()-$td) . ")");
+				}
+				log::add("cron_execution", 'warning', $buffer);
+			}
+			$status = proc_get_status($process);
+			if (!$status['running']) {
+				fclose($pipes[1]);
+				fclose($pipes[2]);
+				proc_close($process);
+				return $status['exitcode'];	// should be 0 in normal cases
+			}
+			usleep(250000);
+		}
+		$stdout = "Timeout detected (more than $timeout)";
+		log::add("cron_execution", 'warning', $stdout);
+		fclose($pipes[1]);
+		fclose($pipes[2]);
+		// kill the sh process whichis parent of the real python process
+		// TODO: look for the child process, then kill -9 it.. (but it will necessary terminate, at unpredictive future time..)
+		proc_terminate($process, 9);
+		return 1;
+	}
+
+	static function runPython($prgName, $taskName, $data, $parameters=null) {
+		$td = time();
+		while ( self::isPythonRunning() ) {
+			$prevTask = self::getCacheData(self::CACHE_PYTHON_RUNNING);
+			if ( self::isDebug() ) self::logDebug("another runPython ($prevTask) is running (a), wait 5sec before launching a new one ($taskName)");
+			if ( time() - $td > 250 ) {
+				self::logDebug("runPython : Timeout while waiting another python task ($prevTask) to end");
+				return "Timeout while waiting another python task ($prevTask) to end";
+			}
 			sleep(5);
 		}
 		$credential = self::getParam(self::CFG_USER_NAME,'') . ' ' . self::getParam(self::CFG_PASSWORD,'');
@@ -335,6 +436,9 @@ class evohome extends eqLogic {
 			return "runPython too early : account is not set yet";
 		}
 
+		if ( $data != null && $data['task'] != null ) {
+			self::refreshComponent($data, "1".$data['task']." : ".self::i18n("démarrage"));
+		}
 		self::setPythonRunning($taskName);
 		$cmd = 'python ' . dirname(__FILE__) . '/../../resources/' . $prgName . ' ' . $credential;
 
@@ -357,7 +461,19 @@ class evohome extends eqLogic {
 		if ( $parameters !== null ) {
 			$cmd .= ' ' . self::getLocationId() . ' ' . $parameters;
 		}
-		$json = trim(shell_exec($cmd));
+		try {
+			self::logDebug("Launching $prgName");
+			//$json = trim(shell_exec($cmd));
+			$json = '';
+			// timeout=1mn40 max (2mn could be too much against max_execution_time, and in this case, all is lost..)
+			// see also : https://stackoverflow.com/questions/6861033/how-to-catch-the-fatal-error-maximum-execution-time-of-30-seconds-exceeded-in-p
+			$ret = self::__execute($cmd, $data, $json, 310);
+			if ( self::isDebug() && $ret != 0 ) self::logDebug("Error while __execute ($ret) : <$json>");
+			$json = trim($json);
+		} catch (Exception $e) {
+			self::logError("Exception while running python part");
+			$json = '';
+		}
 
 		// cache API infos (access_token/session)
 		$jsonRet = self::jsonDecode($json, 'runPython('. $prgName . ')');
@@ -394,19 +510,19 @@ class evohome extends eqLogic {
 		}
 
 		self::razPythonRunning();
+		if ( self::isDebug() ) self::logDebug("python.$taskName done in " . (time() - $td) . "sec", $jsonRet);
 		return $jsonRet;
 	}
 
 	/*
 	 * Read all Locations attached to the account
 	 */
-	public static function listLocations() {
+	public static function listLocations($enforce=false) {
 		self::logDebug('IN>> - listLocations');
 		$locations = self::getCacheData(self::CACHE_LIST_LOCATIONS);
-		if ( $locations == '') {
+		if ( $enforce || $locations == '') {
 			$td = time();
-			$locations = self::runPython("LocationsInfosE2.py","LocationsInfosE2_$td");
-			if ( self::isDebug() ) self::logDebug("python.LocationsInfosE2_$td done in " . (time() - $td) . "sec", $locations);
+			$locations = self::runPython("LocationsInfosE2.py","LocationsInfosE2_$td", null);
 			if ( !is_array($locations)  ) {
 				self::logError('Erreur while LocationsInfosE2 : response was empty or malformed', $locations);
 				$locations = null;
@@ -450,74 +566,80 @@ class evohome extends eqLogic {
 		return $isRunning;
 	}
 
-	public static function getInformationsAllZonesE2($forceRefresh=false, $readSchedule=true, $msgInfo='') {
-		$execUnitId = rand(0,10000);
-		if ( self::isDebug() ) self::logDebug('IN>> - getInformationsAllZonesE2[' . $execUnitId . ']');
-		$infosZones = self::getCacheData(self::CACHE_IAZ);
-		$useCachedData = true;
-		$infosZonesBefore = null;
-		if ( !is_array($infosZones) || $forceRefresh ) {
-			if ( self::waitingIAZReentrance('IAZ-' . $execUnitId) ) {
-				$infosZones = self::getCacheData(self::CACHE_IAZ);
-				// a reading has just been done
-			} else {
-				// Wait if another python is running
-				$tdw = time();
-				while ( ($prev=self::isPythonRunning()) != '' ) {
-					if ( self::isDebug() ) self::logDebug("another runPython ($prev) is running, wait 5sec before launching a new one (InfosZonesE2_$execUnitId)");
-					if ( time() - $tdw > 300 ) {
-						self::logError("Previous call to python ($prev) is blocking other requests");
-						return null;
-					}
-					sleep(5);
-				}
-				self::activateIAZReentrance(15*60);	// was 120 - now 15mn against cloud freezing
-				if ( is_array($infosZones) && $infosZones[self::PY_SUCCESS] ) {
-					$infosZonesBefore = $infosZones;
-					self::refreshAll($infosZonesBefore);
-				}
-				$td = time();
-				$infosZones = self::runPython('InfosZonesE2.py', "InfosZonesE2_$execUnitId", $readSchedule ? "1" : "0");
-				if ( self::isDebug() ) self::logDebug('python.InfosZonesE2[' . $execUnitId . '] done in ' . (time() - $td) . 'sec', $infosZones);
-				self::deactivateIAZReentrance();
-				if ( !is_array($infosZones) ) {
-					self::logError('Error while getInformationsAllZonesE2 : response was empty of malformed', $infosZones);
-					if ( $infosZonesBefore != null ) {
-						self::refreshAll($infosZonesBefore,false,$msgInfo);
-					}
-				} else if ( !$infosZones[self::PY_SUCCESS] ) {
-					self::logError('Error while getInformationsAllZonesE2', $infosZones);
-					if ( $infosZonesBefore != null ) {
-						self::refreshAll($infosZonesBefore,false,$msgInfo);
-					}
+	public static function getInformationsAllZonesE2($forceRefresh=false, $readSchedule=true, $msgInfo='', $taskIsRunning=false) {
+		try {
+			$execUnitId = rand(0,10000);
+			if ( self::isDebug() ) self::logDebug('IN>> - getInformationsAllZonesE2[' . $execUnitId . ']');
+			$infosZones = self::getCacheData(self::CACHE_IAZ);
+			$useCachedData = true;
+			$infosZonesBefore = null;
+			if ( !is_array($infosZones) || $forceRefresh ) {
+				if ( self::waitingIAZReentrance('IAZ-' . $execUnitId) ) {
+					$infosZones = self::getCacheData(self::CACHE_IAZ);
+					// a reading has just been done
 				} else {
-					self::setCacheData(self::CACHE_IAZ, $infosZones, self::CACHE_IAZ_DURATION);
-					// refresh if needed
-					if ( $readSchedule ) self::refreshAll($infosZones,true,$msgInfo);
-					$infosZones[self::IZ_CACHED] = false;
+					// Wait if another python is running
+					$tdw = time();
+					while ( self::isPythonRunning() ) {
+						$prev = self::getCacheData(self::CACHE_PYTHON_RUNNING);
+						if ( self::isDebug() ) self::logDebug("another runPython ($prev) is running (b), wait 5sec before launching a new one (InfosZonesE2_$execUnitId)");
+						if ( time() - $tdw > 250 ) {
+							self::logError("Previous call to python ($prev) is blocking other requests");
+							return null;
+						}
+						sleep(5);
+					}
+					self::activateIAZReentrance(15*60);	// was 120 - now 15mn against cloud freezing
+					if ( is_array($infosZones) && $infosZones[self::PY_SUCCESS] ) {
+						$infosZonesBefore = $infosZones;
+						if ( !$taskIsRunning ) {
+							self::refreshAll($infosZonesBefore);
+						} else {
+							self::refreshAll($infosZonesBefore, false, $msgInfo, $taskIsRunning);
+						}
+					}
+					$infosZones = self::runPython('InfosZonesE2.py', "InfosZonesE2_$execUnitId", null, $readSchedule ? "1" : "0");
+					self::deactivateIAZReentrance();
+					if ( !is_array($infosZones) ) {
+						self::logError('Error while getInformationsAllZonesE2 : response was empty of malformed', $infosZones);
+						if ( $infosZonesBefore != null ) {
+							if ( $taskIsRunning ) {
+								self::refreshAll($infosZonesBefore);
+							} else {
+								self::refreshAll($infosZonesBefore,false,$msgInfo);
+							}
+						}
+					} else if ( !$infosZones[self::PY_SUCCESS] ) {
+						self::logError('Error while getInformationsAllZonesE2', $infosZones);
+						if ( $infosZonesBefore != null ) {
+							if ( $taskIsRunning ) {
+								self::refreshAll($infosZonesBefore);
+							} else {
+								self::refreshAll($infosZonesBefore,false,$msgInfo);
+							}
+						}
+					} else {
+						self::setCacheData(self::CACHE_IAZ, $infosZones, self::CACHE_IAZ_DURATION);
+						// refresh if needed
+						if ( $readSchedule ) self::refreshAll($infosZones,true,$msgInfo,$taskIsRunning);
+						//$infosZones[self::IZ_CACHED] = false;
+					}
+					$useCachedData = false;
 				}
-				$useCachedData = false;
 			}
+			if ( $useCachedData ) {
+				if ( self::isDebug() ) self::logDebug('got getInformationsAllZonesE2[' . $execUnitId . '] from cache (rest to live=' . self::getCacheRemaining(self::CACHE_IAZ) . ')');
+				if ( $infosZonesBefore != null ) $infosZones = $infosZonesBefore;
+				//$infosZones[self::IZ_CACHED] = true;
+			}
+			if ( self::isDebug() ) self::logDebug('<<OUT getInformationsAllZonesE2[' . $execUnitId . ']');
+			return $infosZones;
+		} catch (Exception $e) {
+			self::logError("Exception while getInformationsAllZonesE2");
+			return null;
 		}
-		if ( $useCachedData ) {
-			if ( self::isDebug() ) self::logDebug('got getInformationsAllZonesE2[' . $execUnitId . '] from cache (rest to live=' . self::getCacheRemaining(self::CACHE_IAZ) . ')');
-			if ( $infosZonesBefore != null ) $infosZones = $infosZonesBefore;
-			$infosZones[self::IZ_CACHED] = true;
-		}
-		if ( self::isDebug() ) self::logDebug('<<OUT getInformationsAllZonesE2[' . $execUnitId . ']');
-		return $infosZones;
 	}
 
-	const C2BG = array(25=>'#f21f1f',
-					   22=>'#ff5b1a',
-					   19=>'#fa9e2d',
-					   16=>'#2e9985',
-					    0=>'#247eb2');
-	const F2BG = array((25* 9/5 + 32)=>'#f21f1f',
-					   (22* 9/5 + 32)=>'#ff5b1a',
-					   (19* 9/5 + 32)=>'#fa9e2d',
-					   (16* 9/5 + 32)=>'#2e9985',
-					                0=>'#247eb2');
 	public static function getBackColorForTemp($consigne,$isOff=false) {
 		if ( $consigne == null ) return 'lightgray';
 		if ( $isOff ) return 'black';
@@ -557,14 +679,18 @@ class evohome extends eqLogic {
 		return null;
 	}
 
-	static function refreshConsole($msgInfo='') {
-		if ( self::isDebug() ) self::logDebug("IN>> - refreshConsole");
-		$console = self::getConsole();
-		if ( $console != null ) {
-			$console->setToHtmlProperties(self::getStates(self::getInformationsAllZonesE2()),self::getSchedule(self::CURRENT_SCHEDULE_ID),$msgInfo);
-			$console->refreshComponent();
+	static function refreshConsole($msgInfo='', $taskIsRunning=false) {
+		self::refreshComponent(array("zoneId"=>self::ID_CONSOLE, "wheel"=>$taskIsRunning), $msgInfo);
+	}
+	static function refreshComponent($data, $msgInfo='') {
+		$zoneId = $data['zoneId'];
+		if ( self::isDebug() ) self::logDebug("IN>> - refreshComponent($zoneId)");
+		$comp = self::getComponent($zoneId);
+		if ( $comp != null ) {
+			$comp->setToHtmlProperties(self::getStates(self::getInformationsAllZonesE2()),self::getSchedule(self::CURRENT_SCHEDULE_ID),$msgInfo,$data['wheel'],$data["consigne"]);
+			$comp->iRefreshComponent();
 		}
-		self::logDebug('<<OUT - refreshConsole');
+		self::logDebug('<<OUT - refreshComponent');
 	}
 
 	static function extractZone($zonesDatas,$zoneId) {
@@ -627,6 +753,7 @@ class evohome extends eqLogic {
 	static function getStates($infosZones=null) {
 		$states = array();
 		$states['unread'] = (self::CACHE_IAZ_DURATION - self::getCacheRemaining(self::CACHE_IAZ)) > self::getLoadingInterval()*60;
+		$states['cron_active'] = self::isCronActive();
 		$states['isRunning'] = self::isIAZrunning();
 		$states['lastRead'] = !is_array($infosZones) || !array_key_exists(self::IZ_TIMESTAMP,$infosZones) ? 0 : self::tsToLocalDateTime($infosZones[self::IZ_TIMESTAMP]);
 		// apiV1 available == accurate values available
@@ -635,14 +762,16 @@ class evohome extends eqLogic {
 		return $states;
 	}
 
-	static function refreshAll($infosZones,$inject=false,$msgInfo='') {
+	static function refreshAll($infosZones,$inject=false,$msgInfo='',$taskIsRunning=false) {
 		self::logDebug("IN>> - refreshAll");
 		$states = self::getStates($infosZones);
 		$scheduleCurrent = self::getSchedule(self::CURRENT_SCHEDULE_ID);
+		$console = self::getConsole();
 		foreach (eqLogic::byType(__CLASS__) as $equipment) {
-			$equipment->setToHtmlProperties($states,$scheduleCurrent,$msgInfo);
+			// NB : $taskIsRunning should be set on console only
+			$equipment->setToHtmlProperties($states,$scheduleCurrent,$msgInfo,$taskIsRunning && $equipment == $console);
 			$msgInfo = '';	// set only on the first equipment
-			$equipment->refreshComponent($infosZones,$inject);
+			$equipment->iRefreshComponent($infosZones,$inject);
 		}
 		self::logDebug("<<OUT - refreshAll");
 	}
@@ -752,7 +881,7 @@ class evohome extends eqLogic {
 			if ( is_object($cmd) ) {
 				$v = $cmd->getIsVisible() ? '1' : '0';
 				if ( self::isDebug() ) self::logDebug("preUpdate : visible STAT = $v");
-				self::setCacheData("STAT_PREV_VISIBLE", $v);
+				self::setCacheData(self::CACHE_STAT_PREV_VISIBLE, $v);
 			}
 		}
 
@@ -824,7 +953,10 @@ class evohome extends eqLogic {
 			$temp = self::adjustByUnit($infosZone['temperature'],$infosZone['units']);
 			$tmp = $this->getCmd(null,self::CMD_TEMPERATURE_ID);
 			if (is_object($tmp) ) {
+				$prev = $tmp->execCmd();
 				$tmp->event($temp);
+			} else {
+				$prev = 0;
 			}
 			$tmp = $this->getCmd(null,self::CMD_CONSIGNE_ID);
 			if (is_object($tmp) ) {
@@ -835,9 +967,10 @@ class evohome extends eqLogic {
 				$consigneScheduled = self::getConsigneScheduledForZone($infosZone);
 				$tmp->event(self::adjustByUnit($consigneScheduled,$infosZone['units']));
 			}
-			$consigneInfo = $infosZone['status'] . ";" . $infosZone['until'] . ";" . $infosZone['units'];
 			$spc = $infosZone['setPointCapabilities'];
-			$consigneInfo = $consigneInfo . ";" . $spc['resolution'] . ";" . $spc['minHeat'] . ";" . $spc['maxHeat'];
+			$consigneInfo = $infosZone['status'] . ";" . $infosZone['until'] . ";" . $infosZone['units']
+				. ";" . $spc['resolution'] . ";" . $spc['minHeat'] . ";" . $spc['maxHeat'] . ";" . $prev
+				. ";" . $infosZone['battLow'] . ";" . $infosZone['cnxLost'];
 			$tmp = $this->getCmd(null,self::CMD_CONSIGNE_TYPE_ID);
 			if (is_object($tmp) ) {
 				$tmp->event($consigneInfo);
@@ -1000,6 +1133,7 @@ class evohome extends eqLogic {
 		$saveColor = 'white';
 		$canRestoreCurrent = 0;
 		$saveTitle = self::i18n("Sauvegarde la programmation courante");
+		$scheduleDelta = "0";
 		if ( $scheduleFileId != null ) {
 			$scheduleSaved = self::getSchedule($scheduleFileId);
 			if ( $scheduleSaved != null && $scheduleCurrent != null ) {
@@ -1008,14 +1142,17 @@ class evohome extends eqLogic {
 				if ( $_scheduleSaved != $_scheduleCurrent ) {
 					$saveColor = 'orange';
 					$canRestoreCurrent = 1;
+					$scheduleDelta = "1";
 					/*if ( self::isDebug() ) {
 						self::logDebug("_scheduleSaved = " . $_scheduleSaved);
 						self::logDebug("_scheduleCurrent = " . $_scheduleCurrent);
 					}*/
-					$saveTitle .= ' (' . self::i18n("différente de la dernière programmation restaurée") . ')';
+					$saveTitle .= ' (' . self::i18n("différente de la dernière programmation restaurée ou éditée") . ')';
 				}
 			}
 		}
+		//self::logDebug("***** console scheduleDelta = $scheduleDelta");
+		self::setCacheData(self::CACHE_SCHEDULE_DELTA, $scheduleDelta, 2);
 		$replace_action['#title.save#'] = $saveTitle;
 		$replace_action['#canRestoreCurrent#'] = $canRestoreCurrent;
 		$replace_action['#isAdmin#'] = self::isAdmin();
@@ -1048,12 +1185,6 @@ class evohome extends eqLogic {
 		$rbs = self::getParam(self::CFG_REFRESH_BEFORE_SAVE,0);
 		$msg = array('scheduleTitle'=>"Programmes hebdo.",
 			'title.setMode'=>"Réglage du mode de présence",
-			'modeAuto'=>"Planning",
-			'modeEco'=>"Economie",
-			'modeAway'=>"Innocupé",
-			'modeDayOff'=>"Congé",
-			'modeCustom'=>"Personnalisé",
-			'modeOff'=>"Arrêt",
 			'setModeConfirm'=>"Confirmez-vous la demande du mode {0} ?",
 			'setModeInfoList'=>"Bascule vers le mode '{0}'",
 			'title.showCurrent'=>"Affiche la programmation courante",
@@ -1071,14 +1202,24 @@ class evohome extends eqLogic {
 			'deleteInfoList'=>"Supprime le fichier '{0}'"
 			);
 		foreach ( $msg as $code=>$txt ) $replace_action["#$code#"] = self::i18n($txt);
+		$replace_action["#modeAuto#"] = self::getModeName(self::CODE_MODE_AUTO);
+		$replace_action["#modeEco#"] = self::getModeName(self::CODE_MODE_ECO);
+		$replace_action["#modeAway#"] = self::getModeName(self::CODE_MODE_AWAY);
+		$replace_action["#modeDayOff#"] = self::getModeName(self::CODE_MODE_DAYOFF);
+		$replace_action["#modeCustom#"] = self::getModeName(self::CODE_MODE_CUSTOM);
+		$replace_action["#modeOff#"] = self::getModeName(self::CODE_MODE_OFF);
 
 		$replace['#consoleContent#'] = template_replace($replace_action, getTemplate('core', $version, 'console_content', __CLASS__));
 		$replace['#temperatureContent#'] = '';
 
+		$replace['#batteryImgDisplay#'] = 'none';
+		$replace['#batteryImg#'] = 'empty.svg';
+		$replace['#batteryImgTitle#'] = '';
+
 		return $replace;
 	}
 
-	public function toHtmlTh($pVersion,$version,$replace,$zoneId,$scheduleCurrent,$states) {
+	public function toHtmlTh($pVersion,$version,$replace,$zoneId,$scheduleCurrent,$states,$forcedConsigne) {
 		$replace_temp = $this->preToHtml($pVersion);
 		// *** TEMPERATURE
 		$replace_temp['#etatImg#'] = 'empty.svg';	// dummy
@@ -1090,93 +1231,20 @@ class evohome extends eqLogic {
 		$replace_temp['#temperatureDisplay#'] = (is_object($cmdTemperature) && $cmdTemperature->getIsVisible()) ? "block" : "none";
 		$temperatureNative = is_object($cmdTemperature) ? $cmdTemperature->execCmd() : 0;
 		if ( $temperatureNative == null ) {
+			$temperature = 0;
 			$replace_temp['#temperature#'] = '';
-			$replace_temp['#temperatureImgDisplay#'] = 'inline;height:36px;width:36px;margin-top:8px;margin-bottom:8px;';
 			$replace_temp['#temperatureDisplay2#'] = 'none';
 		} else {
 			$temperature = self::applyRounding($temperatureNative);
 			$replace_temp['#temperature#'] = $temperature . '°';
-			$replace_temp['#temperatureImgDisplay#'] = 'inline;height:15px;width:15px;margin-top:20px;';
-			$replace_temp['#temperatureDisplay2#'] = 'inline';
-		}
-		$cmdStatistics = self::getConsole()->getCmd(null,self::CMD_STATISTICS_ID);
-		$timeWindow = !is_object($cmdStatistics) || !$cmdStatistics->getIsVisible() || $cmdId == '' ? 0 : max($cmdStatistics->execCmd(), 0);
-		$replace_temp['#minMaxDisplay#'] = $timeWindow == 0 ? "none" : "block";
-		if ( $timeWindow != 0 ) {
-			// https://www.w3schools.com/sql/func_mysql_date_format.asp
-			if ( $timeWindow == 1 ) {
-				// timeWindow = 1 : same day
-				$tw = '%Y%c%d';
-			} else if ( $timeWindow == 2 ) {
-				// timeWindow = 2 : same week (Monday start of week)
-				$tw = '%Y%u';
-			} else {
-				// timeWindow = 3 : same month
-				$tw = '%Y%c';
-			}
-			$sql = "select * from (";
-			$sql .= "select datetime, value from historyArch where cmd_id=$cmdId and DATE_FORMAT(datetime,'$tw')=DATE_FORMAT(now(),'$tw')";
-			$sql .= " union";
-			$sql .= " select datetime, value from history where cmd_id=$cmdId and DATE_FORMAT(datetime,'$tw')=DATE_FORMAT(now(),'$tw')";
-			$sql .= ") as x order by datetime";
-			$results = DB::Prepare($sql, array(), DB::FETCH_TYPE_ALL);
-			if ( count($results) == 0 ) {
-				$replace_temp['#minMaxDisplay#'] = 'none';
-			} else {
-				$min = 99;
-				$sDateMin = 0;
-				$max = 0;
-				$sDateMax = 0;
-				$totValue = 0.0;
-				foreach ($results as $result) {
-					$value = $result['value'];
-					if ( $value < $min ) { $min = $value; $sDateMin = $result['datetime']; }
-					if ( $value > $max ) { $max = $value; $sDateMax = $result['datetime']; }
-					$totValue += $value;
-				}
-				$avg = $totValue / count($results);
-				$dMin = strtotime($sDateMin);
-				$dMax = strtotime($sDateMax);
-				$dMaxMinus1 = 0;
-				$dMinPlus1 = 0;
-				foreach ($results as $result) {
-					$dt = strtotime($result['datetime']);
-					$value = $result['value'];
-					if ( $dMaxMinus1 == 0 && $dt > $dMax && $max - $value >= 1.0 ) {
-						$dMaxMinus1 = $dt - $dMax;
-					}
-					if ( $dMinPlus1 == 0 && $dt > $dMin && $value - $min >= 1.0 ) {
-						$dMinPlus1 = $dt - $dMin;
-					}
-				}
-				$replace_temp['#statTitle#'] = self::i18n($timeWindow == 1 ? "Statistiques du jour" : ($timeWindow == 2 ? "Statistiques de la semaine" : "Statistiques du mois"));
-				$replace_temp['#statRazTimeTitle#'] = self::i18n("valeurs réinitialisées");
-				$replace_temp['#statRazTime#'] = $timeWindow == 1 ? self::tsToLocalHMS(strtotime($results[0]['datetime'])) : $results[0]['datetime'];
-
-				$replace_temp['#statLastReadTitle#'] = self::i18n("dernière lecture");
-				$replace_temp['#statLastRead#'] = self::tsToLocalHMS(strtotime($results[count($results)-1]['datetime']));
-
-				$replace_temp['#statMaxTitle#'] = self::i18n("max");
-				$replace_temp['#statThMax#'] = self::applyRounding($max) . '°';
-				$replace_temp['#statWhenMax#'] = $timeWindow == 1 ? self::tsToLocalHMS($dMax) : $sDateMax;
-				$replace_temp['#statWhenMinus1#'] = $dMaxMinus1 == 0 ? '(' . self::i18n("pas encore") . ')' : self::tsToAbsoluteHMS($dMaxMinus1);
-
-				$replace_temp['#statAvgTitle#'] = self::i18n("moy");
-				$replace_temp['#statThAvg#'] = self::applyRounding($avg) . '°';
-				$replace_temp['#statNbPoints#'] = self::i18n("{0} points", count($results));
-
-				$replace_temp['#statMinTitle#'] = self::i18n("min");
-				$replace_temp['#statThMin#'] = self::applyRounding($min) . '°';
-				$replace_temp['#statWhenMin#'] = $timeWindow == 1 ? self::tsToLocalHMS($dMin) : $sDateMin;
-				$replace_temp['#statWhenPlus1#'] = $dMinPlus1 == 0 ? '(' . self::i18n("pas encore") . ')' : self::tsToAbsoluteHMS($dMinPlus1);
-			}
+			$replace_temp['#temperatureDisplay2#'] = 'table-cell';
 		}
 
 		// *** CONSIGNE
 		$cmdConsigne = $this->getCmd(null,self::CMD_CONSIGNE_ID);
 		$replace_temp['#consigneId#'] = is_object($cmdConsigne) ? $cmdConsigne->getId() : '';
 		$replace_temp['#consigneDisplay#'] = (is_object($cmdConsigne) && $cmdConsigne->getIsVisible()) ? "block" : "none";
-		$consigne = is_object($cmdConsigne) ? $cmdConsigne->execCmd() : 0;
+		$consigne = $forcedConsigne != null ? $forcedConsigne : (is_object($cmdConsigne) ? $cmdConsigne->execCmd() : 0);
 		$currentMode = self::getCurrentMode();
 		$isOff = $currentMode == self::MODE_OFF;
 		$isEco = $currentMode == self::MODE_ECO;
@@ -1189,13 +1257,36 @@ class evohome extends eqLogic {
 		$replace_temp['#consigne#'] = $infoConsigne;
 		$replace_temp['#consigneBG#'] = self::getBackColorForTemp($consigne,$isOff);
 
-		$replace_temp['#temperatureImg#'] = $temperatureNative == null ? 'battlow.png' : ($temperatureNative < $consigne ? 'chauffage_on.gif' : 'check-mark-md.png');
+		switch ( $temperatureNative == null ? 0 : ($temperatureNative < $consigne ? 2 : 1) ) {
+			case 0 :
+			$replace_temp['#temperatureImg#'] = 'batt-hs.png';
+			$replace_temp['#temperatureImgStyle#'] = 'height:36px;width:36px;margin-top:2px;';
+			$replace_temp['#temperatureDeltaDisplay#'] = 'none;';
+			break;
+
+			case 1:
+			$replace_temp['#temperatureImg#'] = 'check-mark-md.png';
+			$replace_temp['#temperatureImgStyle#'] = 'height:20px;';
+			break;
+
+			case 2:
+			$replace_temp['#temperatureImg#'] = 'chauffage_on.gif';
+			$replace_temp['#temperatureImgStyle#'] = 'height:15px;width:15px;';
+		}
 
 		$cmdConsigneInfos = $this->getCmd(null,self::CMD_CONSIGNE_TYPE_ID);
 
 		$consigneTypeImg = null;
 		if ( is_object($cmdConsigneInfos) && $cmdConsigneInfos->getIsVisible() ) {
-			# $consigneInfos = FollowSchedule / PermanentOverride / TemporaryOverride ; 2018-01-28T23:00:00Z / <empty> ; Celsius/?? ; 0.5 (step) ; 5 (min) ; 25 (max)
+			# $consigneInfos[0] = FollowSchedule / PermanentOverride / TemporaryOverride
+			# $consigneInfos[1] = 2018-01-28T23:00:00Z / <empty>
+			# $consigneInfos[2] = Celsius/??
+			# $consigneInfos[3] = 0.5 (step)
+			# $consigneInfos[4] = 5 (min)
+			# $consigneInfos[5] = 25 (max)
+			# $consigneInfos[6] = delta previous measure (0/-1:+1)
+			# $consigneInfos[7] = timeBattLow / <empty>
+			# $consigneInfos[8] = timeCnxLost / <empty>
 			$consigneInfos = explode(';', $cmdConsigneInfos->execCmd());
 			$consigneScheduled = self::getConsigneScheduled($scheduleCurrent,$zoneId);
 			$consigneTip = '';
@@ -1280,6 +1371,100 @@ class evohome extends eqLogic {
 		// configuration
 		$replace_temp['#evoDefaultShowingScheduleMode#'] = self::getParam(self::CFG_DEF_SHOW_SCHEDULE_MODE,self::CFG_SCH_MODE_HORIZONTAL);
 
+		// Info Batterie (A)
+		$replace_temp['#temperatureImgTitle#'] = $consigneInfos[8] == '' ? '' : self::i18n("Connexion perdue depuis {0} (batterie HS)", self::tsToLocalDateTime(strtotime($consigneInfos[8])));
+
+		// fix 7 - error reported by TLoo - 2019-02-09 - btw, plugin without Console is uncomplete ;)
+		$console = self::getConsole();
+		if ( $console != null ) {
+			$cmdStatistics = $console->getCmd(null,self::CMD_STATISTICS_ID);
+			$timeWindow = !is_object($cmdStatistics) || !$cmdStatistics->getIsVisible() || $cmdId == '' ? 0 : max($cmdStatistics->execCmd(), 0);
+		}else {
+			$timeWindow = 0;
+		}
+		$replace_temp['#minMaxDisplay#'] = $timeWindow == 0 ? "none" : "block";
+		if ( $timeWindow == 0 ) {
+			$replace_temp['#statDelta#'] = '&nbsp;';
+			$replace_temp['#statDeltaTitle#'] = '';
+			$replace_temp['#deltaDisplay#'] = 'none';
+			$replace_temp['#deltaImg#'] = 'empty.svg';
+		} else {
+			$temperature = self::applyRounding($temperatureNative);
+			$replace_temp['#statDelta#'] = $temperature == 0 ? '' : ($temperature > $consigne ? '+' : '') . round($temperature - $consigne,2) . '°';
+			$replace_temp['#statDeltaTitle#'] = self::i18n("Ecart consigne");
+			$delta = $consigneInfos[6] == 0 ? 0 : $temperature - self::applyRounding($consigneInfos[6]);
+			$replace_temp['#deltaDisplay#'] = $delta == 0 ? "none" : "inline-block";
+			$replace_temp['#deltaValue#'] = ($delta > 0 ? "+" : "") . self::i18n("{0}° depuis la précédente mesure", $delta);
+			$replace_temp['#deltaImg#'] = $delta > 0 ? 'green-up-anim.gif' : 'red-down-anim.gif';
+			// https://www.w3schools.com/sql/func_mysql_date_format.asp
+			if ( $timeWindow == 1 ) {
+				// timeWindow = 1 : same day
+				$tw = '%Y%c%d';
+			} else if ( $timeWindow == 2 ) {
+				// timeWindow = 2 : same week (Monday start of week)
+				$tw = '%Y%u';
+			} else {
+				// timeWindow = 3 : same month
+				$tw = '%Y%c';
+			}
+			$sql = "select * from (";
+			$sql .= "select datetime, value from historyArch where cmd_id=$cmdId and DATE_FORMAT(datetime,'$tw')=DATE_FORMAT(now(),'$tw')";
+			$sql .= " union";
+			$sql .= " select datetime, value from history where cmd_id=$cmdId and DATE_FORMAT(datetime,'$tw')=DATE_FORMAT(now(),'$tw')";
+			$sql .= ") as x order by datetime";
+			$results = DB::Prepare($sql, array(), DB::FETCH_TYPE_ALL);
+			if ( count($results) == 0 ) {
+				$replace_temp['#minMaxDisplay#'] = 'none';
+			} else {
+				$min = 99;
+				$sDateMin = 0;
+				$max = 0;
+				$sDateMax = 0;
+				$totValue = 0.0;
+				foreach ($results as $result) {
+					$value = $result['value'];
+					if ( $value < $min ) { $min = $value; $sDateMin = $result['datetime']; }
+					if ( $value > $max ) { $max = $value; $sDateMax = $result['datetime']; }
+					$totValue += $value;
+				}
+				$avg = $totValue / count($results);
+				$dMin = strtotime($sDateMin);
+				$dMax = strtotime($sDateMax);
+				$dMaxMinus1 = 0;
+				$dMinPlus1 = 0;
+				foreach ($results as $result) {
+					$dt = strtotime($result['datetime']);
+					$value = $result['value'];
+					if ( $dMaxMinus1 == 0 && $dt > $dMax && $max - $value >= 1.0 ) {
+						$dMaxMinus1 = $dt - $dMax;
+					}
+					if ( $dMinPlus1 == 0 && $dt > $dMin && $value - $min >= 1.0 ) {
+						$dMinPlus1 = $dt - $dMin;
+					}
+				}
+				$replace_temp['#statTitle#'] = self::i18n($timeWindow == 1 ? "Statistiques du jour" : ($timeWindow == 2 ? "Statistiques de la semaine" : "Statistiques du mois"));
+				$replace_temp['#statRazTimeTitle#'] = self::i18n("valeurs réinitialisées");
+				$replace_temp['#statRazTime#'] = $timeWindow == 1 ? self::tsToLocalHMS(strtotime($results[0]['datetime'])) : $results[0]['datetime'];
+
+				$replace_temp['#statLastReadTitle#'] = self::i18n("dernière lecture");
+				$replace_temp['#statLastRead#'] = self::tsToLocalHMS(strtotime($results[count($results)-1]['datetime']));
+
+				$replace_temp['#statMaxTitle#'] = self::i18n("max");
+				$replace_temp['#statThMax#'] = self::applyRounding($max) . '°';
+				$replace_temp['#statWhenMax#'] = $timeWindow == 1 ? self::tsToLocalHMS($dMax) : $sDateMax;
+				$replace_temp['#statWhenMinus1#'] = $dMaxMinus1 == 0 ? '(' . self::i18n("pas encore") . ')' : self::tsToAbsoluteHM($dMaxMinus1);
+
+				$replace_temp['#statAvgTitle#'] = self::i18n("moy");
+				$replace_temp['#statThAvg#'] = self::applyRounding($avg) . '°';
+				$replace_temp['#statNbPoints#'] = self::i18n("{0} points", count($results));
+
+				$replace_temp['#statMinTitle#'] = self::i18n("min");
+				$replace_temp['#statThMin#'] = self::applyRounding($min) . '°';
+				$replace_temp['#statWhenMin#'] = $timeWindow == 1 ? self::tsToLocalHMS($dMin) : $sDateMin;
+				$replace_temp['#statWhenPlus1#'] = $dMinPlus1 == 0 ? '(' . self::i18n("pas encore") . ')' : self::tsToAbsoluteHM($dMinPlus1);
+			}
+		}
+
 		foreach ($this->getCmd('action') as $cmd) {
 			$replace_temp['#cmd_' . $cmd->getLogicalId() . '_id#'] = $cmd->getId();
 		}
@@ -1287,13 +1472,18 @@ class evohome extends eqLogic {
 		$replace['#consoleContent#'] = '';
 		$replace['#temperatureContent#'] = template_replace($replace_temp, getTemplate('core', $version, 'temperature_content', __CLASS__));
 
+		// Battery info (B)
+		$replace['#batteryImgDisplay#'] = $consigneInfos[7] . $consigneInfos[8] === '' ? 'none' : 'flex';
+		$replace['#batteryImg#'] = $consigneInfos[8] != '' ? 'batt-hs-small.png' : ($consigneInfos[7] != '' ? 'batt-low-small.png' : 'empty.svg');
+		$replace['#batteryImgTitle#'] = $consigneInfos[8] != '' ? self::i18n('Batterie HS depuis {0}', self::tsToLocalDateTime(strtotime($consigneInfos[8]))) : ($consigneInfos[7] != '' ? self::i18n('Batterie faible depuis {0}', self::tsToLocalDateTime(strtotime($consigneInfos[7]))) : '');
+
 		return $replace;
 	}
 
-	function setToHtmlProperties($pStates,$pScheduleCurrent,$pMsgInfo) {
+	function setToHtmlProperties($pStates,$pScheduleCurrent,$pMsgInfo,$pTaskIsRunning=false,$pConsigne=null) {
 		//self::logDebug("setToHtmlProperties(..$pMsgInfo)");
 		self::setCacheData('toHtmlData_' . $this->getConfiguration(self::CONF_ZONE_ID),
-			array("states"=>$pStates, "scheduleCurrent"=>$pScheduleCurrent, "msgInfo"=>$pMsgInfo));
+			array("states"=>$pStates, "scheduleCurrent"=>$pScheduleCurrent, "msgInfo"=>$pMsgInfo, "taskIsRunning"=>$pTaskIsRunning ,"forcedConsigne"=>$pConsigne));
 	}
 	function getToHtmlProperty($name) {
 		$zId = $this->getConfiguration(self::CONF_ZONE_ID);
@@ -1304,7 +1494,7 @@ class evohome extends eqLogic {
 		self::doCacheRemove('toHtmlData_' . $this->getConfiguration(self::CONF_ZONE_ID));
 	}
 
-	function refreshComponent($infosZones=null,$inject=false) {
+	function iRefreshComponent($infosZones=null,$inject=false) {
 		//self::logDebug("IN>> refreshComponent");
 		if ( is_array($infosZones) && $inject ) {
 			$this->injectInformationsFromZone($infosZones);
@@ -1316,7 +1506,7 @@ class evohome extends eqLogic {
  	public function toHtml($pVersion='dashboard') {
 		self::doCacheRemove('evohomeWidget' . $pVersion . $this->getId());
 		$zoneId = $this->getConfiguration(self::CONF_ZONE_ID);
-		self::logDebug("IN>> toHtml($pVersion) on $zoneId (" . $this->getName() . ")");
+		//self::logDebug("IN>> toHtml($pVersion) on $zoneId (" . $this->getName() . ")");
 
 		$replace = $this->preToHtml($pVersion);
 		if (!is_array($replace)) return $replace;
@@ -1357,17 +1547,17 @@ class evohome extends eqLogic {
 		}
 
 		$msgInfo = $this->getToHtmlProperty("msgInfo");
-		//self::logDebug("-- private msgInfo=$msgInfo");
 
-		// single usage :
-		$this->removeToHtmlProperties();
+		$taskIsRunning = $this->getToHtmlProperty("taskIsRunning");
+		if ( is_null($taskIsRunning) ) $taskIsRunning = false;
 
 		if ( $zoneId == self::ID_CONSOLE ) {
+			//if ( self::isDebug() ) self::logDebug("-- toHtmlConsole msgInfo=$msgInfo");
 			// CONSOLE
 			$replace = $this->toHtmlConsole($pVersion,$version,$replace,$scheduleCurrent);
-			$prevStatVisible = self::getCacheData("STAT_PREV_VISIBLE");
+			$prevStatVisible = self::getCacheData(self::CACHE_STAT_PREV_VISIBLE);
 			// got a STAT_PREV_VISIBLE, during console refresh
-			self::doCacheRemove("STAT_PREV_VISIBLE");
+			self::doCacheRemove(self::CACHE_STAT_PREV_VISIBLE);
 			if ( $prevStatVisible != '' ) {
 				$cmd = $this->getCmd('info', self::CMD_STATISTICS_ID);
 				if ( is_object($cmd) && ($cmd->getIsVisible() ? '1' : '0') != $prevStatVisible ) {
@@ -1378,9 +1568,14 @@ class evohome extends eqLogic {
 		}
 		else {
 			// TH WIDGET
-			$replace = $this->toHtmlTh($pVersion,$version,$replace,$zoneId,$scheduleCurrent,$states);
+			$forcedConsigne = $this->getToHtmlProperty("forcedConsigne");
+			$replace = $this->toHtmlTh($pVersion,$version,$replace,$zoneId,$scheduleCurrent,$states,$forcedConsigne);
 		}
 
+		// single usage :
+		$this->removeToHtmlProperties();
+
+		$replace['#taskIsRunning#'] = $taskIsRunning ? "true" : "false";
 		$replace['#background-color#'] = '#F6F6FF';
 		$replace['#evoBackgroundColor#'] = '#F6F6FF';
 		$replace['#evoCmdBackgroundColor#'] = '#3498db';
@@ -1390,12 +1585,17 @@ class evohome extends eqLogic {
 		$replace['#evoTemperatureColor#'] = $states['unread'] ? 'gray' : 'black';
 		$replace['#evoConsigneColor#'] = $states['unread'] ? 'lightgray' : 'white';
 		$replace['#iazColorState#'] = $states['isRunning'] ? 'crimson' : ($states['unread'] ? 'red' : ($states['isAccurate'] || self::getParam(self::CFG_ACCURACY,1) == 1 ? 'lightgreen' : 'coral'));
-		$replace['#iazIcon#'] = $states['isRunning'] ? 'fa-spinner fa-pulse' : ($states['unread'] ? 'fa-chain-broken' : 'fa-circle');
-		$replace['#iazIconSize#'] = $states['isRunning'] ? '16' : ($states['unread'] ? '10' : '10');
+		$replace['#iazIcon#'] = $states['isRunning'] ? 'fa-spinner fa-pulse' : ($states['unread'] ? (!$states['cron_active'] ? 'fa-bell-slash-o' : 'fa-chain-broken') : 'fa-circle');
+		$replace['#iazIconSize#'] = $states['isRunning'] ? '16' : '10';
 
 		$waitNext = true;
 		if ( $states['unread'] ) {
-			$txt = self::i18n('Dernière lecture : {0} (problème en lecture)', $states['lastRead']);
+			if ( $states['cron_active'] ) {
+				$txt = self::i18n("Dernière lecture : {0} (problème en lecture)", $states['lastRead']);
+			} else {
+				$txt = self::i18n("Dernière lecture : {0} ; le cron est arrêté", $states['lastRead']);
+				$waitNext = false;
+			}
 		} else if ( $states['isRunning'] ) {
 			$txt = self::i18n('Lecture en cours...');
 			$waitNext = false;
@@ -1426,7 +1626,7 @@ class evohome extends eqLogic {
 		$html = template_replace($replace, getTemplate('core', $version, 'evohome', __CLASS__));
 		cache::set('evohomeWidget' . $version . $this->getId(), $html, 0);
 
-		self::logDebug("<<OUT - toHtml");
+		//self::logDebug("<<OUT - toHtml");
 		return $html;
 	}
 
@@ -1543,15 +1743,14 @@ class evohome extends eqLogic {
 		return null;
 	}
 
-	static function updateScheduleFileId($fileId, $msgInfo='', $schedule=null) {
+	static function updateScheduleFileId($schedule=null, $msgInfo='', $taskIsRunning=false) {
 		self::logDebug("IN>> - updateScheduleFileId");
-		self::setParam(self::iCFG_SCHEDULE_ID, $fileId);
 
 		// read data without schedules infos
-		$allInfos = self::getInformationsAllZonesE2($schedule != null, $schedule == null);
+		$allInfos = self::getInformationsAllZonesE2($schedule != null, $schedule == null, $msgInfo, $taskIsRunning);
 		if ( $schedule != null && is_array($allInfos) ) {
 			self::logDebug("updateScheduleFileId : merge restored schedule data with fresh InformationsAllZonesE2");
-			foreach ( $schedule['zones'] as &$srcZone ) {
+			foreach ( $schedule['zones'] as $srcZone ) {
 				foreach ( $allInfos['zones'] as &$dstZone ) {
 					if ( $srcZone['zoneId'] == $dstZone['zoneId'] ) {
 						if ( self::isDebug() ) self::logDebug("- merging zone " . $dstZone['zoneId']);
@@ -1563,7 +1762,7 @@ class evohome extends eqLogic {
 			$tsRemain = self::getCacheRemaining(self::CACHE_IAZ);
 			self::setCacheData(self::CACHE_IAZ, $allInfos, $tsRemain);
 		}
-		self::refreshAll($allInfos,false,$msgInfo);
+		self::refreshAll($allInfos, false, $msgInfo, $taskIsRunning);
 
 		self::logDebug("<<OUT - updateScheduleFileId");
 	}
@@ -1581,7 +1780,14 @@ class evohome extends eqLogic {
 		}
 	}
 
-	static function ajaxSynchronizeTH($locationId,$sZones,$resizeWhenSynchronize) {
+	static function ajaxReloadLocations() {
+		self::logDebug("IN>> - ajaxReloadLocations");
+		$loc = self::listLocations(true);
+		self::logDebug("<<OUT - ajaxReloadLocations");
+		return $loc;
+	}
+
+	static function ajaxSynchronizeTH($locationId,$sZones,$prefix,$resizeWhenSynchronize) {
 		self::logDebug("IN>> - ajaxSynchronizeTH");
 		$zones = self::jsonDecode($sZones, "ajaxSynchronizeTH");
 		$zones[] = array("id"=>self::ID_CONSOLE, "name"=>self::i18n("Console"));
@@ -1598,7 +1804,7 @@ class evohome extends eqLogic {
 							$eqLogic->setDisplay("width", "176px");
 						} else {
 							$eqLogic->setDisplay("height", "120px");
-							$eqLogic->setDisplay("width", "220px");
+							$eqLogic->setDisplay("width", "210px");
 						}
 					}
 					$eqLogic->save();
@@ -1611,15 +1817,20 @@ class evohome extends eqLogic {
 				$eqLogic = new evohome();
 				$eqLogic->setEqType_name(__CLASS__);
 				//$eqLogic->setLogicalId(xxx);	will be undefined (useless in our case) - should be zoneId instead of Configuration prop ;)
-				$eqLogic->setName($zone["name"]);
+				$zName = str_replace("'", "", $zone["name"]);
+				$eqLogic->setName(($zone["id"] == self::ID_CONSOLE ? '' : $prefix) . $zName);
 				$eqLogic->setIsVisible(1);
 				$eqLogic->setIsEnable(1);
 				$eqLogic->setCategory("heating", 1);
 				$eqLogic->setConfiguration(self::CONF_ZONE_ID, $zone["id"]);
 				foreach (object::all() as $obj) {
-					if ( stripos($zone["name"],$obj->getName()) !== false || stripos($obj->getName(),$zone["name"]) !== false ) {
-						$eqLogic->setObject_id($obj->getId());
-						break;
+					if ( stripos($zName,$obj->getName()) !== false || stripos($obj->getName(),$zName) !== false ) {
+						$sql = "select count(*) as cnt from eqLogic where name = '" . $zName . "' and object_id = " . $obj->getId();
+						$dbResults = DB::Prepare($sql, array(), DB::FETCH_TYPE_ALL);
+						if ( count($dbResults) == 0 || $dbResults[0]['cnt'] == 0 ) {
+							$eqLogic->setObject_id($obj->getId());
+							break;
+						}
 					}
 				}
 				if ( $zone["id"] == self::ID_CONSOLE ) {
@@ -1627,7 +1838,7 @@ class evohome extends eqLogic {
 					$eqLogic->setDisplay("width", "176px");
 				} else {
 					$eqLogic->setDisplay("height", "120px");
-					$eqLogic->setDisplay("width", "220px");
+					$eqLogic->setDisplay("width", "210px");
 				}
 				$eqLogic->save();
 				$nbAdded += 1;
@@ -1669,20 +1880,21 @@ class evohome extends eqLogic {
 
 	function setMode($parameters) {
 		$codeMode = $parameters[self::ARG_CODE_MODE];
-		if ( $codeMode == null || $codeMode == '' ) {
+		if ( $codeMode === null || $codeMode === '' ) {
 			self::logDebug('IN>><<OUT - setMode called without code');
 			return;
 		}
-		$execUnitId = rand(0,10000);
-		//self::waitingIAZReentrance("SetMode-$execUnitId");
-		//self::lockCron();
 		if ( self::isDebug() ) self::logDebug('IN>> - setMode with code=' . $codeMode);
+		$execUnitId = rand(0,10000);
+		self::waitingIAZReentrance("SetMode-$execUnitId");
+		self::lockCron();
 
 		// Call python function
 		self::logDebug('setMode : call python');
-		$td = time();
-		$aRet = self::runPython("SetModeE2.py", "SetModeE2_$execUnitId", $codeMode);
-		if ( self::isDebug() ) self::logDebug("python.SetModeE2_$execUnitId done in " . (time() - $td) . "sec", $aRet);
+		$aRet = self::runPython("SetModeE2.py", "SetModeE2_$execUnitId",
+			array("task"=>self::i18n("Bascule vers le Mode '{0}'", self::getModeName($codeMode)), "zoneId"=>self::ID_CONSOLE, "wheel"=>true),
+			$codeMode);
+		$success = false;
 		if ( !is_array($aRet) ) {
 			self::logError("Error while setMode : response was empty or malformed", $aRet);
 			$msgInfo = self::i18n("Erreur en changement de mode");
@@ -1690,13 +1902,16 @@ class evohome extends eqLogic {
 			self::logError("Error while setMode", $aRet);
 			$msgInfo = self::i18n("Erreur en changement de mode : {0} - {1}", [$aRet["code"], $aRet["message"]]);
 		} else {
+			self::refreshConsole("1".self::i18n("Rechargement des données en attente..."), true);
 			sleep(10);	// wait a bit before loading new values
 			$msgInfo = "1" . self::i18n("Le mode de présence a été correctement modifié");
+			$success = true;
 		}
-		self::getInformationsAllZonesE2(true,true,$msgInfo);
+		if ( $success ) self::getInformationsAllZonesE2(true,true,"1".self::i18n('Rechargement des données en cours...'),true);
+		self::refreshConsole($msgInfo);
 
 		self::logDebug('<<OUT - setMode');
-		//self::unlockCron();
+		self::unlockCron();
 	}
 
 	function saveSchedule($parameters) {
@@ -1735,10 +1950,11 @@ class evohome extends eqLogic {
 			fclose($fp);
 
 			if ( $newSchedule == null ) {
-				self::updateScheduleFileId($fileId);
-			} else {
-				self::refreshAll(null);
-			}
+				self::setParam(self::iCFG_SCHEDULE_ID, $fileId);
+				//self::updateScheduleFileId();
+			}/* else {*/
+				self::refreshAll(self::getInformationsAllZonesE2());
+			/*}*/
 			self::logDebug('<<OUT - saveSchedule');
 		}
 		self::updateRestoreList();
@@ -1752,32 +1968,86 @@ class evohome extends eqLogic {
 			self::logError('restoreSchedule on unknown ID=' . $fileId);
 			return;
 		}
+		// Optimisation - retain only saved schedule/zone # CurrentSchedule/zone
+		$scheduleCurrent = self::getSchedule(self::CURRENT_SCHEDULE_ID);
+		$scheduleSaved = self::getSchedule($fileId);
+		$scheduleDelta = array("zones"=>array());
+		foreach ( $scheduleSaved['zones'] as $schZoneCandidate ) {
+			$jsCandidate = json_encode($schZoneCandidate['schedule']);
+			foreach ( $scheduleCurrent['zones'] as $schZoneCurrent ) {
+				if ( $schZoneCandidate['zoneId'] == $schZoneCurrent['zoneId'] ) {
+					$jsCurrent = json_encode($schZoneCurrent['schedule']);
+					if ( $jsCandidate != $jsCurrent ) {
+						$schZoneCandidate = array("zoneId"=>$schZoneCandidate['zoneId'], "schedule"=>$schZoneCandidate['schedule']);
+						$scheduleDelta['zones'][] = $schZoneCandidate;
+					}
+					break;
+				}
+			}
+		}
+		$nbSchedules = count($scheduleDelta['zones']);
+		if ( $nbSchedules == 0 ) {
+			self::logDebug('restoreSchedule on ID=' . $fileId . " : no change to send");
+			return;
+		}
+
 		$execUnitId = rand(0,10000);
-		//self::waitingIAZReentrance("RestoreSchedule-$execUnitId");
-		//self::lockCron();
-		if ( self::isDebug() ) self::logDebug('restoreSchedule on saving ID=' . $fileId . ', name=' . $fileInfos['name']);
+		self::waitingIAZReentrance("RestoreSchedule-$execUnitId");
+		self::lockCron();
+
+		if ( self::isDebug() ) self::logDebug("restoreSchedule on saving ID=$fileId, name=" . $fileInfos['name'] . ", nbSchedules=$nbSchedules");
 		// Call python function
-		self::logDebug('restoreSchedule : call python');
-		$td = time();
-		$aRet = self::runPython("RestaureZonesE2.py", "RestaureZonesE2_$execUnitId", '"' . $fileInfos['fullPath'] . '"');
-		if ( self::isDebug() ) self::logDebug("python.RestaureZonesE2_$execUnitId done in " . (time() - $td) . "sec", $aRet);
+		//$td = time();
+		$prevFileId = self::getParam(self::iCFG_SCHEDULE_ID,0);
+		self::setParam(self::iCFG_SCHEDULE_ID, $fileId);
+		$taskName = self::i18n("Restauration depuis '{0}' ({1} zone(s))", [$fileInfos['name'], $nbSchedules]);
+		$aRet = self::runPython("RestaureZonesE2b.py", "RestaureZonesE2_$execUnitId",
+			array("task"=>$taskName, "zoneId"=>self::ID_CONSOLE, "wheel"=>true),
+			str_replace('"', '\"', json_encode($scheduleDelta)));
+			//'"' . $fileInfos['fullPath'] . '"'
 		if ( !is_array($aRet) ) {
 			self::logError("Error while restoreSchedule : response was empty or malformed", $aRet);
-			// this call used to remove the loading mask on the screen
-			self::refreshConsole(self::i18n("Erreur pendant l'envoi de la programmation"));
+			// restore the previous file selected and remove the loading mask on the screen
+			self::setParam(self::iCFG_SCHEDULE_ID, $prevFileId);
+			self::refreshConsole(self::i18n("Erreur pendant l'envoi de la programmation") . ($aRet !== '' ? " : " . $aRet : ""));
 		}
 		else if ( !$aRet[self::PY_SUCCESS] ) {
 			self::logError("Error while restoreSchedule", $aRet);
-			// this call used to remove the loading mask on the screen
+			// restore the previous file selected and remove the loading mask on the screen
+			self::setParam(self::iCFG_SCHEDULE_ID, $prevFileId);
 			self::refreshConsole(self::i18n("Erreur pendant l'envoi de la programmation : {0} : {1}", [$aRet["code"], $aRet["message"]]));
 		} else {
 			$fp = fopen($fileInfos['fullPath'], 'r');
 			$fileContent = fread($fp,filesize($fileInfos['fullPath']));
 			$schedule = self::jsonDecode($fileContent, 'restoreSchedule2');
 			fclose($fp);
-			self::updateScheduleFileId($fileId, "1".self::i18n("L'envoi de la programmation s'est correctement effectué"), $schedule);
+			// will read immediately the data, which are not necessary uptodate just now :(
+			/*$rdarTask = new RefreshDataAfterRestore($fileId, "1".evohome::i18n("L'envoi de la programmation s'est correctement effectué"), $schedule);
+			$rdarTask->start();*/
+			$nb = 1;
+			while ( true ) {
+				set_time_limit(60);	// reset the time_limit (?)
+				$msgInfo = "1".self::i18n("Rafraichissement des données, essai {0}...", $nb);
+				//self::updateScheduleFileId($schedule, $msgInfo, true);
+				$allInfos = self::getInformationsAllZonesE2(true, true, $msgInfo, true);
+				//self::refreshAll($allInfos, false, $msgInfo, true);
+				while ( true ) {	// waiting for refresh event triggers the toHtmlConsole..
+					$sd = self::getCacheData(self::CACHE_SCHEDULE_DELTA);
+					if ( $sd !== '' ) break;
+					usleep(250000);
+				}
+				//self::logDebug("***** console scheduleDelta received = <$sd>");
+				if ( $sd == "1" ) {
+					$nb += 1;
+					self::refreshConsole("1".self::i18n("Rafraichissement des données : attente 30 sec avant essai {0}", $nb), true);
+					sleep(30);
+				} else {
+					break;
+				}
+			}
+			self::refreshConsole("1".self::i18n("L'envoi de la programmation s'est correctement effectué"));
 		}
-		//self::unlockCron();
+		self::unlockCron();
 	}
 
 	function deleteSchedule($parameters) {
@@ -1810,8 +2080,9 @@ class evohome extends eqLogic {
 		// $data = 'manuel/auto # zoneId # value (nn.n or 0=reset) # until ('null' or 'timevalue' (feature)
 		$data = array('mode'=>$params[0],
 						 'zoneId'=>$params[1],	// string or numeric
-						 'value'=>$params[2],		// keep in string
-						 'until'=>$params[3]);	// unused yet (forced to null == PermanentOverride)
+						 'value'=>$params[2],	// keep in string
+						 'concreteValue'=>$params[3],
+						 'until'=>$params[4]);	// unused yet (forced to null == PermanentOverride)
 		if ( $data['mode'] == 'auto' ) {
 			// triggered by scenario
 			if ( self::getStates()['unread'] ) {
@@ -1824,17 +2095,21 @@ class evohome extends eqLogic {
 				return;
 			}
 		}
+
 		if ( $data['until'] == '' || $data['until'] == 'null' ) $data['until'] = null;
 		$cmdParam = str_replace('"', '\"', json_encode($data));
 		if ( self::isDebug() ) self::logDebug("setConsigne with " . $cmdParam);
+		$TH = self::getComponent($data['zoneId']);
+		$zname = $TH->getName();
 
 		// ...appel python...
 		$execUnitId = rand(0,10000);
 		//self::waitingIAZReentrance("setConsigne-$execUnitId");
-		$td = time();
-		$infos = self::runPython("SetTempE2.py", "SetTempE2_$execUnitId", $cmdParam);
+		$taskName = self::i18n("Set consigne {0}° sur {1}", [$data['concreteValue'],$zname]);
+		$infos = self::runPython("SetTempE2.py", "SetTempE2_$execUnitId",
+			array("task"=>$taskName, "zoneId"=>$data['zoneId'], "wheel"=>false, "consigne"=>$data['concreteValue']),
+			$cmdParam);
 		$updated = false;
-		if ( self::isDebug() ) self::logDebug("python.SetTempE2_$execUnitId done in " . (time() - $td) . "sec", $infos);
 		if ( !is_array($infos) ) {
 			self::logError("Error while SetTempE2 : response was empty or malformed", $infos);
 		} else {
@@ -1851,7 +2126,7 @@ class evohome extends eqLogic {
 						$infosZone['setPoint'] = $data['value'] == 0 ? self::getConsigneScheduledForZone($infosZone) : $data['value'];
 						$infosZone['status'] = $data['value'] == 0 ? 'FollowSchedule' : ($data['until'] == null ? 'PermanentOverride' : 'TemporaryOverride');
 						$infosZone['until'] = $data['until'] == null ? 'NA' : $data['until'];
-						$msgInfo = "1" . self::i18n("La consigne de {0}° a été correctement envoyée vers : {1}", [$infosZone['setPoint'], self::getComponent($infosZone['zoneId'])->getName()]);
+						$msgInfo = "1" . self::i18n("La consigne de {0}° a été correctement envoyée vers : {1}", [$infosZone['setPoint'], $zname]);
 						$updated = true;
 						break;
 					}
@@ -1861,13 +2136,10 @@ class evohome extends eqLogic {
 				}
 			}
 			if ( is_array($infosZones) ) {
-				$TH = self::getComponent($data['zoneId']);
-				if ( $TH != null ) {
-					$states = self::getStates($infosZones);
-					$scheduleCurrent = self::getSchedule(self::CURRENT_SCHEDULE_ID);
-					$TH->setToHtmlProperties($states,$scheduleCurrent,$msgInfo);
-					$TH->refreshComponent($infosZones,$updated);
-				}
+				$states = self::getStates($infosZones);
+				$scheduleCurrent = self::getSchedule(self::CURRENT_SCHEDULE_ID);
+				$TH->setToHtmlProperties($states,$scheduleCurrent,$msgInfo);
+				$TH->iRefreshComponent($infosZones,$updated);
 			}
 		}
 		self::logDebug('<<OUT - setConsigne');

@@ -38,7 +38,6 @@ def callSetting(zones,txtData):
 		r = zones[data['zoneId']].set_temperature(value,data['until'])
 	if DEBUG:
 		evohome_log.warning("ret = %s" % r.text.replace('\r\n',''))
-	print (' ')
 	return r
 
 baseUrl = 'https://tccna.honeywell.com/WebAPI/emea/api/v1/'
@@ -62,9 +61,10 @@ DATA = sys.argv[9]		# [{"zoneId":"z1","value":"v1","until":"u1"},{"zoneId":"z2",
 						# vn = n.nn or ("0[.0]" or Scheduled == reset)
 						# un = can be null (means "Hold") ; if vn # O/Schedule, can be a date/time like "2016-01-16T22:00:00Z"
 		# Version 1 => single tuple (received in an array)
-#if DEBUG:
-#	evohome_log.warning("data = <%s>" % DATA)
-#	evohome_log.warning("SESSION_ID_V2 = %s" % SESSION_ID_V2)
+if False and DEBUG:
+	#	evohome_log.warning("data = <%s>" % DATA)
+	evohome_log.warning("SESSION_ID_V2 = %s" % SESSION_ID_V2)
+	evohome_log.warning("SESSION_EXPIRES_V2 = %s" % SESSION_EXPIRES_V2)
 
 CLIENT = None
 lastResponse = None
@@ -72,8 +72,6 @@ lastResponse = None
 try:
 	CLIENT = EvohomeClientSC(USERNAME, PASSWORD, SESSION_ID_V2, float(SESSION_EXPIRES_V2), DEBUG)
 
-	# avoid broken pipe in the php caller
-	print ' '
 	loc = None
 	if LOCATION_ID == '-1':
 		loc = CLIENT.locations[0]
@@ -83,10 +81,8 @@ try:
 				loc = tmp
 
 	if loc == None:
-		print '{"success":false,"code":"UnknownLocation","message":"no location for ID %s" %s}' % (LOCATION_ID, addTokenTags())
+		print ('{"success":false,"code":"UnknownLocation","message":"no location for ID %s" %s}' % (LOCATION_ID, addTokenTags()))
 	else:
-		# avoid broken pipe in the php caller
-		print ' '
 		response = callSetting(loc._gateways[0]._control_systems[0].zones_by_id,DATA)
 		# Version 1 : single result
 		lastResponse = response.text
@@ -113,20 +109,18 @@ try:
 			while more:
 				r = requests.get(baseUrl+'commTasks?commTaskId=%s' % taskId, headers=CLIENT.headers())
 				lastResponse = r.text
-				print (' ')
 				ct = json.loads(lastResponse)
 				if ct['state'] == 'Succeeded':
 					print ('{"success":true %s}' % addTokenTags())
 					more = False
 				else:
-					if time.time() - td > 60:
+					if time.time() - td > 300:
 						if DEBUG:
-							evohome_log.warning("waiting loop stopped after 1mn.")
-						print '{"success":false,"code":"TreatmentError","message":"Waiting state time exceeded 1mn" %s}' % addTokenTags()
+							evohome_log.warning("waiting loop stopped after 5mn.")
+						print ('{"success":false,"code":"TreatmentError","message":"Waiting state time exceeded 5mn (last state was %s)" %s}' % (ct['state'], addTokenTags()))
 						more = False
 					else:
-						if DEBUG:
-							evohome_log.warning('waiting 2sec for state (was %s)' % ct['state'])
+						evohome_log.warning('Waiting for state (was %s)' % ct['state'])
 						time.sleep(2)
 
 except Exception as e:

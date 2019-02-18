@@ -27,7 +27,7 @@ PASSWORD = sys.argv[2]
 #USER_ID_V1 = sys.argv[4]
 # -- a2
 SESSION_ID_V2 = None if sys.argv[5] == '0' else sys.argv[5]
-SESSION_EXPIRES_V2 = sys.argv[6]
+SESSION_EXPIRES_V2 = float(sys.argv[6])
 # -- a3
 DEBUG = sys.argv[7] == '1'
 

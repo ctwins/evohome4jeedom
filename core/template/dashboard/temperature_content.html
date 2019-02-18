@@ -1,25 +1,34 @@
 <div style="height:6px;"></div>
 <div class="TH1" style="display:#temperatureDisplay#;">
 	<div class="hoverTH" style="display:#minMaxDisplay#;">
-		<table id="hoverTHShowA#id#" class="THSAt">
-			<tr><td class="fa fa-thermometer-full THSAd1">#statThMax#</td></tr>
-			<tr><td class="fa fa-thermometer-half THSAd2">#statThAvg#</td></tr>
-			<tr><td class="fa fa-thermometer-empty THSAd3">#statThMin#</td></tr>
-		</table>
-		<div class="hoverTHShow" id="hoverTHShowB#id#">
-			<table border="1" width=97% style="background-color:unset;margin:6px;"><tbody>
-				<tr><td colspan="4" class="THSBd1">#name_display# : #statTitle#</td></tr>
-				<tr><td colspan="2">#statRazTimeTitle#</td><td colspan="2">#statRazTime#</td></tr>
-				<tr><td colspan="2">#statLastReadTitle#</td><td colspan="2">#statLastRead#</td></tr>
-				<tr><td class="fa fa-thermometer-full" style="padding-left:8px;">&nbsp;#statMaxTitle#&nbsp;</td><td colspan="2">#statThMax#&nbsp;<span style="font-style:italic;">(#statWhenMax#)</span></td><td style="width:90px;" align=center>-1°&nbsp;>&nbsp;#statWhenMinus1#</td></tr>
-				<tr><td class="fa fa-thermometer-half" style="padding-left:8px;">&nbsp;#statAvgTitle#&nbsp;</td><td colspan="3">#statThAvg#&nbsp;<span style="font-style:italic;">(#statNbPoints#)</span></td></tr>
-				<tr><td class="fa fa-thermometer-empty" style="padding-left:8px;">&nbsp;#statMinTitle#&nbsp;</td><td colspan="2">#statThMin#&nbsp;<span style="font-style:italic;">(#statWhenMin#)</span></td><td align=center>+1°&nbsp;>&nbsp;#statWhenPlus1#</td></tr>
-			</tbody></table>
-		 </div>
+			<table id="hoverTHShowA#id#" class="THSAt">
+				<tr><td class="fa fa-thermometer-full THSAd1">#statThMax#</td></tr>
+				<tr><td class="fa fa-thermometer-half THSAd2">#statThAvg#</td></tr>
+				<tr><td class="fa fa-thermometer-empty THSAd3">#statThMin#</td></tr>
+			</table>
+			<div class="hoverTHShow" id="hoverTHShowB#id#">
+				<table border="1" width=97% style="background-color:unset;margin:6px;"><tbody>
+					<tr><td colspan="4" class="THSBd1">#name_display# : #statTitle#</td></tr>
+					<tr><td colspan="2">#statRazTimeTitle#</td><td colspan="2">#statRazTime#</td></tr>
+					<tr><td colspan="2">#statLastReadTitle#</td><td colspan="2">#statLastRead#</td></tr>
+					<tr><td class="fa fa-thermometer-full" style="padding-left:8px;">&nbsp;#statMaxTitle#&nbsp;</td><td colspan="2">#statThMax#&nbsp;<span style="font-style:italic;">(#statWhenMax#)</span></td><td style="width:90px;" align=center>-1°&nbsp;>&nbsp;#statWhenMinus1#</td></tr>
+					<tr><td class="fa fa-thermometer-half" style="padding-left:8px;">&nbsp;#statAvgTitle#&nbsp;</td><td colspan="3">#statThAvg#&nbsp;<span style="font-style:italic;">(#statNbPoints#)</span></td></tr>
+					<tr><td class="fa fa-thermometer-empty" style="padding-left:8px;">&nbsp;#statMinTitle#&nbsp;</td><td colspan="2">#statThMin#&nbsp;<span style="font-style:italic;">(#statWhenMin#)</span></td><td align=center>+1°&nbsp;>&nbsp;#statWhenPlus1#</td></tr>
+				</tbody></table>
+			 </div>
 	</div>
-	<span data-cmd_id="#temperatureId#" class="cmd-widget history cursor TH1s"
-		style="display:#temperatureDisplay2#;color:#evoTemperatureColor#;">#temperature#</span>
-	<img style="display:#temperatureImgDisplay#" src="plugins/evohome/img/#temperatureImg#"/>
+	<div style="display:inline-flex;">
+		<div style="display:#temperatureDisplay2#;">
+			<span data-cmd_id="#temperatureId#" class="cmd-widget history cursor TH1s" style="color:#evoTemperatureColor#;">#temperature#</span>
+			<img style="display:#deltaDisplay#;margin-top:16px;" title="#deltaValue#" src="plugins/evohome/img/#deltaImg#"/>
+		</div>
+		<div style="padding-left:4px;margin-top:4px;">
+			<div class="statDelta" style="display:#temperatureDeltaDisplay#" title="#statDeltaTitle#">#statDelta#</div>
+			<div>
+				<img style="#temperatureImgStyle#" title="#temperatureImgTitle#" src="plugins/evohome/img/#temperatureImg#"/>
+			</div>
+		</div>
+	</div>
 </div>
 
 <table class="tableCmd TH2t" style="display:#consigneDisplay#;"><tr>
@@ -58,4 +67,5 @@ if ( '#setConsigneDisplay#' != 'none' ) {
 }
 $('#hoverTHShowA#id#').on('click', function() { flipTH(#id#); });
 $('#hoverTHShowB#id#').on('click', function() { hideTH(#id#); });
+if ( #taskIsRunning# ) showSettingTemp(#zoneId#);
 </script>

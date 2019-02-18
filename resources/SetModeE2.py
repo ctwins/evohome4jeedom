@@ -28,7 +28,7 @@ PASSWORD = sys.argv[2]
 #USER_ID_V1 = sys.argv[4]
 # -- a2
 SESSION_ID_V2 = None if sys.argv[5] == '0' else sys.argv[5]
-SESSION_EXPIRES_V2 = sys.argv[6]
+SESSION_EXPIRES_V2 = float(sys.argv[6])
 # -- a3
 DEBUG = sys.argv[7] == '1'
 # -- a4
@@ -43,7 +43,7 @@ baseUrl = 'https://tccna.honeywell.com/WebAPI/emea/api/v1/'
 lastReceived = None
 
 try:
-	CLIENT = EvohomeClientSC(USERNAME, PASSWORD, SESSION_ID_V2, float(SESSION_EXPIRES_V2), DEBUG)
+	CLIENT = EvohomeClientSC(USERNAME, PASSWORD, SESSION_ID_V2, SESSION_EXPIRES_V2, DEBUG)
 
 	loc = None
 	if LOCATION_ID == '-1':
@@ -78,28 +78,24 @@ try:
 			td = time.time()
 			more = True
 			while more:
-				print (' ')
 				lHeaders = CLIENT.headers()
 				lHeaders['Content-Type'] = 'application/json'
 				r = requests.get(baseUrl+'commTasks?commTaskId=%s' % ret['id'], headers=lHeaders)
 				lastReceived = r.text
 				ct = json.loads(lastReceived)
-
 				if ct['state'] == 'Succeeded':
 					if DEBUG:
 						evohome_log.warning("SetMode has succeeded.")
 					print ('{"success":true %s}' % addTokenTags())
 					more = False
 				else:
-					if time.time() - td > 120:
+					if time.time() - td > 300:
 						if DEBUG:
-							evohome_log.warning("waiting loop stopped after 2mn.")
-						print ('{"success":false,"code":"TreatmentError","message":"Waiting state time exceeded 2mn" %s}' % addTokenTags())
+							evohome_log.warning("waiting loop stopped after 5mn.")
+						print ('{"success":false,"code":"TreatmentError","message":"Waiting state time exceeded 5mn (last state was %s)" %s}' % (ct['state'], addTokenTags()))
 						more = False
 					else:
-						print (' ')	# avoid broken pipe in the php caller
-						if DEBUG:
-							evohome_log.warning("Waiting 2sec for state (was %s)" % ct['state'])
+						evohome_log.warning("Waiting for state (was %s)" % ct['state'])
 						time.sleep(2)
 		else:
 			print ('{"success":false,"modeSet":%s,"code":"TreatmentError","message":"%s" %s}' % (CODE_MODE, r.text, addTokenTags()))

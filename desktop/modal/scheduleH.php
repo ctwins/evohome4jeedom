@@ -61,8 +61,6 @@ echo "<div id='scheduleTable'></div>";
 ._t4e{font-family:'Open Sans', sans-serif;font-size:12px;cursor:pointer;}
 ._virtual{background-color:#A0A0A0;}
 ._rowTdA{border-bottom:1px solid lightgray;}
-._rowTdB{color:black;background-color:lightgreen;}
-._slice1{color:black;background-color:lightgreen;}
 ._slice2{background-color:#F0F0F0;color:gray;}
 ._edit{position:absolute;right:20px;font-weight:600;color:black;padding-bottom:2px;padding-top:3px;}
 <?php if ( $edit ) { ?>

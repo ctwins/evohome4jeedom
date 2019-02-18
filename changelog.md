@@ -1,5 +1,55 @@
 # Changelog - evohome4jeedom
 
+## [version 0.3.2] - 2019-02-18 - fix #7 - the verbose edition
+### Fixes
+1. /!\ Blocked situation could appear when the task executed by python script took too much time (around 2mn).<br/>
+   This is due to the PHP disposition which stops execution of a script after a certain delay.<br/>
+	 Two dispositions taken :
+   - as this time limit can be reset while execution, it's now simply the case
+   - but, to avoid too much waiting time, all commands are now limited to a duration of 5mn (from the PHP side, it's a classical timeout disposition)
+2. Loading Schedule file from Scenario did not work (bad parameter sending)
+3. Schedule editor : the pre-selected day and slice (green background) did not revert their style after moving/chosing another slice
+4. The cached token was badly received by the LocationsInfoE2 and RestaureZonesE2 scripts (caused a token regeneration, and potentially gives a "Too much requests" error)
+
+### Added
+1. General configuration
+	 - A refresh button appears, to aid the first installation
+        - enter user & password
+        - click on Refresh
+        - the Localisation should appear in the selectable list
+        - after chosen the localisation, launch the Synchronization
+	 - Synchronization
+        - to avoid potential name conflicts (with other components of other plugin(s) on the same parent object), the TH components name are now prefixable
+        - if some component are added during Synchronization, the screen is now refreshed (as you open Plugins/Energy/Evohome)
+
+2. /!\ TH widget<br/>
+	 Detection of battery low / connection lost<br/>
+   An icon appears on the left top corner, with the date/time on tip when the default appeared (reported by Evohome)
+
+### Improvements
+1. Configuration (of components)
+   - if a component is not marked as Visible, its tile is now grayed (as for Activated)
+   - if a component has no zone affected (yet), it shows now a 'men at work' image (and no more a TH image), to avoid confusion
+
+2. /!\ for the actions which could take a "certain time" to finish (Setting heatpoint, Set Mode and especially Restore schedule), the progress of the action is now showed at top of screen. (this is why I call this update "the verbose edition")<br/>
+   It appears also when the action is triggered by Scenario, and if the associated component is currently visible on screen :<br/>
+   - console for Set mode and Restore schedule
+   - the target TH component for Setting heatpoint
+
+3. Statistics enabled : 2 infos added :
+	 - a up green or red down animated arrow could appear on the right of the current temperature, with a tip showing the delta between the previous measure
+	 - the delta between current temperature and heatpoint value is showed above the fire or 'ok' icon
+	 - NB : to get a correct display of the TH widget with all these new informations, their dimensions should be at least 210px x 120px<br/>
+	   (TIP : on the general configuration, you can use the Synchronization action + option 'Resize the existing component' activated to easily resize all your components)
+
+4. Restore schedule
+	 - only the zones containing different schedule as the current one are now sent
+	 - after sending the zones, it could be more than one reading data action to refresh correctly the current schedule data (each after 30sec of waiting)
+
+### Changes
+1. TH widget : the 'ok' icon is renewed
+
+
 ## [version 0.3.1] - 2019-02-09 - fix #6
 ### Fix
 - Correction of regression for new installation (or user/password blanks)
@@ -39,7 +89,7 @@ This could be have to effect to show additional errors in the "Jeedom messages" 
   At this time, the sepoint is background grayed with a spinning icon. After a while (waiting for system state), the right background appears (and status bar on the top of screen shows the result of command, so, successful, or error message)<br/>
   You can adjust more then one TH at at time, as each sending is internally serialized<br/>
 
-- a new option 'Statistics' appears in the Console commands (corresponding to the new Statistics command which appears after re-save the equipment - or do a SYnchronize action, see above - and if you have chosen to Show it)<br/>
+- a new option 'Statistics' appears in the Console commands (corresponding to the new Statistics command which appears after re-save the equipment - or do a Synchronize action, see above - and if you have chosen to Show it)<br/>
   So, a select list appears in the Console widget, with the choices : Deactivated, Day, Week, Month.<br/>
   A click (*) on the small grid displayed on each TH widget makes appear a more detailed bigger grid (auto-off after 10 sec)
 

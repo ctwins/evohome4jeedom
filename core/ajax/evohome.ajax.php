@@ -48,12 +48,18 @@ try {
 		evohome::ajaxChangeStatScope($statScope);
 		ajax::success();
 	}
+	else if (init('action') == 'reloadLocations') {
+		if ( evohome::isDebug() ) evohome::logDebug("IN>> - ajax.reloadLocations()");
+		$loc = evohome::ajaxReloadLocations();
+		ajax::success(array('loc'=>$loc));
+	}
 	else if (init('action') == 'synchronizeTH') {
 		$locationId = init('locationId');
 		$sZones = init('zones');
+		$prefix = init('prefix');
 		$resizeWhenSynchronize = init('resizeWhenSynchronize') == '1';
 		if ( evohome::isDebug() ) evohome::logDebug("IN>> - ajax.synchronize($locationId)");
-		$added = evohome::ajaxSynchronizeTH($locationId,$sZones,$resizeWhenSynchronize);
+		$added = evohome::ajaxSynchronizeTH($locationId,$sZones,$prefix,$resizeWhenSynchronize);
 		ajax::success(array('added'=>$added));
 	}
 

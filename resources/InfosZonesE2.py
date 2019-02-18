@@ -21,14 +21,13 @@ SESSION_ID_V2 = None
 def loginV1():
 	global SESSION_ID_V1
 	global USER_ID_V1
+	global V1_JUST_RENEWED
 	# Session ID is valid for 15 minutes.
 	# Each call with previously obtained Session ID resets timeout interval.
 	# For explicit timeout reset use PUT api/Session API call (without response)
 	lHeaders = {'content-type':'application/json'}
 	jsonData = json.dumps({'Username':USERNAME, 'Password':PASSWORD, 'ApplicationId':'91db1612-73fd-4500-91b2-e63b069b185c'})
 	response = requests.post(baseurl + 'Session', data=jsonData, headers=lHeaders)
-	# avoid broken pipe in the php caller
-	print (' ')
 	lastResponseAllDataV1 = response.content
 	if response.status_code != requests.codes.ok:
 		evohome_logV1.error('open session = %s : %s' % (str(response.status_code), lastResponseAllDataV1.replace('\r\n','')))
@@ -39,6 +38,7 @@ def loginV1():
 		else:
 			SESSION_ID_V1 = userInfos['sessionId']
 			USER_ID_V1 = str(userInfos['userInfo']['userID'])
+			V1_JUST_RENEWED = True
 			return True
 	SESSION_ID_V1 = '0'
 	USER_ID_V1 = '0'
@@ -47,8 +47,6 @@ def loginV1():
 def getAllDataV1():
 	lHeaders = {'content-type':'application/json', 'sessionId':SESSION_ID_V1}
 	response = requests.get(baseurl + 'locations?userId=%s&allData=True' % USER_ID_V1, headers=lHeaders)
-	# avoid broken pipe in the php caller
-	print (' ')
 	return response
 
 def removeSessionV1():
@@ -96,7 +94,7 @@ SessionIdV1Org = SESSION_ID_V1
 USER_ID_V1 = sys.argv[4]
 # -- a2
 SESSION_ID_V2 = None if sys.argv[5] == '0' else sys.argv[5]
-SESSION_EXPIRES_V2 = sys.argv[6]
+SESSION_EXPIRES_V2 = float(sys.argv[6])
 # -- a3
 DEBUG = sys.argv[7] == '1'
 # -- a4
@@ -108,10 +106,7 @@ logguedV1 = False
 
 try:
 	# 0.3.0 - manage cached session V2
-	CLIENT = EvohomeClientSC(USERNAME, PASSWORD, SESSION_ID_V2, float(SESSION_EXPIRES_V2), DEBUG)
-
-	# avoid broken pipe in the php caller
-	print (' ')
+	CLIENT = EvohomeClientSC(USERNAME, PASSWORD, SESSION_ID_V2, SESSION_EXPIRES_V2, DEBUG)
 
 	devicesV1 = None
 	# 0.3.0 - manage cached session V1
@@ -139,7 +134,6 @@ try:
 			else:
 				if DEBUG:
 					evohome_logV1.warning('renew as session has expired : %s' % SESSION_ID_V1)
-				V1_JUST_RENEWED = True
 				# request again :
 				response = getAllDataV1()
 				lastResponseAllDataV1 = response.content
@@ -179,8 +173,6 @@ try:
 	if loc == None:
 		print ('{"success":false,"code":"UnknownLocation","message":"no location for ID %s" %s}' % (LOCATION_ID, addTokenTags()))
 	else:
-		# avoid broken pipe in the php caller
-		print (' ')
 		tcs = loc._gateways[0]._control_systems[0]
 
 		jZones = '{"success":true'
@@ -230,6 +222,17 @@ try:
 							break
 				else:
 					jZones = jZones + ',"temperature":' + str(zone.temperatureStatus['temperature'])
+				if len(zone.activeFaults) > 0:
+					faultDetected = False
+					for fault in zone.activeFaults:
+						if fault['faultType'] == 'TempZoneSensorLowBattery':
+							jZones = jZones + ',"battLow":"' + fault['since'] + '"'
+							faultDetected = True
+						elif fault['faultType'] == 'TempZoneSensorCommunicationLost':
+							jZones = jZones + ',"cnxLost":"' + fault['since'] + '"'
+							faultDetected = True
+					if not faultDetected:
+						jZones = jZones + ',"unwaitedFaults":' + json.dumps(zone.activeFaults)
 				if devicesV1 != None:
 					for device in devicesV1:
 						if str(device['deviceID']) == zone.zoneId:
@@ -267,8 +270,6 @@ try:
 				else:
 					# add schedule infos (NB : each call to zone.schedule() takes ~1 sec because of an API request)
 					jZones = jZones + ',"schedule":' + json.dumps(zone.schedule())
-					# avoid broken pipe in the php caller
-					print (' ')
 				jZones = jZones + "}"
 		jZones = jZones + ']'
 		jZones = jZones + ',"timestamp":' + str(round(time.time()))

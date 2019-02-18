@@ -25,45 +25,56 @@ if (!isConnect('admin')) {
 <form class="form-horizontal">
 	<fieldset>
 		<div class="form-group">
-			<label class="col-lg-3 control-label">{{Nom d'utilisateur}}</label>
+			<div class="col-lg-3"></div>
 			<div class="col-lg-2">
-				<?php echo '<input id="usnm" type="text" class="configKey form-control" data-l1key="' . evohome::CFG_USER_NAME . '" />'; ?>
+				<label>{{Nom d'utilisateur}}</label>
+				<br/>
+				<?php echo '<input id="usnm" type="text" style="width:unset;" class="configKey form-control" data-l1key="' . evohome::CFG_USER_NAME . '" />'; ?>
 			</div>
-		<!--</div>
-		<div class="form-group">-->
-			<label class="col-lg-1 control-label">{{Mot de passe}}</label>
 			<div class="col-lg-2">
-				<?php echo '<input id="pswd" type="password" class="configKey form-control" data-l1key="' . evohome::CFG_PASSWORD . '" />'; ?>
+				<label>{{Mot de passe}}</label>
+				<br/>
+				<?php echo '<input id="pswd" type="password" style="width:unset;" class="configKey form-control" data-l1key="' . evohome::CFG_PASSWORD . '" />'; ?>
 			</div>
-		</div>
-		<div class="form-group">
-			<label class="col-lg-3 control-label">{{Emplacement}}</label>
 			<div class="col-lg-2">
-				<?php
-				$locations = evohome::listLocations();
-				echo '<select class="configKey form-control configuration" data-l1key="evoLocationId">';
-					echo '<option value="' . evohome::CFG_LOCATION_DEFAULT_ID . '">{{Défaut}}</option>';
+				<label>{{Emplacement}}</label>
+				<br/>
+				<div style="display:flex;">
+					<a class="btn btn-warning" id="btnReload"><i class="fa fa-refresh"/></a>
+					&nbsp;&nbsp;
+					<?php
+					$locations = evohome::listLocations();
+					echo '<select id="evoLocationId" class="configKey form-control configuration" data-l1key="evoLocationId">';
+						echo '<option value="' . evohome::CFG_LOCATION_DEFAULT_ID . '">{{Défaut}}</option>';
+						if ( is_array($locations) ) {
+							foreach ($locations as $location) {
+								echo '<option value="' . $location['locationId'] . '">' . $location['name'] . '</option>';
+							}
+						}
+					echo '</select>';
+					echo '<script>var zones=[];';
 					if ( is_array($locations) ) {
 						foreach ($locations as $location) {
-							echo '<option value="' . $location['locationId'] . '">' . $location['name'] . '</option>';
+							echo "zones[" . $location['locationId'] . "]='" . str_replace("'", "\'", json_encode($location['zones'])) . "';";
 						}
 					}
-				echo '</select>';
-				echo '<script>var zones=[];';
-				if ( is_array($locations) ) {
-					foreach ($locations as $location) {
-						echo "zones[" . $location['locationId'] . "]='" . str_replace("'", "\'", json_encode($location['zones'])) . "';";
-					}
-				}
-				echo 'var locDefaultId=' . evohome::CFG_LOCATION_DEFAULT_ID . ';</script>';
-				?>
+					echo 'var locDefaultId=' . evohome::CFG_LOCATION_DEFAULT_ID . ';</script>';
+					?>
+				</div>
 			</div>
-			<div class="col-lg-1"></div>
-			<div class="col-lg-1">
-			  <a class="btn btn-warning" id="btnSync">{{Synchroniser}}</a>
+		</div>
+		<div class="form-group" style="margin-bottom:30px;">
+			<div class="col-lg-3"></div>
+			<div class="col-lg-2" style="text-align:right;margin-top:24px;">
+				<a class="btn btn-warning" id="btnSync">{{Synchroniser}}</a>
 			</div>
-			<div class="col-lg-3">
-				&nbsp;&nbsp;&nbsp;&nbsp;<label style="font-style:italic;">
+			<div class="col-lg-2">
+				<label>{{Préfixe de nommage}}</label>
+				<br/>
+				<input id="prefix" type="text" class="form-control" style="width:80px;" value="TH" />
+			</div>
+			<div class="col-lg-3" style="margin-top:24px;">
+				<label style="font-style:italic;">
 					<input type="checkbox" style="height:24px;width:24px;" id="resizeWhenSynchronize" />
 					{{Redimensionner les widgets existants}}
 				</label>
@@ -239,32 +250,70 @@ setTimeout(function() {
 $('input[name=etu]').on('click', function(event) { $('#evoTempUnit').val($('input[name=etu]:checked').val()); });
 $('input[name=eshm]').on('click', function(event) { $('#evoDefaultShowingScheduleMode').val($('input[name=eshm]:checked').val()); });
 $('input[name=esm]').on('click', function(event) { $('#evoShowingModes').val($('input[name=esm]:checked').val()); });
+$('#btnReload').on('click', function() {
+	var _user = $('#usnm').value().trim();
+	var _pswd = $('#pswd').value().trim();
+	if ( _user != '' && _pswd != '' ) {
+		$('#bt_savePluginConfig').click();
+		setTimeout(function() {
+			$.ajax({
+				type:"POST",
+				url:"plugins/evohome/core/ajax/evohome.ajax.php",
+				data:{action:"reloadLocations"},
+				dataType:'json',
+				error:function(request, status, error) {
+					handleAjaxError(request, status, error);
+				},
+				success:function(data) {
+					if (data.state == 'ok' && is_array(data.result.loc) ) {
+						var prevLocId = $('#evoLocationId').value();
+						var selLoc = $('#evoLocationId')[0];
+						selLoc.options.length = 1;	// keep default only
+						selLoc.options[0].selected = true;
+						zones = [];
+						data.result.loc.forEach(function(loc,idx) {
+							selLoc.options[selLoc.options.length] = new Option(loc.name, loc.locationId);
+							if ( loc.locationId == prevLocId ) selLoc.options[selLoc.options.length-1].selected = true;
+							zones[loc.locationId] = JSON.stringify(loc.zones);
+						});
+						if ( selLoc.options[0].selected && selLoc.options.length > 1 ) selLoc.options[1].selected = true;
+					}
+				}
+			})
+		}, 1000);
+	}
+});
 $('#btnSync').on('click', function() {
-	var locId = $('.configuration[data-l1key="evoLocationId"]').value();
+	var locId = $('#evoLocationId').value();
 	if ( locId == locDefaultId ) {
 		bootbox.alert({message:"{{Indisponible sur la localisation par défaut}}", closeButton:false});
 		return;
 	}
 	$('#bt_savePluginConfig').click();
-	$.ajax({
-		type:"POST",
-		url:"plugins/evohome/core/ajax/evohome.ajax.php",
-		data:{ action:"synchronizeTH", locationId:locId, zones:zones[locId], resizeWhenSynchronize:$('#resizeWhenSynchronize').value() },
-		dataType:'json',
-		error:function(request, status, error) {
-			handleAjaxError(request, status, error);
-		},
-		success:function(data) {
-			if (data.state != 'ok') {
-				$('#div_alert').showAlert({message:data.result, level:'danger'});
-			} else {
-				$('#div_alert').showAlert({message:'{{Synchronisation effectuée}}', level:'success'});
-				/*if ( data.result.added ) {
-					// reload the page if some component were added
-					document.location.href += '';
-				}*/
+	setTimeout(function() {
+		var _prefix = $('#prefix').value().trim();
+		if ( _prefix != '' ) _prefix += " ";
+		var _rws = $('#resizeWhenSynchronize').value();
+		$.ajax({
+			type:"POST",
+			url:"plugins/evohome/core/ajax/evohome.ajax.php",
+			data:{action:"synchronizeTH",locationId:locId,zones:zones[locId],prefix:_prefix,resizeWhenSynchronize:_rws},
+			dataType:'json',
+			error:function(request, status, error) {
+				handleAjaxError(request, status, error);
+			},
+			success:function(data) {
+				if (data.state != 'ok') {
+					$('#div_alert').showAlert({message:data.result, level:'danger'});
+				} else {
+					$('#div_alert').showAlert({message:'{{Synchronisation effectuée}}', level:'success'});
+					if ( data.result.added ) {
+						// reload the page if some components were added
+						document.location.href = "/index.php?v=d&m=evohome&p=evohome";
+					}
+				}
 			}
-		}
-	});
-  });
+		})
+	}, 1000);
+});
 </script>

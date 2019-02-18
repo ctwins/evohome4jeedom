@@ -36,7 +36,7 @@ DEBUG = sys.argv[7] == '1'
 # -- a4
 LOCATION_ID = sys.argv[8]
 # payload B
-FILE_PATH = sys.argv[9]
+schedules = json.loads(sys.argv[9])
 
 CLIENT = None
 
@@ -59,24 +59,22 @@ try:
 	else:
 		tcs = loc._gateways[0]._control_systems[0]
 
-		zonesRet = '['
 		nb = 0
+		zonesRet = '['
 		taskId = []
-		with open(FILE_PATH,'r') as f:
-			schedule_db = f.read()
-			schedules = json.loads(schedule_db)
-			for zone in schedules['zones']:
-				nb = nb + 1
-				if nb > 1:
-					zonesRet = zonesRet + ','
-				zonesRet = zonesRet + '{'
-				zonesRet = zonesRet + '"zoneId":' + str(zone['zoneId'])
-				#zonesRet = zonesRet + ', "name" : "' + zone['name'] + '"'
-				r = tcs.zones_by_id[str(zone['zoneId'])].set_schedule(json.dumps(zone['schedule']))
-				# save "id of task" from r :
-				taskId.append([r["id"], False])
-				zonesRet = zonesRet + ',"taskId":' + str(r["id"])
-				zonesRet = zonesRet + '}'
+		for zone in schedules['zones']:
+			nb = nb + 1
+			if nb > 1:
+				zonesRet = zonesRet + ','
+			zonesRet = zonesRet + '{'
+			zonesRet = zonesRet + '"zoneId":' + str(zone['zoneId'])
+			#zonesRet = zonesRet + ', "name" : "' + zone['name'] + '"'
+			#evohome_log.warning("zoneId("+str(zone['zoneId'])+") = " + json.dumps(zone['schedule']))
+			r = tcs.zones_by_id[str(zone['zoneId'])].set_schedule(json.dumps(zone['schedule']))
+			# save "id of task" from r :
+			taskId.append([r["id"], False])
+			zonesRet = zonesRet + ',"taskId":' + str(r["id"])
+			zonesRet = zonesRet + '}'
 		zonesRet = zonesRet + "]"
 
 		# loop on the "id of task", and get out when each is finished
@@ -114,7 +112,7 @@ try:
 				more = False
 			else:
 				#if DEBUG:
-				evohome_log.warning("Waiting for " + str(nbTasks-nbOk) + " task(s)...")
+				evohome_log.warning("Waiting for " + str(nbTasks-nbOk) + " zone(s)...")
 				time.sleep(2)
 
 except Exception as e:
