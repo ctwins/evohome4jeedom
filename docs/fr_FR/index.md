@@ -1,8 +1,8 @@
-<img align="left" src="../img/evohome_icon.png" width="120" style="padding-right:16px;">
+<img align="left" src="plugin_info/evohome_icon.png" width="120" style="padding-right:16px;">
 Plugin permettant l'intégration du système Evohome de Honeywell.
 
 Basé sur l'excellente librairie "evohome" de watchforstock, **[disponible ici](https://github.com/watchforstock/evohome-client)** 
-(fork embarqué depuis 0.3.0)<br/><br/><br/><br/><br/><br/>
+(fork embarqué depuis 0.3.0)<br/><br/><br/><br/><br/>
 
 
 Possibilités
@@ -17,6 +17,7 @@ Possibilités
 Depuis 0.4.0 : gère la multi-localisation et le Round-Thermostat<br/>
 ** /!\ ATTENTION - VOUS DEVEZ LANCER UNE SYNCHRONISATION LORS DE LA MISE A JOUR VERS CETTE VERSION /!\ ** <br/>
 ** /!\ Sauvegarde préalable hautement conseillée /!\ Contactez moi pour tout problème d'update **
+
 
 Configuration du plugin
 ==
@@ -72,6 +73,7 @@ Grâce au cas d'usage soulevé par **pykforum**, pour effectuer cette opération
 		
 		$cmdSC = cmd::byString("#[$objParent][$eqName][Set Consigne]#");
 		$cmdSC->execCmd($options = array('select' => $params));
+
 
 Forum
 ==
