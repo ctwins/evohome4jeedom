@@ -1,4 +1,4 @@
-<img align="left" src="../../plugin_info/evohome_icon.png" width="120" style="padding-right:16px;">
+<img align="left" src="../img/evohome_icon.png" width="120" style="padding-right:16px;">
 Plugin permettant l'intégration du système Evohome de Honeywell.
 
 Basé sur l'excellente librairie "evohome" de watchforstock, **[disponible ici](https://github.com/watchforstock/evohome-client)** 
