@@ -27,7 +27,10 @@ although no TH value is received (API says isAvailable=false).
 1. [thanks to ecc] Get now the connection lost fault from the gateway (red wifi icon appears on the top right of each widget)<br/>
 Please note that, in this case, the reading could run, as the API return again and again the last values got
 2. [from above] For the Set Mode, Set Temp and Restore action, manage now the 'failed' status received from the task manager
-
+3. "titre bar" on the widgets receive a backround color :<br/>
+   - T < 25, standard color (depending or the category)
+   - T < 28, warning color (orange)
+   - else, error color (red)
 
 ## [version 0.3.2] - 2019-02-18 - fix #7 - the verbose edition
 ### Fixes
