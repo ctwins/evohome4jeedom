@@ -2,7 +2,7 @@
 Plugin permettant l'intégration du système Evohome de Honeywell.
 
 Basé sur l'excellente librairie "evohome" de watchforstock, **[disponible ici](https://github.com/watchforstock/evohome-client)** 
-(fork embarqué depuis 0.3.0)<br/><br/><br/><br/><br/><br/><br/>
+(fork embarqué depuis 0.3.0)<br/><br/><br/><br/><br/><br/>
 
 
 Possibilités
@@ -15,8 +15,8 @@ Possibilités
 - éditeur complet des programmes hebdomadaires
 
 Depuis 0.4.0 : gère la multi-localisation et le Round-Thermostat<br/>
-**/!\ ATTENTION - VOUS DEVEZ LANCER UNE SYNCHRONISATION LORS DE LA MISE A JOUR VERS CETTE VERSION /!\** <br/>
-**/!\ Sauvegarde préalable hautement conseillée /!\ Contactez moi pour tout problème d'update **
+** /!\ ATTENTION - VOUS DEVEZ LANCER UNE SYNCHRONISATION LORS DE LA MISE A JOUR VERS CETTE VERSION /!\ ** <br/>
+** /!\ Sauvegarde préalable hautement conseillée /!\ Contactez moi pour tout problème d'update **
 
 Configuration du plugin
 ==
@@ -48,7 +48,7 @@ Tout est fait pour être intuitif, faites moi savoir si vous avez besoin d'expli
 
 
 Scénario
-========
+==
 
 Le pilotage par scénario est très simple : il vous suffit d'ajouter une commande de type action, et choisir le paramètre dans la liste déroulante.<br/>
 Soit :
@@ -70,7 +70,8 @@ Grâce au cas d'usage soulevé par **pykforum**, pour effectuer cette opération
 		$cmdCP = cmd::byString("#[$objParent][$eqName][Consigne programmée]#");
 		$params = "auto#$zoneId#0#" . $cmdCP->execCmd() . "#null";
 		
-		$cmdSC = cmd::byString("#[$objParent][$eq
+		$cmdSC = cmd::byString("#[$objParent][$eqName][Set Consigne]#");
+		$cmdSC->execCmd($options = array('select' => $params));
 
 Forum
 ==
