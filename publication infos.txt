@@ -1,0 +1,33 @@
+** Nom
+Evohome
+
+
+** Catégorie
+Energie
+
+
+** Description
+Intégration du système Evohome de Honeywell avec pilotage des modes de présence, et des programmations hebdomadaires + éditeur de programmes (à activer dans la configuration)
+
+S'appuie sur la librairie python de watchforkstock :
+https://github.com/watchforstock/evohome-client
+
+
+** Forum
+https://www.jeedom.com/forum/viewtopic.php?f=143&t=31647&start=91
+
+
+** Utilisation
+DOC minimale, voir read.me dans le GIT du projet (in english) : https://github.com/ctwins/evohome4jeedom
+
+NB : les équipements sont à créer manuellement, après avoir saisi votre compte dans l'écran de configuration générale (s'enregistrer au préalable sur le site Honeywell, ce que vous avez déjà fait si vous disposez de l'application mobile officielle).
+
+A votre disposition dans le forum/blog
+
+
+** Langue
+English
+
+
+** Compatibilité
+RPI / DIY

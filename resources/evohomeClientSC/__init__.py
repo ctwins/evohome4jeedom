@@ -2,7 +2,6 @@ from __future__ import print_function
 import requests
 import json
 import codecs
-#from datetime import datetime, timedelta
 import time
 from .location import Location
 from .base import EvohomeBase
@@ -118,9 +117,12 @@ class EvohomeClientSC(EvohomeBase):
 				evoLog.warning("error while _basic_login : %s - %s" % (r.status_code, r.text.replace('\r\n','')))
 			r.raise_for_status()
 
-		data = self._convert(r.text)
+		try:
+			data = self._convert(r.text)
+		except Exception as e:
+			evoLog.warning("basic_login : error while convert : %s" % "{0}".format(e))
+
 		self.access_token = data['access_token']
-		#self.access_token_expires = datetime.now() + timedelta(seconds = data['expires_in'])
 		self.access_token_expires = time.time() + data['expires_in']
 
 		self._headers = {
@@ -134,7 +136,6 @@ class EvohomeClientSC(EvohomeBase):
 				evoLog.warning("token is invalid : ask a new one")
 			# token is invalid
 			self._basic_login()
-		#elif datetime.now() > self.access_token_expires - timedelta(seconds = 30):
 		elif time.time() > self.access_token_expires - 30:
 			# token has expired
 			if self.debug:
@@ -143,7 +144,6 @@ class EvohomeClientSC(EvohomeBase):
 		return self._headers
 
 	def user_account(self):
-		#self.account_info = None
 		self.userId = None
 		r = requests.get(self.baseurl+'/userAccount', headers=self.headers(), timeout=self.request_timeout)
 		if r.status_code != requests.codes.ok:
@@ -151,9 +151,7 @@ class EvohomeClientSC(EvohomeBase):
 				evoLog.warning("error while user_account : %s - %s" % (r.status_code, r.text.replace('\r\n','')))
 			r.raise_for_status()
 
-		#self.account_info = self._convert(r.text)
 		self.userId = self._convert(r.text)['userId']
-		#return self.account_info
 
 	def installation(self):
 		self.locations = []

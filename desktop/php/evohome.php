@@ -11,9 +11,6 @@ $eqLogics = eqLogic::byType($plugin->getId());
 	<div class="col-lg-2 col-md-3 col-sm-4">
 		<div class="bs-sidebar">
 			<ul id="ul_eqLogic" class="nav nav-list bs-sidenav">
-				<a class="btn btn-default eqLogicAction" style="width:100%;margin-top:5px;margin-bottom:5px;" data-action="add">
-					<i class="fa fa-plus-circle"></i> {{Ajouter}}
-				</a>
 				<li class="filter" style="margin-bottom:5px;">
 					<input class="filter form-control input-sm" placeholder="{{Rechercher}}" style="width:100%"/>
 				</li>
@@ -31,11 +28,6 @@ $eqLogics = eqLogic::byType($plugin->getId());
 		<legend>{{Installation}}</legend>
 		<legend><i class="fa fa-cog"></i>  {{Gestion}}</legend>
 		<div class="eqLogicThumbnailContainer">
-			<div class="cursor eqLogicAction" data-action="add" style="text-align:center;background-color:#ffffff;height:120px;margin-bottom:10px;padding:5px;border-radius:2px;width:160px;margin-left:10px;" >
-				<i class="fa fa-plus-circle" style="font-size:6em;color:#94ca02;"></i>
-				<br>
-				<span style="font-size:1.1em;position:relative;top:23px;word-break:break-all;white-space:pre-wrap;word-wrap:break-word;color:#94ca02">{{Ajouter}}</span>
-			</div>
 			<div class="cursor eqLogicAction" data-action="gotoPluginConf" style="text-align:center;background-color:#ffffff;height:120px;margin-bottom:10px;padding:5px;border-radius:2px;width:160px;margin-left:10px;">
 				<i class="fa fa-wrench" style="font-size:6em;color:#767676;"></i>
 				<br>
@@ -49,10 +41,13 @@ $eqLogics = eqLogic::byType($plugin->getId());
 			foreach ($eqLogics as $eqLogic) {
 				$opacity = ($eqLogic->getIsEnable() && $eqLogic->getIsVisible()) ? '' : jeedom::getConfiguration('eqLogic:style:noactive');
 				echo '<div class="eqLogicDisplayCard cursor" data-eqLogic_id="' . $eqLogic->getId() . '" style="text-align:center;background-color:#ffffff;height:200px;margin-bottom:10px;padding:5px;border-radius:2px;width:160px;margin-left:10px;' . $opacity . '" >';
-				//echo '<img src="' . $plugin->getPathImgIcon() . '" height="105" width="95" />';
+				$typeEqu = $eqLogic->getConfiguration(evohome::CONF_TYPE_EQU);
+				$modelType = $eqLogic->getConfiguration(evohome::CONF_MODEL_TYPE);
 				$zoneId = $eqLogic->getConfiguration(evohome::CONF_ZONE_ID);
-				echo '<br/><img src="plugins/evohome/img/' . ($zoneId == evohome::ID_CONSOLE ? 'console-small.png' : ($zoneId == evohome::ID_NO_ZONE ? 'men_at_work.png' : 'hr92-small.png')) . '" />';
-				echo "<br>";
+				if ( $zoneId == evohome::ID_NO_ZONE ) $img = 'men_at_work.png';
+				else if ( $typeEqu == evohome::TYPE_EQU_CONSOLE || $zoneId == evohome::OLD_ID_CONSOLE) $img = $modelType == evohome::MODEL_TYPE_ROUND_WIRELESS ? 'round-console-small.png' : 'console-small.png';
+				else $img = $modelType == evohome::MODEL_TYPE_ROUND_WIRELESS ? 'round-th-small.png' : 'hr92-small.png';
+				echo '<br/><img src="plugins/evohome/img/' . $img . '" /><br>';
 				echo '<span style="font-size:1.1em;position:relative;top:15px;word-break:break-all;white-space:pre-wrap;word-wrap:break-word;">' . $eqLogic->getHumanName(true,true) . '</span>';
 				echo '</div>';
 			}
@@ -78,8 +73,6 @@ $eqLogics = eqLogic::byType($plugin->getId());
 							<fieldset>
 								<legend>
 									<i class="fa fa-arrow-circle-left eqLogicAction cursor" data-action="returnToThumbnailDisplay"></i> {{General}}
-									<!-- <i class="fa fa-cogs eqLogicAction pull-right cursor expertModeVisible" data-action="configure"></i> -->
-									<!-- <a class="btn btn-xs btn-default pull-right eqLogicAction" data-action="copy"><i class="fa fa-files-o"></i> Dupliquer</a> -->
 								</legend>
 								<div class="form-group">
 									<label class="col-sm-2 control-label">{{Nom Equipement}}</label>
@@ -130,24 +123,35 @@ $eqLogics = eqLogic::byType($plugin->getId());
 									<i class="fa fa-info-circle"></i>  {{Informations}}
 								</legend>
 								<div class="form-group">
-									<label class="col-sm-3 control-label">{{Zone}}</label>
+									<label class="col-sm-3 control-label">{{Localisation}}</label>
 									<div class="col-sm-8">
-										<select class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="zoneId" placeholder="param1">
-											<option value="-2">{{Aucune}}</option>
-											<option value="-1">{{Console}}</option>
+										<script>var oldLocId = -2;</script>
+										<select id="locationId" class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="locationId">
+											<option value="-2">Aucun</option>
 											<?php
-											$zones = evohome::getInformationsAllZonesE2();
-											if ( $zones != null ) {
-												foreach ($zones['zones'] as $zone) {
-													echo '<option value="' . $zone['zoneId'] . '">' . $zone['name'] . ' (' . ($zone['temperature'] == null ? '{{indisponible}}' : $zone['temperature']) . ')</option>';
+											$locations = evohome::listLocations();
+											if ( is_array($locations) ) {
+												foreach ($locations as $location) {
+													echo '<option value="' . $location['locationId'] . '">' . $location['name'] . '</option>';
 												}
+											} else {
+												echo '<option value="-1">{{Défaut}}</option>';
 											}
 											?>
 										</select>
 									</div>
 								</div>
+								<div class="form-group">
+									<label class="col-sm-3 control-label">{{Zone}}</label>
+									<div class="col-sm-8">
+										<input id="zoneId" type="hidden" class="eqLogicAttr" data-l1key="configuration" data-l2key="zoneId"/>
+										<select id="zoneIdTmp" class="form-control">
+											<option value="-2">{{Aucune}}</option>
+										</select>
+									</div>
+								</div>
 								<center>
-									<img src="core/img/no_image.gif" data-original=".png" id="img_device" class="img-responsive" style="max-height:200px;">
+									<img src="core/img/no_image.gif" data-original=".png" id="img_device" class="img-responsive" style="margin-top:20px;max-height:200px;">
 								</center>
 							</fieldset>
 						</form>
@@ -175,6 +179,77 @@ $eqLogics = eqLogic::byType($plugin->getId());
 </div>
 
 <script>
+var modelType = null;
+$('#locationId').on('change', function() { loadZones(); });
+function loadZones() {
+	var locId = $('#locationId').value();
+	if ( locId == null || locId == oldLocId ) return;
+	oldLocId = locId;
+	var zoneId = $('#zoneIdTmp')[0];
+	$.ajax({
+		type:"POST",
+		url:"plugins/evohome/core/ajax/evohome.ajax.php",
+		data:{action:"listLocations"},
+		dataType:'json',
+		error:function(request, status, error) {
+			handleAjaxError(request, status, error);
+		},
+		success:function(data) {
+			if (data.state != 'ok') {
+				$('#div_alert').showAlert({message:data.result, level:'danger'});
+			} else if ( is_array(data.result.loc) ) {
+				zoneId.options.length = 1;
+				var idSelect = 0;
+				modelType = null;
+				data.result.loc.forEach(function(loc,idx) {
+					if ( loc.locationId == locId ) {
+						zoneId.options[1] = new Option('{{Console}}', locId);
+						if ( $('#zoneId').value() == locId || $('#zoneId').value() == <?php echo evohome::OLD_ID_CONSOLE;?> ) {
+							idSelect = 1;
+						}
+						modelType = loc.modelType;
+						loc.zones.forEach(function(zone,idx) {
+							var txt = zone.name;	// + ' (' + (zone.temperature == null ? '{{indisponible}}' : zone.temperature) + ')';
+							zoneId.options[zoneId.options.length] = new Option(txt, zone.id);
+							if ( zone.id == $('#zoneId').value() ) {
+								idSelect = zoneId.options.length - 1;
+							}
+						});
+					}
+				});
+				zoneId.options[idSelect].selected = true;
+				$('#zoneIdTmp').change();
+			}
+		}
+	});
+}
+var settingZoneId = false;
+$('#zoneId').on('change', function() {
+	if ( $('#zoneId').value() == -1 ) {
+		setTimeout(function(){
+			$('#zoneId').value($('#locationId').value());
+		}, 250);
+		return;
+	}
+	if ( !settingZoneId ) $('#zoneIdTmp').value($('#zoneId').value());
+});
+$('#zoneIdTmp').on('change', function() {
+	var imgName = 'plugins/evohome/evohome.png';
+	if ($('.li_eqLogic.active').attr('data-eqlogic_id') != '') {
+		if ( $(this).value() == -2 ) imgName = 'core/img/no_image.gif';
+		else {
+			imgName = 'plugins/evohome/img/';
+			if ( $(this).value() == $('#locationId').value() || $(this).value() == <?php echo evohome::OLD_ID_CONSOLE;?> )
+				imgName += modelType == 'RoundWireless' ? 'round-console.png' : 'console.png';
+			else
+				imgName += modelType == 'RoundWireless' ? 'round-th.png' : 'hr92.png';
+		}
+	}
+	settingZoneId = true;
+	$('#zoneId').value($('#zoneIdTmp').value());
+	settingZoneId = false;
+	$('#img_device').attr('src',imgName);
+});
 <?php 
 echo "var _msgShow = '{{Afficher}}';\n";
 echo "var _msgHistorize = '{{Historiser}}';\n";

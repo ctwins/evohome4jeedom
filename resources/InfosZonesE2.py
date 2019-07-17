@@ -60,7 +60,7 @@ def addTokenTags():
 	global SESSION_ID_V1
 	global USER_ID_V1
 	v1State = ('0' if SESSION_ID_V1 == '0' else '2' if SessionIdV1Org != SESSION_ID_V1 else '1')
-	if not V1_JUST_RENEWED and SESSION_ID_V1 != '0' and CLIENT != None and SESSION_ID_V2 != CLIENT.access_token:
+	if False and not V1_JUST_RENEWED and SESSION_ID_V1 != '0' and CLIENT != None and SESSION_ID_V2 != CLIENT.access_token:
 		if DEBUG:
 			# NB : to avoid "too many requests" errors, we don't request for a new session as soon as V2 has just changed (ie, just after [CLIENT = EvohomeClientSC(USERNAME...])
 			# so, the next call will do the job (10mn min later regarding the settings available)
@@ -181,6 +181,16 @@ try:
 		else:
 			jZones = jZones + ',"apiV1":false'
 
+		# new 0.4.0 - detection of lost connexion of the gateway (to the Honeywell cloud)
+		if len(loc._gateways[0].activeFaults) > 0:
+			faultDetected = False
+			for fault in loc._gateways[0].activeFaults:
+				if fault['faultType'] == 'GatewayCommunicationLost':
+					jZones = jZones + ',"cnxLost":"' + fault['since'] + '"'
+					faultDetected = True
+			if not faultDetected:
+				jZones = jZones + ',"unwaitedFaults":' + json.dumps(loc._gateways[0].activeFaults)
+
 		# examples : Auto (isPermanent=True) / 
 		jZones = jZones + ',"currentMode":"' + tcs.systemModeStatus['mode'] + '"'
 		jZones = jZones + ',"permanentMode":'
@@ -195,7 +205,8 @@ try:
 		nb = 0
 		for zone in tcs._zones:
 			# 0.3.0 - check now the modelType
-			if zone.modelType != 'HeatingZone' and zone.modelType != 'Unknown':
+			# 0.4.0 - add RoundWireless type
+			if zone.modelType != 'HeatingZone' and zone.modelType != 'RoundWireless' and zone.modelType != 'Unknown':
 				evohome_log.warning("Infos ZoneId "+zone.zoneId + ", name=[" + zone.name + "], modelType=" + zone.modelType + ", zoneType=" + zone.zoneType)
 				# waited : modelType=HeatingZone, zoneType=RadiatorZone
 				# can be : modelType=Unknown, zoneType=Unknown
@@ -203,7 +214,7 @@ try:
 				evohome_log.warning("- scheduleCapabilities="+json.dumps(zone.scheduleCapabilities))
 				evohome_log.warning("- temperatureStatus="+json.dumps(zone.temperatureStatus))
 			# zone.name.strip : specific case (from jaktens-2018-11), but was before the check of the modelType (who knows..)
-			if zone.modelType == 'HeatingZone' and zone.name.strip():
+			if (zone.modelType == 'HeatingZone' or zone.modelType == 'RoundWireless') and zone.name.strip():
 				nb += 1
 				if nb > 1:
 					jZones = jZones + ','

@@ -36,30 +36,40 @@ CLIENT = None
 try:
 	CLIENT = EvohomeClientSC(USERNAME, PASSWORD, SESSION_ID_V2, SESSION_EXPIRES_V2, DEBUG)
 
-	json = '{"success":true, "locations":['
-	nb = 0
-	for data in CLIENT.locations:
-		nb += 1
-		if nb > 1:
-			json = json + ','
-		json = json + '{'
-		json = json + '"locationId":' + data.locationId
-		json = json + ',"name":"' + data.name + '"'
-		json = json + ',"zones":['
+	jLocations = '{"success":true, "locations":'
+	nbl = 0
+	for loc in CLIENT.locations:
+		nbl += 1
+		jLocations = jLocations + ('[' if nbl == 1 else ',')
+		jLocations = jLocations + '{'
+		jLocations = jLocations + '"locationId":' + loc.locationId
+		jLocations = jLocations + ',"name":"' + loc.name + '"'
+		# 0.4.0 - manage the allowed system mode
+		tcs = loc._gateways[0]._control_systems[0]
+		smList = []
+		for oneSm in tcs.allowedSystemModes:
+			smList.append(oneSm['systemMode'])
+		jLocations = jLocations + ',"asm":' + json.dumps(smList)
+		jLocations = jLocations + ',"zones":'
+		modelType = None
 		nbz = 0
-		for zone in data._gateways[0]._control_systems[0]._zones:
-			if zone.modelType == 'HeatingZone' and zone.name.strip():
+		for zone in tcs._zones:
+			if (zone.modelType == 'HeatingZone' or zone.modelType == 'RoundWireless') and zone.name.strip():
+				if modelType == None:
+					modelType = zone.modelType
 				nbz += 1
-				if nbz > 1:
-					json = json + ','
-				json = json + '{"id":' + zone.zoneId
-				json = json + ',"name":"' + zone.name + '"}'
-		json = json + ']}'
+				jLocations = jLocations + ('[' if nbz == 1 else ',')
+				jLocations = jLocations + '{"id":' + zone.zoneId
+				jLocations = jLocations + ',"typeEqu":"TH"'
+				jLocations = jLocations + ',"name":"' + zone.name + '"}'
+		jLocations = jLocations + ('null' if nbz == 0 else ']')
+		jLocations = jLocations + ',"modelType":' + ('null' if modelType == None else '"'+modelType+'"')
+		jLocations = jLocations + '}'
 	# 2018-02-21 - same as InfosZonesE2 - fix to correctly send some non ascii characters
-	json = json + ']'
-	json = json + addTokenTags()
-	json = json + '}'
-	print (json.encode('utf-8'))
+	jLocations = jLocations + ('null' if nbl == 0 else ']')
+	jLocations = jLocations + addTokenTags()
+	jLocations = jLocations + '}'
+	print (jLocations.encode('utf-8'))
 
 except Exception as e:
 	evohome_log.exception("Exception")

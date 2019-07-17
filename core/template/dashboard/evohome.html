@@ -1,27 +1,24 @@
-<div id="plugin_container" class="eqLogic-widget eqLogic allowResize" style="width:#width#;height:#height#;background-color:#background-color#;color:#color#;#style#" data-category="" data-eqLogic_id="#id#" data-version="#version#">
-	<div style="height:4px;"></div>
+<div id="plugin_container" class="eqLogic-widget eqLogic allowResize allowReorderCmd" style="width:#width#;height:#height#;background-color:#new-background-color#;color:#color#;#style#" data-category="" data-eqtype="evohome" data-eqLogic_id="#id#" data-eqLogic_uid="#uid#" data-version="#version#">
+	<div style="height:4px;background-color:#background-color#;"></div>
 	<div>
 		<div style="display:#batteryImgDisplay#;float:left;margin-left:4px;">
-			<img src="plugins/evohome/img/#batteryImg#" title="#batteryImgTitle#"/>
+			<img id="hoverBattShowA#id#"src="plugins/evohome/img/#batteryImg#"/>
+			<div id="hoverBattShowB#id#" class="hoverTLRShow"><span nobreak>&nbsp;#batteryImgTitle#&nbsp;</span></div>
 		</div>
-		<div style="display:block;float:right;margin-right:4px;">
+		<div style="float:right;margin-right:4px;">
 			<span id="hoverTLRShowA#id#" class="fa #iazIcon#" style="cursor:pointer;font-size:#iazIconSize#px;vertical-align:top;color:#iazColorState#;"/>
 			<div id="hoverTLRShowB#id#" class="hoverTLRShow"><span nobreak>&nbsp;#iazLastRead#&nbsp;</span></div>
-			<script type="text/javascript" src="plugins/evohome/core/template/dashboard/dashboard_min.js"></script>
-			<script>
-			$('#hoverTLRShowA#id#').off().on('click', function() { flipTLR(#id#); } );
-			$('#hoverTLRShowB#id#').off().on('click', function() { hideTLR(#id#); } );
-			var evoMsgInfo = '#evoMsgInfo#'; if ( evoMsgInfo != '' ) {
-				var level = 'danger';
-				if ( evoMsgInfo.substring(0,1) == '1' ) { evoMsgInfo = evoMsgInfo.substring(1); level = 'success'; }
-				$('#div_alert').showAlert({message:evoMsgInfo, level:level});
-			}
-			</script>
 		</div>
-		<div class="widget-name" style="display:block;text-align:center;">
+		<div class="widget-name" style="background-color:#background-color#;display:block;text-align:center;">
 			<a href="#eqLink#" style="color:black;font-size:1.1em;#hideEqLogicName#"><strong>#name_display#</strong></a>
 		</div>
 	</div>
+	<script type="text/javascript" src="plugins/evohome/core/template/dashboard/dashboard_min.js"></script>
+	<script>
+	evoRegisterHover(#id#,'Batt');
+	evoRegisterHover(#id#,'TLR');
+	evoShowMsgInfo('#evoMsgInfo#');
+	</script>
 
 	<!-- Widget console -->
 	#consoleContent#

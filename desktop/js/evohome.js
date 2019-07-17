@@ -16,31 +16,16 @@
 
 $("#table_cmd").sortable({axis: "y", cursor: "move", items: ".cmd", placeholder: "ui-state-highlight", tolerance: "intersect", forcePlaceholderSize: true});
 
-$('.eqLogicAttr[data-l1key=configuration][data-l2key=zoneId]').on('change', function() {
-	var imgName = 'evohome.png';
-	if ($('.li_eqLogic.active').attr('data-eqlogic_id') != '') {
-		imgName = $(this).value() == -1 ? 'console.png' : 'hr92.png';
-	}
-	$('#img_device').attr('src','plugins/evohome/img/' + imgName);
-});
-
 /*
  * Fonction pour l'ajout de commande, appellé automatiquement par plugin.evohome
  */
 function addCmdToTable(_cmd) {
-	//console.log(JSON.stringify(_cmd));
-	if (!isset(_cmd)) {
-		var _cmd = {configuration: {}};
-	}
-	if (!isset(_cmd.configuration)) {
-		_cmd.configuration = {};
-	}
+	if (!isset(_cmd)) var _cmd = {configuration: {}};
+	if (!isset(_cmd.configuration)) _cmd.configuration = {};
 	if ( _cmd.logicalId == "etat" ) {
-		// Console
-		$("#_idSH").html(_msgShow);
+		$("#_idSH").html(_msgShow);							// Console
 	} else if ( _cmd.logicalId == "temperature" ) {
-		// TH
-		$("#_idSH").html(_msgShow + "/" + _msgHistorize);
+		$("#_idSH").html(_msgShow + "/" + _msgHistorize);	// TH
 	}
 	var tr = '<tr class="cmd" data-cmd_id="' + init(_cmd.id) + '">';
 	// ID
@@ -73,16 +58,13 @@ function addCmdToTable(_cmd) {
 		tr += '<a class="btn btn-default btn-xs cmdAction" data-action="configure"><i class="fa fa-cogs"></i></a> ';
 		tr += '<a class="btn btn-default btn-xs cmdAction" data-action="test"><i class="fa fa-rss"></i> {{Tester}}</a>';
 	}
-	//tr += '<i class="fa fa-minus-circle pull-right cmdAction cursor" data-action="remove"></i>';
 	tr += '</td>';
 
 	tr += '</tr>';
 
 	$('#table_cmd tbody').append(tr);
 	$('#table_cmd tbody tr:last').setValues(_cmd, '.cmdAttr');
-	if (isset(_cmd.type)) {
-		$('#table_cmd tbody tr:last .cmdAttr[data-l1key=type]').value(init(_cmd.type));
-	}
+	if (isset(_cmd.type)) $('#table_cmd tbody tr:last .cmdAttr[data-l1key=type]').value(init(_cmd.type));
 
 	jeedom.cmd.changeType($('#table_cmd tbody tr:last'), init(_cmd.subType));
 }

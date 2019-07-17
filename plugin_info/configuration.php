@@ -14,7 +14,6 @@
  * You should have received a copy of the GNU General Public License
  * along with Jeedom. If not, see <http://www.gnu.org/licenses/>.
  */
-
 require_once dirname(__FILE__) . '/../../../core/php/core.inc.php';
 include_file('core', 'authentification', 'php');
 if (!isConnect('admin')) {
@@ -36,32 +35,6 @@ if (!isConnect('admin')) {
 				<br/>
 				<?php echo '<input id="pswd" type="password" style="width:unset;" class="configKey form-control" data-l1key="' . evohome::CFG_PASSWORD . '" />'; ?>
 			</div>
-			<div class="col-lg-2">
-				<label>{{Emplacement}}</label>
-				<br/>
-				<div style="display:flex;">
-					<a class="btn btn-warning" id="btnReload"><i class="fa fa-refresh"/></a>
-					&nbsp;&nbsp;
-					<?php
-					$locations = evohome::listLocations();
-					echo '<select id="evoLocationId" class="configKey form-control configuration" data-l1key="evoLocationId">';
-						echo '<option value="' . evohome::CFG_LOCATION_DEFAULT_ID . '">{{Défaut}}</option>';
-						if ( is_array($locations) ) {
-							foreach ($locations as $location) {
-								echo '<option value="' . $location['locationId'] . '">' . $location['name'] . '</option>';
-							}
-						}
-					echo '</select>';
-					echo '<script>var zones=[];';
-					if ( is_array($locations) ) {
-						foreach ($locations as $location) {
-							echo "zones[" . $location['locationId'] . "]='" . str_replace("'", "\'", json_encode($location['zones'])) . "';";
-						}
-					}
-					echo 'var locDefaultId=' . evohome::CFG_LOCATION_DEFAULT_ID . ';</script>';
-					?>
-				</div>
-			</div>
 		</div>
 		<div class="form-group" style="margin-bottom:30px;">
 			<div class="col-lg-3"></div>
@@ -69,16 +42,20 @@ if (!isConnect('admin')) {
 				<a class="btn btn-warning" id="btnSync">{{Synchroniser}}</a>
 			</div>
 			<div class="col-lg-2">
-				<label>{{Préfixe de nommage}}</label>
+				<label>{{Préfixe de nommage des thermostats}}</label>
 				<br/>
 				<input id="prefix" type="text" class="form-control" style="width:80px;" value="TH" />
 			</div>
-			<div class="col-lg-3" style="margin-top:24px;">
-				<label style="font-style:italic;">
-					<input type="checkbox" style="height:24px;width:24px;" id="resizeWhenSynchronize" />
-					{{Redimensionner les widgets existants}}
-				</label>
-			</div>
+			<?php
+			if ( count(evohome::getEquipments()) > 0 ) {
+				echo '<div class="col-lg-3" style="margin-top:24px;">';
+				echo	'<label style="font-style:italic;">';
+				echo	'<input type="checkbox" style="height:24px;width:24px;" id="resizeWhenSynchronize" />';
+				echo 	'{{Redimensionner les widgets existants}}';
+				echo	'</label>';
+				echo '</div>';
+			}
+			?>
 		</div>
 		<div class="form-group">
 			<label class="col-lg-3 control-label">{{Unité de température}}</label>
@@ -250,54 +227,15 @@ setTimeout(function() {
 $('input[name=etu]').on('click', function(event) { $('#evoTempUnit').val($('input[name=etu]:checked').val()); });
 $('input[name=eshm]').on('click', function(event) { $('#evoDefaultShowingScheduleMode').val($('input[name=eshm]:checked').val()); });
 $('input[name=esm]').on('click', function(event) { $('#evoShowingModes').val($('input[name=esm]:checked').val()); });
-$('#btnReload').on('click', function() {
-	var _user = $('#usnm').value().trim();
-	var _pswd = $('#pswd').value().trim();
-	if ( _user != '' && _pswd != '' ) {
-		$('#bt_savePluginConfig').click();
-		setTimeout(function() {
-			$.ajax({
-				type:"POST",
-				url:"plugins/evohome/core/ajax/evohome.ajax.php",
-				data:{action:"reloadLocations"},
-				dataType:'json',
-				error:function(request, status, error) {
-					handleAjaxError(request, status, error);
-				},
-				success:function(data) {
-					if (data.state == 'ok' && is_array(data.result.loc) ) {
-						var prevLocId = $('#evoLocationId').value();
-						var selLoc = $('#evoLocationId')[0];
-						selLoc.options.length = 1;	// keep default only
-						selLoc.options[0].selected = true;
-						zones = [];
-						data.result.loc.forEach(function(loc,idx) {
-							selLoc.options[selLoc.options.length] = new Option(loc.name, loc.locationId);
-							if ( loc.locationId == prevLocId ) selLoc.options[selLoc.options.length-1].selected = true;
-							zones[loc.locationId] = JSON.stringify(loc.zones);
-						});
-						if ( selLoc.options[0].selected && selLoc.options.length > 1 ) selLoc.options[1].selected = true;
-					}
-				}
-			})
-		}, 1000);
-	}
-});
 $('#btnSync').on('click', function() {
-	var locId = $('#evoLocationId').value();
-	if ( locId == locDefaultId ) {
-		bootbox.alert({message:"{{Indisponible sur la localisation par défaut}}", closeButton:false});
-		return;
-	}
 	$('#bt_savePluginConfig').click();
 	setTimeout(function() {
 		var _prefix = $('#prefix').value().trim();
 		if ( _prefix != '' ) _prefix += " ";
-		var _rws = $('#resizeWhenSynchronize').value();
 		$.ajax({
 			type:"POST",
 			url:"plugins/evohome/core/ajax/evohome.ajax.php",
-			data:{action:"synchronizeTH",locationId:locId,zones:zones[locId],prefix:_prefix,resizeWhenSynchronize:_rws},
+			data:{action:"synchronizeTH",prefix:_prefix,resizeWhenSynchronize:$('#resizeWhenSynchronize').value()},
 			dataType:'json',
 			error:function(request, status, error) {
 				handleAjaxError(request, status, error);

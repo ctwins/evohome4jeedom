@@ -6,6 +6,7 @@ import sys
 import requests
 import json
 import time
+import datetime
 from evohomeClientSC import EvohomeClientSC
 import logging
 
@@ -34,8 +35,9 @@ def callSetting(zones,txtData):
 	else:
 		if DEBUG:
 			evohome_log.warning("setting %s with %s / %s" % (data['zoneId'], value, data['until']))
-		# until must be None or compliant as : until.strftime('%Y-%m-%dT%H:%M:%SZ')
-		r = zones[data['zoneId']].set_temperature(value,data['until'])
+		# until must be None or compliant as : '%Y-%m-%dT%H:%M:%SZ'
+		date = None if data['until'] == None else datetime.datetime.strptime(data['until'],'%Y-%m-%dT%H:%M:%SZ')
+		r = zones[data['zoneId']].set_temperature(value,date)
 	if DEBUG:
 		evohome_log.warning("ret = %s" % r.text.replace('\r\n',''))
 	return r
@@ -98,7 +100,7 @@ try:
 
 		elif response.status_code != 201:
 			print ('{"success":false,"code":"Error","message":"%s" %s}' % (lastResponse.replace('\r\n',''), addTokenTags()))
-		
+
 		else:
 			# task ID is created
 			ret = json.loads(lastResponse)
@@ -110,18 +112,24 @@ try:
 				r = requests.get(baseUrl+'commTasks?commTaskId=%s' % taskId, headers=CLIENT.headers())
 				lastResponse = r.text
 				ct = json.loads(lastResponse)
+				# see : https://mytotalconnectcomfort.com/WebApi/Help/Model/TrueHome.WebApi.Models.Responses.CommTaskState
 				if ct['state'] == 'Succeeded':
+					if DEBUG:
+						evohome_log.warning('succes :)')
 					print ('{"success":true %s}' % addTokenTags())
 					more = False
+				elif ct['state'] == 'Failed':
+					evohome_log.error("Task ended with Failed after %ssec. lastResponse = %s" % (time.time() - td, lastResponse))
+					print ('{"success":false,"code":"TreatmentError","message":"Task ended with Failed status" %s}' % addTokenTags())
+					more = False
+				elif time.time() - td > 300:
+					msg = "Waiting state time exceeded 5mn (last state was %s)" % ct['state']
+					evohome_log.error(msg)
+					print ('{"success":false,"code":"TreatmentError","message":"%s" %s}' % (msg, addTokenTags()))
+					more = False
 				else:
-					if time.time() - td > 300:
-						if DEBUG:
-							evohome_log.warning("waiting loop stopped after 5mn.")
-						print ('{"success":false,"code":"TreatmentError","message":"Waiting state time exceeded 5mn (last state was %s)" %s}' % (ct['state'], addTokenTags()))
-						more = False
-					else:
-						evohome_log.warning('Waiting for state (was %s)' % ct['state'])
-						time.sleep(2)
+					evohome_log.warning('Waiting for state (was %s)' % ct['state'])
+					time.sleep(2)
 
 except Exception as e:
 	evohome_log.exception("Exception")

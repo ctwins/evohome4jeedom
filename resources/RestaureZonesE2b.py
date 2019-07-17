@@ -68,11 +68,9 @@ try:
 				zonesRet = zonesRet + ','
 			zonesRet = zonesRet + '{'
 			zonesRet = zonesRet + '"zoneId":' + str(zone['zoneId'])
-			#zonesRet = zonesRet + ', "name" : "' + zone['name'] + '"'
-			#evohome_log.warning("zoneId("+str(zone['zoneId'])+") = " + json.dumps(zone['schedule']))
 			r = tcs.zones_by_id[str(zone['zoneId'])].set_schedule(json.dumps(zone['schedule']))
 			# save "id of task" from r :
-			taskId.append([r["id"], False])
+			taskId.append([r["id"], False, False])
 			zonesRet = zonesRet + ',"taskId":' + str(r["id"])
 			zonesRet = zonesRet + '}'
 		zonesRet = zonesRet + "]"
@@ -84,31 +82,40 @@ try:
 		lastBadState = "dummy"
 		while more:
 			nbOk = 0
-			for pair in taskId:
-				if pair[1]:
+			nbFailed = 0
+			for nuplet in taskId:
+				if nuplet[1]:
 					nbOk = nbOk + 1
+				elif nuplet[2]:
+					nbFailed = nbFailed + 1
 				else:
 					if DEBUG:
-						evohome_log.warning("request for taskId = %s" % pair[0])
-					r = requests.get(baseUrl+'commTasks?commTaskId=%s' % pair[0], headers=CLIENT.headers())
+						evohome_log.warning("request for taskId = %s" % nuplet[0])
+					r = requests.get(baseUrl+'commTasks?commTaskId=%s' % nuplet[0], headers=CLIENT.headers())
 					lastReceived = r.text
 					ct = json.loads(lastReceived)
 					if DEBUG:
 						evohome_log.warning(" > gives : " + ct['state'])
 					if ct['state'] == 'Succeeded':
 						nbOk = nbOk + 1
-						pair[1] = True
+						nuplet[1] = True
+					elif ct['state'] == 'Failed':
+						nbFailed = nbFailed + 1
+						nuplet[2] = True
 					else:
 						lastBadState = ct['state']
-			if nbOk == nbTasks:
+			if (nbOk + nbFailed) == nbTasks:
+				if nbFailed > 0:
+					msg = "%s/%s task(s) failed" % (nbFailed, nbTasks)
+					evohome_log.error(msg)
+					print ('{"success":false,"code":"TreatmentError","message":"%s" %s}' % (msg, addTokenTags()))
+				else:
+					print ('{"success":true,"resultByZone":%s %s}' % (zonesRet, addTokenTags()))
 				more = False
-				# 2018-02-24 - same as InfosZonesE2 - fix to correctly send some non ascii characters
-				#print '{"success":true, "resultByZone":' + zonesRet.encode('utf-8') + ', "access_token":"%s"}' % SESSION_ID_V2
-				print ('{"success":true, "resultByZone":%s %s}' % (zonesRet, addTokenTags()))
 			elif time.time() - td > 300:
-				if DEBUG:
-					evohome_log.warning("waiting loop stopped after 5mn")
-				print ('{"success":false,"code":"TreatmentError","message":"Waiting state time exceeded 5mn (%s ok for %s, last state=%s)" %s}' % (nbOk, nbTasks, lastBadState, addTokenTags()))
+				msg = "Waiting state time exceeded 5mn (%s/%s ok, last state=%s)" % (nbOk, nbTasks, lastBadState)
+				evohome_log.error(msg)
+				print ('{"success":false,"code":"TreatmentError","message":"%s" %s}' % (msg, addTokenTags()))
 				more = False
 			else:
 				#if DEBUG:

@@ -4,12 +4,12 @@
 	"description" : "Plugin EVOHOME",
 	"licence" : "AGPL",
 	"author" : "ctwins95",
-	"version" : "0.3.2",
+	"version" : "0.4.0",
 	"require" : "3.0",
 	"category" : "energy",
 	"hasDependency" : true,
 	"hasOwnDeamon" : false,
 	"issue" : "https://github.com/ctwins/evohome4jeedom/issues",
-	"documentation": "https://github.com/ctwins/evohome4jeedom/blob/master/README.md",
-	"changelog": "https://github.com/ctwins/evohome4jeedom/blob/master/changelog.md"
+	"documentation": "https://ctwins.github.io/evohome4jeedom/#language#",
+	"changelog": "https://ctwins.github.io/evohome4jeedom/#language#/changelog"
 }

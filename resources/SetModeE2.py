@@ -40,7 +40,7 @@ UNTIL = None
 CLIENT = None
 
 baseUrl = 'https://tccna.honeywell.com/WebAPI/emea/api/v1/'
-lastReceived = None
+lastResponse = None
 
 try:
 	CLIENT = EvohomeClientSC(USERNAME, PASSWORD, SESSION_ID_V2, SESSION_EXPIRES_V2, DEBUG)
@@ -71,9 +71,9 @@ try:
 		else:
 			data = {"SystemMode":CODE_MODE,"TimeUntil":"%sT00:00:00Z" % UNTIL.strftime('%Y-%m-%d'),"Permanent":False}
 		r = requests.put(baseUrl+'temperatureControlSystem/%s/mode' % tcs.systemId, data=json.dumps(data), headers=lHeaders)
-		lastReceived = r.text
+		lastResponse = r.text
 
-		ret = json.loads(lastReceived)
+		ret = json.loads(lastResponse)
 		if 'id' in ret:
 			td = time.time()
 			more = True
@@ -81,27 +81,30 @@ try:
 				lHeaders = CLIENT.headers()
 				lHeaders['Content-Type'] = 'application/json'
 				r = requests.get(baseUrl+'commTasks?commTaskId=%s' % ret['id'], headers=lHeaders)
-				lastReceived = r.text
-				ct = json.loads(lastReceived)
+				lastResponse = r.text
+				ct = json.loads(lastResponse)
 				if ct['state'] == 'Succeeded':
 					if DEBUG:
 						evohome_log.warning("SetMode has succeeded.")
 					print ('{"success":true %s}' % addTokenTags())
 					more = False
+				elif ct['state'] == 'Failed':
+					evohome_log.error("Task ended with Failed after %ssec. lastResponse = %s" % (time.time() - td, lastResponse))
+					print ('{"success":false,"code":"TreatmentError","message":"Task ended with Failed status after %ssec" %s}' % (time.time() - td, addTokenTags()))
+					more = False
+				elif time.time() - td > 300:
+					msg = "Waiting state time exceeded 5mn (last state was %s)" % ct['state']
+					evohome_log.error(msg)
+					print ('{"success":false,"code":"TreatmentError","message":"%s" %s}' % (msg, addTokenTags()))
+					more = False
 				else:
-					if time.time() - td > 300:
-						if DEBUG:
-							evohome_log.warning("waiting loop stopped after 5mn.")
-						print ('{"success":false,"code":"TreatmentError","message":"Waiting state time exceeded 5mn (last state was %s)" %s}' % (ct['state'], addTokenTags()))
-						more = False
-					else:
-						evohome_log.warning("Waiting for state (was %s)" % ct['state'])
-						time.sleep(2)
+					evohome_log.warning("Waiting for state (was %s)" % ct['state'])
+					time.sleep(2)
 		else:
 			print ('{"success":false,"modeSet":%s,"code":"TreatmentError","message":"%s" %s}' % (CODE_MODE, r.text, addTokenTags()))
 
 except Exception as e:
 	evohome_log.exception("Exception")
-	if lastReceived != None and DEBUG:
-		evohome_log.warning("Last received = <%s>" % lastReceived)
+	if lastResponse != None and DEBUG:
+		evohome_log.warning("Last received = <%s>" % lastResponse)
 	print ('{"success":false,"code":"Exception","message":"%s" %s}' % ("{0}".format(e), addTokenTags()))

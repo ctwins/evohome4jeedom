@@ -19,6 +19,7 @@
 try {
 	require_once dirname(__FILE__) . '/../../../../core/php/core.inc.php';
 	include_file('core', 'authentification', 'php');
+	include ('../class/evohome.utils.php');
 	if ( !isConnect('admin') ) {
 		throw new Exception(evohome::i18n('401 - Accès non autorisé'));
 	}
@@ -26,40 +27,55 @@ try {
 	ajax::init();
 
 	if (init('action') == 'getCommentary') {
-		$fileId = init('fileId');
-		if ( $fileId == '') {
+		$locId = init(evohome::ARG_LOC_ID);
+		$fileId = init(evohome::ARG_FILE_ID);
+		if ( $locId == '' || $fileId == '') {
 			throw new Exception(evohome::i18n("Aucun identifiant de sauvegarde spécifié"));
 		}
-		if ( evohome::isDebug() ) evohome::logDebug("IN>> - ajax.getCommentary($fileId)");
-		$schedule = evohome::getSchedule($fileId);
+		if ( isDebug() ) logDebug("IN>> - ajax.getCommentary($fileId)");
+		$schedule = evohome::getSchedule($locId,$fileId);
 		if ( $schedule == null ) {
 			throw new Exception(evohome::i18n("Impossible de lire la sauvegarde d'identifiant {0}", $fileId));
 		}
 		$comm = $schedule['comment'];
-		if ( evohome::isDebug() ) evohome::logDebug("<<OUT - ajax.getCommentary : " . json_encode($comm));
+		if ( isDebug() ) logDebug("<<OUT - ajax.getCommentary : " . json_encode($comm));
 		ajax::success(array('comment'=>$comm));
 	}
 	else if (init('action') == 'setStatScope') {
+		$locId = init(evohome::ARG_LOC_ID);
 		$statScope = init('statScope');
 		if ( $statScope == '') {
 			throw new Exception("statScope unknown");
 		}
-		if ( evohome::isDebug() ) evohome::logDebug("IN>> - ajax.setStatScope($statScope)");
-		evohome::ajaxChangeStatScope($statScope);
+		if ( isDebug() ) logDebug("IN>> - ajax.setStatScope($locId,$statScope)");
+		evohome::ajaxChangeStatScope($locId,$statScope);
 		ajax::success();
 	}
-	else if (init('action') == 'reloadLocations') {
-		if ( evohome::isDebug() ) evohome::logDebug("IN>> - ajax.reloadLocations()");
+	else if (init('action') == 'listLocations') {
+		if ( isDebug() ) logDebug("IN>> - ajax.listLocations()");
+		$locList = evohome::listLocations();
+		foreach ($locList as &$loc ) {
+			if ( $loc['zones'] != null ) usort($loc['zones'], "evohome::cmpName");
+		}
+		ajax::success(array('loc'=>$locList));
+	}
+	/*else if (init('action') == 'reloadLocations') {
+		if ( isDebug() ) logDebug("IN>> - ajax.reloadLocations()");
 		$loc = evohome::ajaxReloadLocations();
 		ajax::success(array('loc'=>$loc));
+	}*/
+	else if (init('action') == 'getInformationsAllZones') {
+		if ( isDebug() ) logDebug("IN>> - ajax.getInformationsAllZones()");
+		$locId = init(evohome::ARG_LOC_ID);
+		$infosZones = evohome::getInformationsAllZonesE2($locId);
+		usort($infosZones['zones'], "evohome::cmpName");
+		ajax::success(array('infoZones'=>$infosZones));
 	}
 	else if (init('action') == 'synchronizeTH') {
-		$locationId = init('locationId');
-		$sZones = init('zones');
 		$prefix = init('prefix');
 		$resizeWhenSynchronize = init('resizeWhenSynchronize') == '1';
-		if ( evohome::isDebug() ) evohome::logDebug("IN>> - ajax.synchronize($locationId)");
-		$added = evohome::ajaxSynchronizeTH($locationId,$sZones,$prefix,$resizeWhenSynchronize);
+		if ( isDebug() ) logDebug("IN>> - ajax.synchronize('$prefix')");
+		$added = evohome::ajaxSynchronizeTH($prefix,$resizeWhenSynchronize);
 		ajax::success(array('added'=>$added));
 	}
 

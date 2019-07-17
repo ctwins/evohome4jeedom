@@ -29,6 +29,7 @@ class Location(EvohomeBase):
 		# Now feed into other elements
 		for gw in data['gateways']:
 			gateway = self.gateways[gw['gatewayId']]
+			gateway.__dict__.update({'activeFaults':gw['activeFaults']})	# 0.4.0
 
 			for sys in gw["temperatureControlSystems"]:
 				system = gateway.control_systems[sys['systemId']]
