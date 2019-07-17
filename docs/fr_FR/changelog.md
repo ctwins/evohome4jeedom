@@ -1,6 +1,6 @@
 # Changelog - Evohome (for Jeedom)
 
-## [version 0.4.0] - 2019-02-22 - the "multi-locations & Round-Thermostat Edition"
+## [version 0.4.0] - 2019-07-17 - the "multi-locations & Round-Thermostat Edition"
 
 ### Added
 1. **/!\ [thanks to moldu59] The plugin can manage now multi-locations<br/>**
