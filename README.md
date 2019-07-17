@@ -1,5 +1,5 @@
 # evohome4jeedom
-<img align="left" src="plugin_info/evohome_icon.png" width="120" style="padding-right:16px;">
+<img align="left" src="docs/img/evohome_icon.png" width="120" style="padding-right:16px;">
 This is a plugin for Jeedom 3.0 platform, regarding the Honeywell Evohome system.<br/>
 State is : v0.4.0 - the "multi-location & Round-Thermostat Edition"
 
