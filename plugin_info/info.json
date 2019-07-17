@@ -11,5 +11,7 @@
 	"hasOwnDeamon" : false,
 	"issue" : "https://github.com/ctwins/evohome4jeedom/issues",
 	"documentation": "https://ctwins.github.io/evohome4jeedom/#language#",
-	"changelog": "https://ctwins.github.io/evohome4jeedom/#language#/changelog"
+	"changelog": "https://ctwins.github.io/evohome4jeedom/#language#/changelog",
+	"language" : ["fr_FR","en_US","de_DE","sp_SP","it_IT"],
+	"compatibility" : ["miniplus","smart","rpi","diy"]
 }
