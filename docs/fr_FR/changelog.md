@@ -31,6 +31,7 @@ Please note that, in this case, the reading could run, as the API return again a
    - T < 25, standard color (depending or the category)
    - T < 28, warning color (orange)
    - else, error color (red)
+4. manual heatpoint setting opens now a popup so thé duration can be adjusted
 
 ## [version 0.3.2] - 2019-02-18 - fix #7 - the verbose edition
 ### Fixes
