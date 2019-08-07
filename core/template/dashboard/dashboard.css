@@ -1,0 +1,20 @@
+.TH1 { margin-left:10px;margin-right:10px;height:50px;text-align:center;background-color:lightgray; }
+.TH1s { font-size:32px;font-weight:400;font-family:'Open Sans', sans-serif;margin-top:3px; }
+.hoverTH { float:left;margin-left:5px;height:50px;padding-top:2px;cursor:pointer;color:black; }
+.hoverTH:hoverw .hoverTHShow { display: block; }
+.THSAt { line-height:8px;margin-top:5px;font-size:10.5px;background-color:lightgray !important; }
+.THSAd1 { padding-bottom:1.5px;border-bottom:dotted black 1px; }
+.THSAd2 { padding-top:1.5px;padding-bottom:1.5px;border-bottom:dotted black 1px; }
+.THSAd3 { padding-top:1.5px; }
+.hoverTHShow table tr td { padding:2px 2px 2px 4px; display:table-cell; }
+.THSBd1 { text-align:center;border-bottom:solid 1px black;font-style:italic;font-weight:bold;background-color:darkgray; }
+.TH2t { border:none;margin-left:10px;margin-right:10px; }
+.TH2d1a { padding-left:5px;padding-right:5px;padding-top:2px;padding-bottom:2px; }
+.TH2d2a { padding-left:5px;padding-right:5px;padding-top:2px;padding-bottom:2px; }
+.TH2d3s1 { font-size:15px;font-family:'Open Sans', sans-serif;line-height:30px; }
+.TH2d3s2 { line-height:30px;font-size:11.5px;cursor:default; }
+.TH2d3s2i { height:13px;vertical-align:text-bottom; }
+.statDelta { font-size:9px;color:black;cursor:default; }
+.minMaxHeatset { border-radius:3px;font-size:9px;color:black;cursor:default;text-align:right;background-color:lightgray !important; }
+.maxHeatset { padding-left:2px;padding-right:2px;border-bottom:dotted black 1px; }
+.minHeatset { padding-left:2px;padding-right:2px; }

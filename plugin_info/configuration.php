@@ -28,44 +28,99 @@ if (!isConnect('admin')) {
 			<div class="col-lg-2">
 				<label>{{Nom d'utilisateur}}</label>
 				<br/>
-				<?php echo '<input id="usnm" type="text" style="width:unset;" class="configKey form-control" data-l1key="' . evohome::CFG_USER_NAME . '" />'; ?>
+				<?php echo '<input type="text" style="width:unset;" class="configKey form-control userName" data-l1key="' . evohome::CFG_USER_NAME . '" />'; ?>
 			</div>
-			<div class="col-lg-2">
-				<label>{{Mot de passe}}</label>
+			<div class="col-lg-3">
+				<label>{{Préfixe de nommage des thermostats}}</label>
 				<br/>
-				<?php echo '<input id="pswd" type="password" style="width:unset;" class="configKey form-control" data-l1key="' . evohome::CFG_PASSWORD . '" />'; ?>
+				<input type="text" class="form-control thPrefix" style="width:80px;" value="TH" />
 			</div>
 		</div>
 		<div class="form-group" style="margin-bottom:30px;">
 			<div class="col-lg-3"></div>
-			<div class="col-lg-2" style="text-align:right;margin-top:24px;">
-				<a class="btn btn-warning" id="btnSync">{{Synchroniser}}</a>
-			</div>
 			<div class="col-lg-2">
-				<label>{{Préfixe de nommage des thermostats}}</label>
+				<label>{{Mot de passe}}</label>
 				<br/>
-				<input id="prefix" type="text" class="form-control" style="width:80px;" value="TH" />
+				<?php echo '<input type="password" style="width:unset;" class="configKey form-control password" data-l1key="' . evohome::CFG_PASSWORD . '" />'; ?>
+			</div>
+			<div class="col-lg-1" style="margin-top:20px;margin-right:20px;">
+				<a class="btn btn-warning btnSync">{{Synchroniser}}</a>
 			</div>
 			<?php
 			if ( count(evohome::getEquipments()) > 0 ) {
 				echo '<div class="col-lg-3" style="margin-top:24px;">';
-				echo	'<label style="font-style:italic;">';
-				echo	'<input type="checkbox" style="height:24px;width:24px;" id="resizeWhenSynchronize" />';
+				echo	'<input id="resizeWhenSynchronize" type="checkbox" style="height:24px;width:24px;top: 4px!important;" class="resizeWhenSynchronize" />';
+				echo	'<label for="resizeWhenSynchronize" style="font-style:italic;">';
 				echo 	'{{Redimensionner les widgets existants}}';
 				echo	'</label>';
 				echo '</div>';
 			}
 			?>
 		</div>
+
 		<div class="form-group">
-			<label class="col-lg-3 control-label">{{Unité de température}}</label>
-			<input type="hidden" class="configKey" id="evoTempUnit" data-l1key="evoTempUnit" />
+			<label class="col-lg-3 control-label" style="font-size:15px;"><u>{{Console}}</u></label>
+		</div>
+		<div class="form-group">
+			<label class="col-lg-4 control-label" style="vertical-aglin:middle;">{{Modes de présence}}</label>
+			<input type="hidden" class="configKey evoShowingModes" data-l1key="evoShowingModes" />
+			<div class="col-lg-2" style="width:auto;">
+				<label>
+					<?php echo '<input class="form-control" type="radio" id="esm' . evohome::CFG_SHOWING_MODE_CONSOLE . '" name="esm"
+							value="' . evohome::CFG_SHOWING_MODE_CONSOLE . '" style="height:24px;width:24px;display:inline;
+    vertical-align:middle">'; ?>&nbsp;&nbsp;{{Intégré à la console}}
+				</label>
+			</div>
+			<div class="col-lg-2" style="width:auto;">
+				<label>
+					<?php echo '<input class="form-control" type="radio" id="esm' . evohome::CFG_SHOWING_MODE_POPUP . '" name="esm"
+							value="' . evohome::CFG_SHOWING_MODE_POPUP . '" style="height:24px;width:24px;display:inline;
+    vertical-align:middle">'; ?>&nbsp;&nbsp;{{Par popup}}
+				</label>
+			</div>
+		</div>
+		<div class="form-group">
+			<div class="col-lg-4">&nbsp;</div>
+			<div class="col-lg-5">
+				<label>
+					<input class="configKey" type="checkbox" style="height:24px;width:24px;" data-l1key="evoRefreshBeforeSave" />
+					{{Forcer la lecture des données avant de sauvegarder la programmation}}
+				</label>
+			</div>
+		</div>
+
+		<div class="form-group">
+			<label class="col-lg-3 control-label" style="font-size:15px;"><u>{{Thermostats}}</u></label>
+		</div>
+		<div class="form-group">
+			<label class="col-lg-4 control-label" style="vertical-aglin:middle;">{{Couleur barres de titre}}</label>
+			<!-- <input type="hidden" class="configKey evoBackColorTitleModes" data-l1key="evoBackColorTitleModes" /> -->
+			<div class="col-lg-3">
+				<select class="bctMode configKey form-control configuration" data-l1key="evoBackColorTitleModes">
+					<option value="0">{{Inactif}}</option>
+					<option value="1">{{Système (selon catégorie)}}</option>
+					<option value="2">{{Système + 2 seuils :}} </option>
+					<option value="3">{{Selon couleurs officielles (dégradés)}}</option>
+				</select>
+			</div>
+			<div class="col-lg-3">
+				{{orange si}} >=&nbsp;
+				<?php echo '<input type="text" style="width:40px;text-align:center;" maxlength=4 class="bct2NA configKey form-control" data-l1key="' . evohome::CFG_BCT_2N_A . '" />'; ?>
+				&nbsp;&nbsp;
+				{{rouge si}} >=&nbsp;
+				<?php echo '<input type="text" style="width:40px;text-align:center;" maxlength=4 class="bct2NB configKey form-control" data-l1key="' . evohome::CFG_BCT_2N_B . '" />'; ?>
+			</div>
+		</div>
+		<div class="form-group">
+			<label class="col-lg-4 control-label">{{Unité de température}}</label>
+			<input type="hidden" class="configKey evoTempUnit" data-l1key="evoTempUnit" />
 			<div class="col-lg-1" style="width:auto;">
 				<label>
 					<?php echo '<input class="form-control" type="radio" id="etu' . evohome::CFG_UNIT_CELSIUS . '" name="etu"
 							value="' . evohome::CFG_UNIT_CELSIUS . '" style="height:24px;width:24px;display:inline;
     vertical-align:middle">'; ?>&nbsp;&nbsp;°C&nbsp;(Celsius)
 				</label>
+				<br/>
 			</div>
 			<div class="col-lg-2">
 				<label>
@@ -74,10 +129,10 @@ if (!isConnect('admin')) {
     vertical-align:middle">'; ?>&nbsp;&nbsp;°F&nbsp;(Fahrenheit)
 				</label>
 			</div>
-			<span class="col-lg-5 control-label" style="text-align:left;"><i>{{Attention : concerne l'affichage et le stockage historique}}</i></span>
 		</div>
 		<div class="form-group">
-			<label class="col-lg-3 control-label" style="font-size:15px;"><u>{{Affichage}}</u></label>
+			<label class="col-lg-4" />
+			<label class="col-lg-4" style="text-align:left;"><i>{{Attention : concerne l'affichage et le stockage historique}}</i></label>
 		</div>
 		<div class="form-group">
 			<label class="col-lg-4 control-label">{{Précision}}</label>
@@ -91,11 +146,30 @@ if (!isConnect('admin')) {
 			</div>
 		</div>
 		<div class="form-group">
+			<label class="col-lg-4 control-label" style="vertical-aglin:middle;">{{Réglage des consignes}}</label>
+			<input type="hidden" class="configKey evoHeatPointSettingModes" data-l1key="evoHeatPointSettingModes" />
+			<div class="col-lg-2" style="width:auto;">
+				<label>
+					<?php echo '<input class="form-control" type="radio" id="hpsm' . evohome::CFG_HP_SETTING_MODE_INTEGRATED . '" name="hpsm"
+							value="' . evohome::CFG_HP_SETTING_MODE_INTEGRATED . '" style="height:24px;width:24px;display:inline;
+    vertical-align:middle">'; ?>&nbsp;&nbsp;{{Intégré au widget}}
+				</label>
+			</div>
+			<div class="col-lg-2" style="width:auto;">
+				<label>
+					<?php echo '<input class="form-control" type="radio" id="hpsm' . evohome::CFG_HP_SETTING_MODE_POPUP . '" name="hpsm"
+							value="' . evohome::CFG_HP_SETTING_MODE_POPUP . '" style="height:24px;width:24px;display:inline;
+    vertical-align:middle">'; ?>&nbsp;&nbsp;{{Par popup}}
+				</label>
+			</div>
+		</div>
+
+		<div class="form-group">
 			<label class="col-lg-3 control-label" style="font-size:15px;"><u>{{Programmes}}</u></label>
 		</div>
 		<div class="form-group">
 			<label class="col-lg-4 control-label">{{Type d'affichage par défaut}}</label>
-			<input type="hidden" class="configKey" id="evoDefaultShowingScheduleMode" data-l1key="evoDefaultShowingScheduleMode" />
+			<input type="hidden" class="configKey evoDefaultShowingScheduleMode" data-l1key="evoDefaultShowingScheduleMode" />
 			<div class="col-lg-2" style="width:auto;">
 				<label>
 					<?php echo '<input class="form-control" type="radio" id="eshm' . evohome::CFG_SCH_MODE_HORIZONTAL . '" name="eshm"
@@ -120,36 +194,7 @@ if (!isConnect('admin')) {
 				</label>
 			</div>
 		</div>
-		<div class="form-group">
-			<label class="col-lg-3 control-label" style="font-size:15px;"><u>{{Console}}</u></label>
-		</div>
-		<div class="form-group">
-			<label class="col-lg-4 control-label" style="vertical-aglin:middle;">{{Modes de présence}}</label>
-			<input type="hidden" class="configKey" id="evoShowingModes" data-l1key="evoShowingModes" />
-			<div class="col-lg-2" style="width:auto;">
-				<label>
-					<?php echo '<input class="form-control" type="radio" id="esm' . evohome::CFG_SHOWING_MODES_CONSOLE . '" name="esm"
-							value="' . evohome::CFG_SHOWING_MODES_CONSOLE . '" style="height:24px;width:24px;display:inline;
-    vertical-align:middle">'; ?>&nbsp;&nbsp;{{Intégré à la console}}
-				</label>
-			</div>
-			<div class="col-lg-2" style="width:auto;">
-				<label>
-					<?php echo '<input class="form-control" type="radio" id="esm' . evohome::CFG_SHOWING_MODES_POPUP . '" name="esm"
-							value="' . evohome::CFG_SHOWING_MODES_POPUP . '" style="height:24px;width:24px;display:inline;
-    vertical-align:middle">'; ?>&nbsp;&nbsp;{{Par popup}}
-				</label>
-			</div>
-		</div>
-		<div class="form-group">
-			<div class="col-lg-4">&nbsp;</div>
-			<div class="col-lg-5">
-				<label>
-					<input class="configKey" type="checkbox" style="height:24px;width:24px;" data-l1key="evoRefreshBeforeSave" />
-					{{Forcer la lecture des données avant de sauvegarder la programmation}}
-				</label>
-			</div>
-		</div>
+
 		<div class="form-group">
 			<label class="col-lg-3 control-label" style="font-size:15px;"><u>{{Historique}}</u></label>
 		</div>
@@ -195,47 +240,68 @@ setTimeout(function() {
 	echo "var unitFahrenheit = '" . evohome::CFG_UNIT_FAHRENHEIT . "';";
 	echo "var showHorizontal = '" . evohome::CFG_SCH_MODE_HORIZONTAL . "';";
 	echo "var showVertical = '" . evohome::CFG_SCH_MODE_VERTICAL . "';";
-	echo "var modeConsole = '" . evohome::CFG_SHOWING_MODES_CONSOLE . "';";
-	echo "var modePopup = '" . evohome::CFG_SHOWING_MODES_POPUP . "';";
+	echo "var modeConsole = '" . evohome::CFG_SHOWING_MODE_CONSOLE . "';";
+	echo "var modePopup = '" . evohome::CFG_SHOWING_MODE_POPUP . "';";
+	echo "var heatPointSettingModeConsole = '" . evohome::CFG_HP_SETTING_MODE_INTEGRATED . "';";
+	echo "var heatPointSettingModePopup = '" . evohome::CFG_HP_SETTING_MODE_POPUP . "';";
 	$data = json_decode(file_get_contents(dirname(__FILE__) . "/info.json"), true);
 	echo "var version = '" . (is_array($data) ? $data["version"] : null) . "';";
 	?>
-	var evoTempUnit = $('#evoTempUnit').val();
-	if ( evoTempUnit === '' || evoTempUnit == null ) {
-		$('#usnm').val('');
-		$('#pswd').val('');
+	var etu = $('.evoTempUnit').val();
+	if ( etu === '' || etu == null ) {
+		$('.userName').val('');
+		$('.password').val('');
 	}
-	if ( evoTempUnit !== unitCelsius && evoTempUnit !== unitFahrenheit ) {
-		evoTempUnit = unitCelsius;
-		$('#evoTempUnit').val(unitCelsius);
+	if ( etu !== unitCelsius && etu !== unitFahrenheit ) {
+		etu = unitCelsius;
+		$('.evoTempUnit').val(etu);
 	}
-	document.getElementById('etu'+evoTempUnit).checked = true;
-	var evoDefaultShowingScheduleMode = $('#evoDefaultShowingScheduleMode').val();
-	if ( evoDefaultShowingScheduleMode !== showHorizontal && evoDefaultShowingScheduleMode !== showVertical ) {
-		evoDefaultShowingScheduleMode = showHorizontal;
-		$('#evoDefaultShowingScheduleMode').val(showHorizontal);
+	document.getElementById('etu'+etu).checked = true;
+	// Showing Schedule Mode
+	var eshm = $('.evoDefaultShowingScheduleMode').val();
+	if ( eshm !== showHorizontal && eshm !== showVertical ) {
+		eshm = showHorizontal;
+		$('.evoDefaultShowingScheduleMode').val(eshm);
 	}
-	document.getElementById('eshm'+evoDefaultShowingScheduleMode).checked = true;
-	var evoShowingModes = $('#evoShowingModes').val();
-	if ( evoShowingModes !== modeConsole && evoShowingModes !== modePopup ) {
-		evoShowingModes = modeConsole;
-		$('#evoShowingModes').val(modeConsole);
+	document.getElementById('eshm'+eshm).checked = true;
+	// Console Showing Mode
+	var esm = $('.evoShowingModes').val();
+	if ( esm !== modeConsole && esm !== modePopup ) {
+		esm = modeConsole;
+		$('.evoShowingModes').val(esm);
 	}
-	document.getElementById('esm'+evoShowingModes).checked = true;
-	if ( version  != null ) $('#span_plugin_install_date').html(version);
+	document.getElementById('esm'+esm).checked = true;
+	// HeatPoint Setting mode
+	var hpsm = $('.evoHeatPointSettingModes').val();
+	if ( hpsm !== heatPointSettingModeConsole && hpsm !== heatPointSettingModePopup ) {
+		hpsm = heatPointSettingModeConsole;
+		$('.evoHeatPointSettingModes').val(hpsm);
+	}
+	document.getElementById('hpsm'+hpsm).checked = true;
+	// Backcolor Title mode
+	if ( $('.bct2NA').value() == '' ) $('.bct2NA').val(26);
+	if ( $('.bct2NB').value() == '' ) $('.bct2NB').val(28);
+	adjustBCTfield();
+	if ( version  != null ) $('#span_plugin_install_date').html($('#span_plugin_install_date').html()+" ("+version+")");
 }, 250);
-$('input[name=etu]').on('click', function(event) { $('#evoTempUnit').val($('input[name=etu]:checked').val()); });
-$('input[name=eshm]').on('click', function(event) { $('#evoDefaultShowingScheduleMode').val($('input[name=eshm]:checked').val()); });
-$('input[name=esm]').on('click', function(event) { $('#evoShowingModes').val($('input[name=esm]:checked').val()); });
-$('#btnSync').on('click', function() {
+$('input[name=etu]').on('click', function(event) { $('.evoTempUnit').val($('input[name=etu]:checked').val()); });
+$('input[name=eshm]').on('click', function(event) { $('.evoDefaultShowingScheduleMode').val($('input[name=eshm]:checked').val()); });
+$('input[name=esm]').on('click', function(event) { $('.evoShowingModes').val($('input[name=esm]:checked').val()); });
+$('input[name=hpsm]').on('click', function(event) { $('.evoHeatPointSettingModes').val($('input[name=hpsm]:checked').val()); });
+$('.bctMode').on('change', function(event) { adjustBCTfield(); });
+function adjustBCTfield() {
+	$('.bct2NA').attr('disabled', $('.bctMode').value() != "2");
+	$('.bct2NB').attr('disabled', $('.bctMode').value() != "2");
+}
+$('.btnSync').on('click', function() {
 	$('#bt_savePluginConfig').click();
 	setTimeout(function() {
-		var _prefix = $('#prefix').value().trim();
-		if ( _prefix != '' ) _prefix += " ";
+		var _thPrefix = $('.thPrefix').value().trim();
+		if ( _thPrefix != '' ) _thPrefix += " ";
 		$.ajax({
 			type:"POST",
 			url:"plugins/evohome/core/ajax/evohome.ajax.php",
-			data:{action:"synchronizeTH",prefix:_prefix,resizeWhenSynchronize:$('#resizeWhenSynchronize').value()},
+			data:{action:"synchronizeTH",prefix:_thPrefix,resizeWhenSynchronize:$('.resizeWhenSynchronize').value()},
 			dataType:'json',
 			error:function(request, status, error) {
 				handleAjaxError(request, status, error);

@@ -74,9 +74,12 @@ try {
 	else if (init('action') == 'synchronizeTH') {
 		$prefix = init('prefix');
 		$resizeWhenSynchronize = init('resizeWhenSynchronize') == '1';
-		if ( isDebug() ) logDebug("IN>> - ajax.synchronize('$prefix')");
-		$added = evohome::ajaxSynchronizeTH($prefix,$resizeWhenSynchronize);
-		ajax::success(array('added'=>$added));
+		$result = evohome::ajaxSynchronizeTH($prefix,$resizeWhenSynchronize);
+		if ( $result["success"] == false ) {
+			ajax::error($result["message"]);
+		} else {
+			ajax::success(array('added'=>$result["addedd"]));
+		}
 	}
 
 	throw new Exception(__('Aucune méthode correspondante à : ', __FILE__) . init('action'));

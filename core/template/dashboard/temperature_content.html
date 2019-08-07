@@ -1,12 +1,12 @@
 <div style="height:6px;"></div>
 <div class="TH1" style="display:#temperatureDisplay#;">
 	<div class="hoverTH" style="display:#minMaxDisplay#;">
-		<table id="hoverTHShowA#id#" class="THSAt">
+		<table class="hoverTHShowA#id# THSAt">
 			<tr><td class="fa fa-thermometer-full THSAd1">#statThMax#</td></tr>
 			<tr><td class="fa fa-thermometer-half THSAd2">#statThAvg#</td></tr>
 			<tr><td class="fa fa-thermometer-empty THSAd3">#statThMin#</td></tr>
 		</table>
-		<div id="hoverTHShowB#id#" class="hoverTHShow">
+		<div class="hoverTHShowB#id# hoverTHShow">
 			<table border="1" width=97% style="background-color:unset;margin:6px;"><tbody>
 				<tr><td colspan="4" class="THSBd1">#name_display# : #statTitle#</td></tr>
 				<tr><td colspan="2">#statRazTimeTitle#</td><td colspan="2">#statRazTime#</td></tr>
@@ -38,42 +38,42 @@
 <td class="showCurrentScheduleS#id# showCS TH2d2">
 	<a class="btn btn-sm TH2d2a"><i class="fa fxa-folder-open showSavedScheduleCaption#id#">Ps</i></a>
 </td>
-<td id="zidBackConsigne#zoneId#" width="100%" style="text-align:center;background-color:#consigneBG#">
-	<span id="zidConsigne#zoneId#" data-cmd_id="#consigneId#" class="cmd-widget history cursor TH2d3s1" style="color:#evoConsigneColor#;" title="#consigneTip#">#consigne#</span>
-	<span id="zidSpDisplayImg#zoneId#" class="TH2d3s2" style="display:#consigneTypeDisplay#;" title="#consigneTypeUntilFull#">
-		<img id="zidSpImg#zoneId#" class="TH2d3s2i" src="plugins/evohome/img/#consigneTypeImg#"/>
-		<span id="zidConsigneTypeUntil#zoneId#">&nbsp;#consigneTypeUntil#</span>
+<td class="zidBackConsigneVx#zoneId#" width="100%" style="text-align:center;background-color:#consigneBG#">
+	<span data-cmd_id="#consigneId#" class="zidConsigneVx#zoneId# cmd-widget history cursor TH2d3s1" style="color:#evoConsigneColor#;" title="#consigneTip#">#consigne#</span>
+	<span class="zidSpDisplayImgVx#zoneId# TH2d3s2" style="display:#consigneTypeDisplay#;" title="#consigneTypeUntilFull#">
+		<img class="zidSpImgVx#zoneId# TH2d3s2i" src="plugins/evohome/img/#consigneTypeImg#"/>
+		<span class="zidConsigneTypeUntilVx#zoneId#">&nbsp;#consigneTypeUntil#</span>
 	</span>
-	<span id="zidSetTempSpinner#zoneId#" class="fa fa-spinner fa-pulse" style="display:none;margin-top:9px;margin-left:4px;"/>
+	<span class="zidSetTempSpinnerVx#zoneId# fa fa-spinner fa-pulse" style="display:none;margin-top:9px;margin-left:4px;"/>
 	<div style="display:#minMaxDisplay#;float:right;padding-top:3px;padding-right:3px;">
-		<table class="minMaxHeatset">
+		<table class="minMaxHeatset" style="display:#setConsigneDisplayV1#;">
 			<tr><td class="maxHeatset">#adjustHigh#°</td></tr>
 			<tr><td class="minHeatset">#adjustLow#°</td></tr>
 		</table>
 	</div>
 </td>
 <td style="display:#setConsigneDisplayV1#;">
-	<a id="zidAdjustPlus#zoneId#" class="btn btn-sm TH2d4">
-		<span id="zidAdjustPlusIcon#zoneId#" class="glyphicon glyphicon-chevron-up"/>
+	<a class="zidAdjustV1Plus#zoneId# btn btn-sm TH2d4">
+		<span class="zidAdjustV1PlusIcon#zoneId# glyphicon glyphicon-chevron-up"/>
 	</a>
-	<a id="zidAdjustMinus#zoneId#" class="btn btn-sm TH2d4">
-		<span id="zidAdjustMinusIcon#zoneId#" class="glyphicon glyphicon-chevron-down"/>
+	<a class="zidAdjustV1Minus#zoneId# btn btn-sm TH2d4">
+		<span class="zidAdjustV1MinusIcon#zoneId# glyphicon glyphicon-chevron-down"/>
 	</a>
 </td>
 <td style="display:#setConsigneDisplayV1#;">
-	<a class="zidAdjustReset#zoneId# btn btn-sm TH2d5" title="#backScheduleTitle#">
-		<span class="zidAdjustResetIcon#zoneId# glyphicon glyphicon-repeat" style="color:gray;" />
+	<a class="zidAdjustV1Reset#zoneId# btn btn-sm TH2d5" title="#backScheduleTitle#">
+		<span class="zidAdjustV1ResetIcon#zoneId# glyphicon glyphicon-repeat" style="color:white;" />
 	</a>
-	<a id="zidAdjustLowest#zoneId#" class="btn btn-sm TH2d5">
-		<span id="zidAdjustLowestIcon#zoneId#" style="font-weight:100;">min</span>
+	<a class="zidAdjustV1Lowest#zoneId# btn btn-sm TH2d5">
+		<span class="zidAdjustV1LowestIcon#zoneId#" style="font-weight:100;">min</span>
 	</a>
 </td>
 <td style="display:#setConsigneDisplayV2#;">
-	<a class="zidAdjustReset#zoneId# btn btn-sm TH2d5" style="width:20px;height:15px;" title="#backScheduleTitle#">
-		<span class="zidAdjustResetIcon#zoneId# glyphicon glyphicon-repeat" style="color:gray;" />
+	<a class="zidAdjustV2Reset#zoneId# btn btn-sm TH2d5" style="width:20px;height:15px;" title="#backScheduleTitle#">
+		<span class="zidAdjustV2ResetIcon#zoneId# glyphicon glyphicon-repeat" style="color:white;" />
 	</a>
-	<a id="zidAdjust#zoneId#" class="btn btn-sm TH2d5" style="height:15px;">
-		<span id="zidAdjustIcon#zoneId#" style="font-weight:100;">
+	<a class="zidAdjustV2#zoneId# btn btn-sm TH2d5" style="height:15px;">
+		<span class="zidAdjustV2Icon#zoneId#" style="font-weight:100;">
 			<span class="fa fa-minus-circle" />
 			<span class="fa fa-plus-circle" />
 		</span>
@@ -85,6 +85,8 @@
 initVarsCommon('#evoBackgroundColor#','#evoCmdBackgroundColor#',#apiAvailable#,"#msgApiUnavailable#",'#evoDefaultShowingScheduleMode#','#showHorizontal#','#argLocId#','#argZoneId#','#argFileId#');
 initVarsTH('#locId#','#id#','#zoneId#');
 if ( '#setConsigneDisplayV1#' != 'none' || '#setConsigneDisplayV2#' != 'none' ) {
-	initVarsAC(#taskIsRunning#,'#adjustAvailable#',"#msgAdjustConsigneUnavailable#","#msgEnforceConsigne#",'#zoneId#','#currentConsigne#','#currentConsigneUntil#','#consigne#'.replace('°',''),'#adjustLow#','#adjustHigh#','#adjustStep#','#cmd_setConsigne_id#',"#canReset#" == "1");
+	initVarsAC(#taskIsRunning#,'#adjustAvailable#',"#msgAdjustConsigneUnavailable#","#msgEnforceConsigne#",'#zoneId#','#currentConsigne#','#currentConsigneUntil#','#consigne#'.replace('°',''),'#adjustLow#','#adjustHigh#','#adjustStep#','#cmd_setConsigne_id#',"#canReset#" == "1",
+	'#setConsigneDisplayV1#' != 'none', "#name_display#",
+	"#lblAdjTHTitle1#","#lblAdjTHTitle2#","#lblAdjTHUntilCurrentSchedule#","#lblAdjTHPermanent#","#lblAdjTHUntil#","#lblAdjTHUntilEndOfDay#");
 }
 </script>

@@ -31,7 +31,7 @@ $eqLogics = eqLogic::byType($plugin->getId());
 			<div class="cursor eqLogicAction" data-action="gotoPluginConf" style="text-align:center;background-color:#ffffff;height:120px;margin-bottom:10px;padding:5px;border-radius:2px;width:160px;margin-left:10px;">
 				<i class="fa fa-wrench" style="font-size:6em;color:#767676;"></i>
 				<br>
-				<span style="font-size:1.1em;position:relative;top:15px;word-break:break-all;white-space:pre-wrap;word-wrap:break-word;color:#767676">{{Configuration}}</span>
+				<span style="font-size:1.1em;position:relative;top:15px;word-break:break-all;white-space:pre-wrap;word-wrap:break-word;color:#767676;">{{Configuration}}</span>
 			</div>
 		</div>
 		<br/>
@@ -82,7 +82,7 @@ $eqLogics = eqLogic::byType($plugin->getId());
 									</div>
 								</div>
 								<div class="form-group">
-									<label class="col-sm-2 control-label" >{{Objet Parent}}</label>
+									<label class="col-sm-2 control-label">{{Objet Parent}}</label>
 									<div class="col-sm-8">
 										<select id="sel_object" class="eqLogicAttr form-control" data-l1key="object_id">
 											<option value="">{{Aucune}}</option>
@@ -126,7 +126,7 @@ $eqLogics = eqLogic::byType($plugin->getId());
 									<label class="col-sm-3 control-label">{{Localisation}}</label>
 									<div class="col-sm-8">
 										<script>var oldLocId = -2;</script>
-										<select id="locationId" class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="locationId">
+										<select class="locationId eqLogicAttr form-control" data-l1key="configuration" data-l2key="locationId">
 											<option value="-2">Aucun</option>
 											<?php
 											$locations = evohome::listLocations();
@@ -144,14 +144,14 @@ $eqLogics = eqLogic::byType($plugin->getId());
 								<div class="form-group">
 									<label class="col-sm-3 control-label">{{Zone}}</label>
 									<div class="col-sm-8">
-										<input id="zoneId" type="hidden" class="eqLogicAttr" data-l1key="configuration" data-l2key="zoneId"/>
-										<select id="zoneIdTmp" class="form-control">
+										<input type="hidden" class="zoneId eqLogicAttr" data-l1key="configuration" data-l2key="zoneId"/>
+										<select class="zoneIdTmp form-control">
 											<option value="-2">{{Aucune}}</option>
 										</select>
 									</div>
 								</div>
 								<center>
-									<img src="core/img/no_image.gif" data-original=".png" id="img_device" class="img-responsive" style="margin-top:20px;max-height:200px;">
+									<img src="core/img/no_image.gif" data-original=".png" class="img_device img-responsive" style="margin-top:20px;max-height:200px;">
 								</center>
 							</fieldset>
 						</form>
@@ -170,8 +170,7 @@ $eqLogics = eqLogic::byType($plugin->getId());
 							<th>{{Action}}</th>
 						</tr>
 					</thead>
-					<tbody>
-					</tbody>
+					<tbody></tbody>
 				</table>
 			</div>
 		</div>
@@ -180,12 +179,48 @@ $eqLogics = eqLogic::byType($plugin->getId());
 
 <script>
 var modelType = null;
-$('#locationId').on('change', function() { loadZones(); });
+var settingZoneId = false;
+
+function cantEnter(id) {
+	return $('.locationId').value() == null || $('.locationId').value() == -2 || settingZoneId || id == null || id == '';
+}
+
+$('.zoneId').on('change', function() {
+	var id = $(this).value();
+	//console.log("change zoneId with '"+id+"'");
+	if ( cantEnter(id) ) {
+		//console.log("-> nothing to do");
+		return ;
+	}
+	loadImage(id);
+
+	settingZoneId = true;
+	//console.log("set zoneIdTmp with "+id);
+	$('.zoneIdTmp').value(id);
+	settingZoneId = false;
+});
+
+$('.zoneIdTmp').on('change', function() {
+	var id = $(this).value();
+	//console.log("change zoneIdTmp with '"+id+"'");
+	if ( cantEnter(id) ) {
+		//console.log("-> nothing to do");
+		return ;
+	}
+	loadImage(id);
+
+	settingZoneId = true;
+	//console.log("set zoneId with "+id);
+	$('.zoneId').value(id);
+	settingZoneId = false;
+});
+
+$('.locationId').on('change', function() { loadZones(); });
 function loadZones() {
-	var locId = $('#locationId').value();
-	if ( locId == null || locId == oldLocId ) return;
-	oldLocId = locId;
-	var zoneId = $('#zoneIdTmp')[0];
+	var locId = $('.locationId').value();
+	if ( locId == null || locId == -2 ) return;
+	//console.log("change locationId with " + locId);
+	var zoneIdTmp = $('.zoneIdTmp')[0];
 	$.ajax({
 		type:"POST",
 		url:"plugins/evohome/core/ajax/evohome.ajax.php",
@@ -198,58 +233,50 @@ function loadZones() {
 			if (data.state != 'ok') {
 				$('#div_alert').showAlert({message:data.result, level:'danger'});
 			} else if ( is_array(data.result.loc) ) {
-				zoneId.options.length = 1;
+				zoneIdTmp.options.length = 1;
 				var idSelect = 0;
+				var zoneId = $('.zoneId').value();
 				modelType = null;
 				data.result.loc.forEach(function(loc,idx) {
 					if ( loc.locationId == locId ) {
-						zoneId.options[1] = new Option('{{Console}}', locId);
-						if ( $('#zoneId').value() == locId || $('#zoneId').value() == <?php echo evohome::OLD_ID_CONSOLE;?> ) {
+						zoneIdTmp.options[1] = new Option('{{Console}}', locId);
+						if ( zoneId == locId || zoneId == <?php echo evohome::OLD_ID_CONSOLE;?> ) {
 							idSelect = 1;
 						}
 						modelType = loc.modelType;
 						loc.zones.forEach(function(zone,idx) {
-							var txt = zone.name;	// + ' (' + (zone.temperature == null ? '{{indisponible}}' : zone.temperature) + ')';
-							zoneId.options[zoneId.options.length] = new Option(txt, zone.id);
-							if ( zone.id == $('#zoneId').value() ) {
-								idSelect = zoneId.options.length - 1;
+							var txt = zone.name;
+							zoneIdTmp.options[zoneIdTmp.options.length] = new Option(txt, zone.id);
+							if ( zone.id == zoneId ) {
+								idSelect = zoneIdTmp.options.length - 1;
 							}
 						});
 					}
 				});
-				zoneId.options[idSelect].selected = true;
-				$('#zoneIdTmp').change();
+				zoneIdTmp.options[idSelect].selected = true;
+				loadImage($('.zoneIdTmp').value());
 			}
 		}
 	});
 }
-var settingZoneId = false;
-$('#zoneId').on('change', function() {
-	if ( $('#zoneId').value() == -1 ) {
-		setTimeout(function(){
-			$('#zoneId').value($('#locationId').value());
-		}, 250);
-		return;
-	}
-	if ( !settingZoneId ) $('#zoneIdTmp').value($('#zoneId').value());
-});
-$('#zoneIdTmp').on('change', function() {
+
+function loadImage(idZone) {
+	//console.log("loadImage : idZone='"+idZone+"', locId='"+$('.locationId').value()+"'");
 	var imgName = 'plugins/evohome/evohome.png';
 	if ($('.li_eqLogic.active').attr('data-eqlogic_id') != '') {
-		if ( $(this).value() == -2 ) imgName = 'core/img/no_image.gif';
+		if ( idZone == null || idZone == -2 ) imgName = 'core/img/no_image.gif';
 		else {
 			imgName = 'plugins/evohome/img/';
-			if ( $(this).value() == $('#locationId').value() || $(this).value() == <?php echo evohome::OLD_ID_CONSOLE;?> )
+			if ( idZone == $('.locationId').value() || idZone == <?php echo evohome::OLD_ID_CONSOLE;?> )
 				imgName += modelType == 'RoundWireless' ? 'round-console.png' : 'console.png';
 			else
 				imgName += modelType == 'RoundWireless' ? 'round-th.png' : 'hr92.png';
 		}
 	}
-	settingZoneId = true;
-	$('#zoneId').value($('#zoneIdTmp').value());
-	settingZoneId = false;
-	$('#img_device').attr('src',imgName);
-});
+	//console.log("imgName="+imgName);
+	$('.img_device').attr('src',imgName);
+}
+
 <?php 
 echo "var _msgShow = '{{Afficher}}';\n";
 echo "var _msgHistorize = '{{Historiser}}';\n";

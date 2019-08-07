@@ -133,7 +133,8 @@ function extractZone($zonesDatas,$zoneId) {
 }
 
 function isVirtualAvailable() {
-	$sql = "select count(*) from config c where c.plugin = 'virtual' and c.key = 'active' and c.value = 1";
+	$sql = "select count(*) as cnt from config c where c.plugin = 'virtual' and c.key = 'active' and c.value = 1";
 	$results = DB::Prepare($sql, array(), DB::FETCH_TYPE_ALL);
-	return count($results) > 0;
+	// 0.4.1 - fix of the check ! :(
+	return count($results) > 0 && intval($results[0]["cnt"]) == 1;
 }

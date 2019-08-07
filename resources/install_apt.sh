@@ -11,7 +11,11 @@ echo 50 > ${PROGRESS_FILE}
 
 echo "Update.."
 sudo apt-get update
-echo 75 > ${PROGRESS_FILE}
+echo 65 > ${PROGRESS_FILE}
+
+echo "Python requests"
+apt-get install -y  python-requests
+echo 80 > ${PROGRESS_FILE}
 
 echo "Check and potentially remove previous evohomeclient module"
 sudo pip list | awk 'NR>2 {print $1}' | grep evohomeclient | xargs -I {} pip uninstall -y {}
