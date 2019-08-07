@@ -1875,7 +1875,7 @@ class evohome extends eqLogic {
 		}
 		setCacheData(self::CACHE_SYNCHRO_RUNNING, $execUnitId, 60);
 		lockCron();
-		$locations = null;	// self::ajaxReloadLocations();
+		$locations = self::ajaxReloadLocations();
 		if ( $locations == null ) {
 			doCacheRemove(self::CACHE_SYNCHRO_RUNNING);
 			unlockCron();

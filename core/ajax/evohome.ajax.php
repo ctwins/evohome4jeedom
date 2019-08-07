@@ -73,7 +73,7 @@ try {
 	}
 	else if (init('action') == 'synchronizeTH') {
 		$prefix = init('prefix');
-		$resizeWhenSynchronize = init('resizeWhenSynchronize') == '1';
+		$resizeWhenSynchronize = init('resizeWhenSynchronize') == '1' ? 1 : 0;
 		$result = evohome::ajaxSynchronizeTH($prefix,$resizeWhenSynchronize);
 		if ( $result["success"] == false ) {
 			ajax::error($result["message"]);
