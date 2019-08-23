@@ -1,5 +1,25 @@
 Changelog - Evohome (for Jeedom)
 
+# [version 0.4.2] - 2019-08-23 - PHP7.2 & Mobile app compatibilities
+
+## Fixes
+
+1. synchronization : small bug in the returned value
+2. schedule saving : avoid a minor error reported in http.error under certain condition
+3. change in check dependencies (look now for python-requests, no more avconv !). Thanks **Yotasky**.
+4. was missing one translation
+
+## Improvements
+
+1. PHP7.2 (and more) : ensures compatibility now
+   - by the way, gives a compatibility with Jeedom V4. WARNING ! this first step gives a runnable plugin, lot of rendering has to be corrected for V4
+2. Mobile app : modifications on some cmd settings, so they are now compliant with the Mobile application (on smartphone)
+
+## Under the hood
+
+1. The field ZoneId is now stored in the logicalId field of equipment (**synchronization needed !**)
+
+
 # [version 0.4.1] - 2019-08-07 - the title edition ;)
 
 ## Added
@@ -75,16 +95,6 @@ Please note that, in this case, the reading could run, as the API return again a
 4. manual heatpoint setting opens now a popup so the duration can be adjusted
 
 # [version 0.3.2] - 2019-02-18 - fix #7 - the verbose edition
-## Fixes
-1. /!\ Blocked situation could appear when the task executed by python script took too much time (around 2mn).<br/>
-   This is due to the PHP disposition which stops execution of a script after a certain delay.<br/>
-	 Two dispositions taken :
-   - as this time limit can be reset while execution, it's now simply the case
-   - but, to avoid too much waiting time, all commands are now limited to a duration of 5mn (from the PHP side, it's a classical timeout disposition)
-2. Loading Schedule file from Scenario did not work (bad parameter sending)
-3. Schedule editor : the pre-selected day and slice (green background) did not revert their style after moving/chosing another slice
-4. The cached token was badly received by the LocationsInfoE2 and RestaureZonesE2 scripts (caused a token regeneration, and potentially gives a "Too much requests" error)
-
 ## Added
 1. General configuration
 	 - A refresh button appears, to aid the first installation
@@ -99,6 +109,16 @@ Please note that, in this case, the reading could run, as the API return again a
 2. /!\ TH widget<br/>
 	 Detection of battery low / connection lost<br/>
    An icon appears on the left top corner, with the date/time on tip when the default appeared (reported by Evohome)
+
+## Fixes
+1. /!\ Blocked situation could appear when the task executed by python script took too much time (around 2mn).<br/>
+   This is due to the PHP disposition which stops execution of a script after a certain delay.<br/>
+	 Two dispositions taken :
+   - as this time limit can be reset while execution, it's now simply the case
+   - but, to avoid too much waiting time, all commands are now limited to a duration of 5mn (from the PHP side, it's a classical timeout disposition)
+2. Loading Schedule file from Scenario did not work (bad parameter sending)
+3. Schedule editor : the pre-selected day and slice (green background) did not revert their style after moving/chosing another slice
+4. The cached token was badly received by the LocationsInfoE2 and RestaureZonesE2 scripts (caused a token regeneration, and potentially gives a "Too much requests" error)
 
 ## Improvements
 1. Configuration (of components)
@@ -169,6 +189,9 @@ This could be have to effect to show additional errors in the "Jeedom messages" 
 
 (*) : no mouse hover, so the smartphone compatibility
 
+## Fix
+- Python/reading informations : better check of the Heating zone (fix the reported error by "jaktens")
+
 ## Improvements
 - When editing Scenario, the SetMode, RestoreSchedule (and Adjustment) use now a selectable list<br/>
   Please note that if a Schedule file is used in a Scenario, it could no more be deleted from the Console
@@ -181,9 +204,6 @@ This could be have to effect to show additional errors in the "Jeedom messages" 
 ## Changes
 - now, only the admin profile has the possibility to do these things regarding the schedules :
 	1. Editing, Saving, Restore, Remove schedule
-
-## Fix
-- Python/reading informations : better check of the Heating zone (fix the reported error by "jaktens")
 
 ## Under the hood
 - The extra module evohomeclient is now embedded inside the plugin itself ('forked' to introduce the token cache and custom logs)<br/>
@@ -198,7 +218,6 @@ This could be have to effect to show additional errors in the "Jeedom messages" 
 - Most of functions on the TH widget become unique in a .js file
 - Most of widget and schedule panel html style becomes classes
 - The Python layers logs now verbously under control of the Debug level of the plugin
-
 
 
 # [version 0.2.3] - 2018-12-19 - pictures adjustments
@@ -226,6 +245,9 @@ This could be have to effect to show additional errors in the "Jeedom messages" 
 	consider the active schedule has not to be loaded
 
 # [version 0.2.1] - 2018-12-11 - the 'schedule edition' 1.1
+## Fix
+- History graphs are now also displayable from the View mode
+
 ## Improvements
 - Schedules edition mode<br/>
 	1. indicator '*' added after the zone name in the zones list, when schedule for it has changed<br/>
@@ -234,15 +256,20 @@ This could be have to effect to show additional errors in the "Jeedom messages" 
 ## Change
 - Category of the plugin becomes Energy
 
-## Fix
-- History graphs are now also displayable from the View mode
-
 # [version 0.2.0] - 2018-11-10 - the 'schedule edition' 1.0
 ## Added
 - Schedules edition mode (thanks to ecc for pre-testing)<br/>
 	1. the Edition mode has to be activated in the General configuration before to use it<br/>
 	2. first, use the Pc button (or Ps if you have already saved a full schedule) on console of any component, then Click on Edit button on the top right (or on the right on each zone name), and let's go !<br/>
 	3. changes are lost if you close the edition popup ; you have to Save before quit to keep your changes<br/>
+
+## Fixes
+- no more check python-pip in dependency_info (could fail after some update)
+- python part / get zones information (thanks to jaktens and ecc)<br/>
+	1. better management of exceptions. Due to that, you could see now exception messages in the Jeedom messages popup.<br/>
+	2. no more crash when encounter an incomplete device
+- python part / adjust mode<br/>
+	3. was KO after the 0.1.2 (no more compliant with the update of evohomeclient)<br/>
 
 ## Improvements
 - better cache around cron/get informations from zones
@@ -254,14 +281,6 @@ This could be have to effect to show additional errors in the "Jeedom messages" 
 	1. better management of the 'presence mode'<br/>
 	2. now, the tip under the label for the Temporary Override shows the until time (already shown after the icon, but can be masked if you did not enlarge the tile width enough)<br/>
 - adjust look of the tiles (console and component)
-
-## Fixes
-- no more check python-pip in dependency_info (could fail after some update)
-- python part / get zones information (thanks to jaktens and ecc)<br/>
-	1. better management of exceptions. Due to that, you could see now exception messages in the Jeedom messages popup.<br/>
-	2. no more crash when encounter an incomplete device
-- python part / adjust mode<br/>
-	3. was KO after the 0.1.2 (no more compliant with the update of evohomeclient)<br/>
 
 # [version 0.1.2] - 2018-10-28 - the 'evohomeclient fix' (+ minors)
 ## Fixes
@@ -317,9 +336,6 @@ This could be have to effect to show additional errors in the "Jeedom messages" 
 	1. Commentary as seen in the Save action above, is showed on the top<br/>
 	2. Current day and current setpoint are now showed on a lightgreen background color<br/>
 
-## Evolutions
-- Console : when you launch some actions, a waiting message is now displayed in the top of screen
-
 ## Fixes
 - labels in french rendered now without developer configuration
 - when a heating is lowbatt, no temperature is available (null value) : now, in the zones select list on a equipment, this is showed by '(unavailable)'
@@ -327,6 +343,9 @@ This could be have to effect to show additional errors in the "Jeedom messages" 
 	- wait for ending of data collecting (typically from the cron) if currently running
 	- lock (then unlock) the cron to avoid concurrent api access (and response time degradation)
 - schedule popup is now closed just before launching any action (Set Mode, Save, Restore and Remove)
+
+## Improvements
+- Console : when you launch some actions, a waiting message is now displayed in the top of screen
 
 ## Underground
 - better manipulation of json data, in case of null or KO content (more log, no more bad effects)
@@ -347,7 +366,7 @@ This could be have to effect to show additional errors in the "Jeedom messages" 
 	1. split function replaced by explode<br/>
 	2. PHP7 restrictions on json : booleans built in python are now returned correctly formed<br/>
 
-## Improved
+## Improvements
 - *install_apt.sh*<br/>
 	1. restore the apt-get clean and update commands 
 

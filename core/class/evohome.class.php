@@ -21,6 +21,8 @@ require_once dirname(__FILE__) . '/../../../../core/php/core.inc.php';
 require_once 'evohome.utils.php';
 
 class evohome extends eqLogic {
+	//public static $_widgetPossibility = array('custom' => true, 'custom::layout' => false);
+	
 	const CFG_USER_NAME = 'evoUserName';
 	const CFG_PASSWORD = 'evoPassword';
 	const CFG_LOCATION_DEFAULT_ID = -1;
@@ -52,6 +54,7 @@ class evohome extends eqLogic {
 	const iCFG_SCHEDULE_ID = 'intScheduleFileId';
 	const CONF_TYPE_EQU = 'typeEqu';
 	const CONF_LOC_ID = 'locationId';
+	// 0.4.2 - Deprecated
 	const CONF_ZONE_ID = 'zoneId';
 	const CONF_MODEL_TYPE = 'modelType';
 	const CONF_ALLOWED_SYSTEM_MODE = 'allowedSystemMode';
@@ -188,7 +191,8 @@ class evohome extends eqLogic {
 		$ret['state'] = 'ok';
 		$ret['progress_file'] = jeedom::getTmpFolder(__CLASS__) . '/dependance';
 
-		$x = 'which avconv | wc -l';
+		// 0.4.2 - change dependency check
+		$x = system::getCmdSudo() . ' dpkg-query --show python-requests 2>nul | wc -l';
 		$r = exec($x);
 		if ( isDebug() ) logDebug("dependancy_info 1/2 [$x] = [$r]");
 		if ($r == 0) {
@@ -603,7 +607,7 @@ class evohome extends eqLogic {
 	static function getComponent($zoneOrLocId) {
 		foreach (self::getEquipments() as $equipment) {
 			// NB : zoneOrLocId ==> zoneId for a TH component ; locationId for a Console component
-			if ( $equipment->getConfiguration(self::CONF_ZONE_ID) == $zoneOrLocId ) {
+			if ( $equipment->getLogicalId() == $zoneOrLocId ) {
 				return $equipment;
 			}
 		}
@@ -684,7 +688,7 @@ class evohome extends eqLogic {
 		$table = array();
 		foreach (self::getEquipments() as $equipment) {
 			if ( self::getLocationid($equipment) == $locId ) {
-				$table[$equipment->getConfiguration(self::CONF_ZONE_ID)] = $equipment->getName();
+				$table[$equipment->getLogicalId()] = $equipment->getName();
 			}
 		}
 		if ( isDebug() ) logDebug('getEquNamesAndId : ' . json_encode($table));
@@ -782,13 +786,20 @@ class evohome extends eqLogic {
 			$cmd->setConfiguration('listValue', $list);
 		} else if ( $logicalId == self::CMD_SET_CONSIGNE_ID ) {
 			// 0.4.1 - become a default setting, before reading real values of min/max inside "injectInformationsFromZone"
-			$zoneId = $this->getConfiguration(self::CONF_ZONE_ID);
+			$zoneId = $this->getLogicalId();
 			self::fillSetConsigneData($cmd,$zoneId,self::adjustbyUnit(5,"C"),self::adjustbyUnit(25,"C"));
 		}
+		// 0.4.2 - les infos précédentes n'étaient pas compatible "appli mobile"
 		if ( $logicalId == self::CMD_TEMPERATURE_ID ) {
-			$cmd->setDisplay('generic_type', 'THERMOSTAT_TEMPERATURE');
+			//$cmd->setDisplay('generic_type', 'THERMOSTAT_TEMPERATURE');
+			$cmd->setDisplay('generic_type', 'TEMPERATURE');
+			$cmd->setGeneric_type('TEMPERATURE');
+			$cmd->setUnite("°");
 		} else if ( $logicalId == self::CMD_CONSIGNE_ID || $logicalId == self::CMD_SCH_CONSIGNE_ID ) {
-			$cmd->setDisplay('generic_type', 'THERMOSTAT_SETPOINT');
+			//$cmd->setDisplay('generic_type', 'THERMOSTAT_SETPOINT');
+			$cmd->setDisplay('generic_type', 'GENERIC_INFO');
+			$cmd->setGeneric_type('GENERIC_INFO');
+			$cmd->setUnite("°");
 		}
 		if ( $isHistorized == 1 ) {
 			$cmd->setConfiguration('historizeMode', 'none');
@@ -842,7 +853,7 @@ class evohome extends eqLogic {
 			self::createOrUpdateCmd(4, self::CMD_DELETE, 'Supprimer', 'action', 'other', 1, 0);
 			$this->createOrUpdateCmd(5, self::CMD_STATISTICS_ID, "Statistiques", 'info', 'numeric', 1, 0);
 		}
-		else if ($this->getConfiguration(self::CONF_ZONE_ID) > 0) {
+		else if ($this->getLogicalId() > 0) {
 			logDebug('postSave - create TH widget');
 			$this->deleteCmd([self::CMD_STATE, self::CMD_SET_MODE, self::CMD_SAVE, self::CMD_RESTORE, self::CMD_DELETE, self::CMD_STATISTICS_ID]);
 			$created = $this->createOrUpdateCmd(0, self::CMD_TEMPERATURE_ID, 'Température', 'info', 'numeric', 1, 1);
@@ -855,7 +866,7 @@ class evohome extends eqLogic {
 		$infosZones = self::getInformationsAllZonesE2(self::getLocationId($this));
 		$this->injectInformationsFromZone($infosZones);
 
-		if ( isDebug() ) logDebug('<<OUT - postSave(' . $this->getConfiguration(self::CONF_ZONE_ID) . ')'); 
+		if ( isDebug() ) logDebug('<<OUT - postSave(' . $this->getLogicalId() . ')'); 
 
 		return true;
 	}
@@ -907,7 +918,7 @@ class evohome extends eqLogic {
 		if ( !is_array($infosZones) ) {
 			return;
 		}
-		$zoneId = $this->getConfiguration(self::CONF_ZONE_ID);
+		$zoneId = $this->getLogicalId();
 		if ( isDebug() ) logDebug("IN>> - injectInformationsFromZone on zone $zoneId");
 		if ( $zoneId == self::ID_NO_ZONE ) {
 			logError("<<OUT - injectInformationsFromZone - zone undefined ; nothing to do");
@@ -1209,7 +1220,7 @@ class evohome extends eqLogic {
 	}
 
 	public function toHtmlTh($pVersion,$version,$replace,$scheduleCurrent,$states,$forcedConsigne) {
-		$zoneId = $this->getConfiguration(self::CONF_ZONE_ID);
+		$zoneId = $this->getLogicalId();
 
 		$replace_temp = $this->preToHtml($pVersion);
 		$locId = self::getLocationId($this);
@@ -1531,14 +1542,14 @@ class evohome extends eqLogic {
 
 	function setToHtmlProperties($pStates,$pScheduleCurrent,$pMsgInfo,$pTaskIsRunning=false,$pConsigne=null) {
 		$lId = self::getLocationId($this);
-		$zId = $this->getConfiguration(self::CONF_ZONE_ID);
+		$zId = $this->getLogicalId();
 		$key = 'toHtmlData_'.$lId."_".$zId;
 		setCacheData($key,
 			array("states"=>$pStates, "scheduleCurrent"=>$pScheduleCurrent, "msgInfo"=>$pMsgInfo, "taskIsRunning"=>$pTaskIsRunning ,"forcedConsigne"=>$pConsigne));
 	}
 	function setMsgInfo($msgInfo) {
 		$lId = self::getLocationId($this);
-		$zId = $this->getConfiguration(self::CONF_ZONE_ID);
+		$zId = $this->getLogicalId();
 		$key = 'toHtmlData_'.$lId."_".$zId;
 		$zData = getCacheData($key);
 		if ( array_key_exists("xx",$zData) ) {
@@ -1548,13 +1559,13 @@ class evohome extends eqLogic {
 	}
 	function getToHtmlProperty($name) {
 		$lId = self::getLocationId($this);
-		$zId = $this->getConfiguration(self::CONF_ZONE_ID);
+		$zId = $this->getLogicalId();
 		$zData = getCacheData('toHtmlData_'.$lId."_".$zId);
 		return (!is_array($zData) || !array_key_exists($name,$zData)) ? null : $zData[$name];
 	}
 	function removeToHtmlProperties() {
 		$lId = self::getLocationId($this);
-		$zId = $this->getConfiguration(self::CONF_ZONE_ID);
+		$zId = $this->getLogicalId();
 		doCacheRemove('toHtmlData_'.$lId."_".$zId);
 	}
 
@@ -1571,7 +1582,7 @@ class evohome extends eqLogic {
 		doCacheRemove('evohomeWidget' . $pVersion . $this->getId());
 		$locId = self::getLocationId($this);
 		$typeEqu = $this->getConfiguration(self::CONF_TYPE_EQU);
-		$zoneId = $this->getConfiguration(self::CONF_ZONE_ID);
+		$zoneId = $this->getLogicalId();
 		//logDebug("IN>> toHtml($pVersion) lid=$locId, zid= $zoneId (" . $this->getName() . ")");
 
 		$replace = $this->preToHtml($pVersion);
@@ -1882,7 +1893,7 @@ class evohome extends eqLogic {
 			return array("success"=>false, "message"=>self::i18n("Erreur en lecture des localisations"));
 		}
 
-		$syncVirtual = isVirtualAvailable();
+		$syncVirtual = false;	// isVirtualAvailable();
 		$nbAdded = 0;
 		foreach ( $locations as $loc ) {
 			$locId = $loc['locationId'];
@@ -1894,7 +1905,9 @@ class evohome extends eqLogic {
 				$eqLogic = null;
 				foreach (self::getEquipments() as $tmp) {
 					// 2nd part for compatibility (and upgrade) between 0.3.x and 0.4.0
-					$prevZoneId = $tmp->getConfiguration(self::CONF_ZONE_ID);
+					// 0.4.2 - now, we use LogicalId (check previous getConfiguration(self::CONF_ZONE_ID) for compatibility between 0.x.x and 0.4.2)
+					$prevZoneId = $tmp->getLogicalId();;
+					if ( $prevZoneId == null || $prevZoneId == '' || $prevZoneId == 0 ) $prevZoneId = $tmp->getConfiguration(self::CONF_ZONE_ID);
 					if ( $prevZoneId == $zone["id"] ||
 					     ($zone['typeEqu'] == self::TYPE_EQU_CONSOLE && $prevZoneId == self::OLD_ID_CONSOLE) ) {
 						$eqLogic = $tmp;
@@ -1909,6 +1922,9 @@ class evohome extends eqLogic {
 							}
 						}
 						$eqLogic->setConfiguration(self::CONF_LOC_ID, $locId);
+						// 0.4.2 - ZONE_ID now in LogicalID
+						$eqLogic->setConfiguration(self::CONF_ZONE_ID, null);
+						$eqLogic->setConfiguration("zone", null);	// from one previous version
 
 						// TYPE_EQU_CONSOLE(C)/TYPE_EQU_THERMOSTAT(TH) :
 						$eqLogic->setConfiguration(self::CONF_TYPE_EQU, $zone["typeEqu"]);
@@ -1920,7 +1936,9 @@ class evohome extends eqLogic {
 								self::adaptSavedSchedules($locations);
 							}
 							// 0.4.0 - update zoneId (== locId for Console)
-							$eqLogic->setConfiguration(self::CONF_ZONE_ID, $locId);	// here, 'zoneId' == $locId
+							//$eqLogic->setConfiguration(self::CONF_ZONE_ID, $locId);	// here, 'zoneId' == $locId
+							// 0.4.2 - ZONE_ID now in LogicalID
+							$eqLogic->setLogicalId($locId);	// here, 'zoneId' == $locId
 							// 0.4.0 -inject allowed system modes
 							$eqLogic->setAllowedSystemModes($loc['asm']);
 							// 0.4.0 - migrate General Parameter Schedule ID to localized
@@ -1930,7 +1948,7 @@ class evohome extends eqLogic {
 							}
 						}
 						else {
-							// 0.40 - 2019-06-29 - new : alert settings
+							// 0.4.0 - 2019-06-29 - new : alert settings
 							logDebug("-- alert settings..");
 							$temp = $eqLogic->getCmd(null,self::CMD_TEMPERATURE_ID);
 							// $temp->setAlert("warningif", "#value# >= 26");
@@ -1939,6 +1957,8 @@ class evohome extends eqLogic {
 							$temp->setAlert("warningif", "");
 							$temp->setAlert("dangerif", "");
 							logDebug("..done");
+							// 0.4.2 - ZONE_ID now in LogicalID
+							$eqLogic->setLogicalId($zone["id"]);
 						}
 						$eqLogic->save();
 						$todo = false;
@@ -1949,17 +1969,17 @@ class evohome extends eqLogic {
 					logDebug("-- create");
 					$eqLogic = new evohome();
 					$eqLogic->setEqType_name(__CLASS__);
-					//$eqLogic->setLogicalId(xxx);	will be undefined (useless in our case) - should be zoneId instead of Configuration prop ;)
+					$eqLogic->setLogicalId($zone["id"]);	// will be undefined (useless in our case) - should be zoneId instead of Configuration prop ;)
 					$zName = str_replace("'", "", $zone["name"]);
 					$eqLogic->setName(($zone["typeEqu"] == self::TYPE_EQU_CONSOLE ? '' : $prefix) . $zName);
 					$eqLogic->setIsVisible(1);
 					$eqLogic->setIsEnable(1);
 					$eqLogic->setCategory("heating", 1);
 					$eqLogic->setConfiguration(self::CONF_LOC_ID, $locId);
-					$eqLogic->setConfiguration(self::CONF_ZONE_ID, $zone["id"]);
+					//$eqLogic->setConfiguration(self::CONF_ZONE_ID, $zone["id"]);
 					$eqLogic->setConfiguration(self::CONF_TYPE_EQU, $zone["typeEqu"]);
 					$eqLogic->setConfiguration(self::CONF_MODEL_TYPE, $loc['modelType']);
-					foreach (object::all() as $obj) {
+					foreach (jeeObject::all() as $obj) {
 						if ( stripos($zName,$obj->getName()) !== false || stripos($obj->getName(),$zName) !== false ) {
 							$sql = "select count(*) as cnt from eqLogic where name = '" . $zName . "' and object_id = " . $obj->getId();
 							$dbResults = DB::Prepare($sql, array(), DB::FETCH_TYPE_ALL);
@@ -1993,7 +2013,7 @@ class evohome extends eqLogic {
 				if ( $syncVirtual && $zone["typeEqu"] != self::TYPE_EQU_CONSOLE ) {
 					logDebug("-- check virtual");
 					foreach (eqLogic::byType("virtual") as $tmp) {
-						if ( $tmp->getConfiguration(self::CONF_ZONE_ID) == $zone["id"] ) {
+						if ( $tmp->getLogicalId() == $zone["id"] ) {
 							logDebug("-- remove existing");
 							$tmp->remove();
 							break;
@@ -2003,7 +2023,7 @@ class evohome extends eqLogic {
 					$virtual = new virtual();
 					$virtual->setEqType_name("virtual");
 					$virtual->setName("(v) " . $eqLogic->getName());
-					$virtual->setConfiguration(self::CONF_ZONE_ID, $zone["id"]);
+					//$virtual->setConfiguration(self::CONF_ZONE_ID, $zone["id"]);
 					$virtual->setIsVisible(0);
 					$virtual->setIsEnable(1);
 					$virtual->setObject_id($eqLogic->getObject_id());
@@ -2013,6 +2033,7 @@ class evohome extends eqLogic {
 					$virtual->setDisplay("showOnmobile", "0");*/
 					$virtual->save();	// used to generate the id
 					$virtual->copyFromEqLogic($eqLogic->getId());
+					//TODO ?? LogicalID change against origin
 					$cmd = cmd::byTypeEqLogicNameCmdName('virtual', $virtual->getName(), self::i18n('Type Consigne'));
 					if (is_object($cmd)) {
 						logDebug("-- remove Type Consigne");
@@ -2029,7 +2050,7 @@ class evohome extends eqLogic {
 		if ( isDebug() ) logDebug("<<OUT - ajaxSynchronizeTH(EUI=$execUnitId)");
 		unlockCron();
 		doCacheRemove(self::CACHE_SYNCHRO_RUNNING);
-		return array("success"=>true, "nbAdded"=>$nbAdded);
+		return array("success"=>true, "added"=>$nbAdded);
 	}
 
 	/************************ Actions ****************************/
@@ -2103,7 +2124,7 @@ class evohome extends eqLogic {
 		$fileName = $parameters[self::ARG_FILE_NAME];
 		$fileId = $parameters[self::ARG_FILE_ID];
 		$commentary = $parameters[self::ARG_FILE_REM];
-		$newSchedule = $parameters[self::ARG_FILE_NEW_SCHEDULE];
+		$newSchedule = array_key_exists(self::ARG_FILE_NEW_SCHEDULE,$parameters) ? $parameters[self::ARG_FILE_NEW_SCHEDULE] : null;
 		if ( isDebug() ) logDebug("IN>> - saveSchedule($fileName, $fileId, " . ($newSchedule == null ? '<currentSchedule>' : '<newSchedule>') . ')');
 		//self::waitingIAZReentrance('SaveSChedule-' . rand(0,10000));
 		//lockCron();

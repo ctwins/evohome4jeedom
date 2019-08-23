@@ -43,7 +43,7 @@ $eqLogics = eqLogic::byType($plugin->getId());
 				echo '<div class="eqLogicDisplayCard cursor" data-eqLogic_id="' . $eqLogic->getId() . '" style="text-align:center;background-color:#ffffff;height:200px;margin-bottom:10px;padding:5px;border-radius:2px;width:160px;margin-left:10px;' . $opacity . '" >';
 				$typeEqu = $eqLogic->getConfiguration(evohome::CONF_TYPE_EQU);
 				$modelType = $eqLogic->getConfiguration(evohome::CONF_MODEL_TYPE);
-				$zoneId = $eqLogic->getConfiguration(evohome::CONF_ZONE_ID);
+				$zoneId = $eqLogic->getLogicalId();
 				if ( $zoneId == evohome::ID_NO_ZONE ) $img = 'men_at_work.png';
 				else if ( $typeEqu == evohome::TYPE_EQU_CONSOLE || $zoneId == evohome::OLD_ID_CONSOLE) $img = $modelType == evohome::MODEL_TYPE_ROUND_WIRELESS ? 'round-console-small.png' : 'console-small.png';
 				else $img = $modelType == evohome::MODEL_TYPE_ROUND_WIRELESS ? 'round-th-small.png' : 'hr92-small.png';
@@ -87,7 +87,7 @@ $eqLogics = eqLogic::byType($plugin->getId());
 										<select id="sel_object" class="eqLogicAttr form-control" data-l1key="object_id">
 											<option value="">{{Aucune}}</option>
 											<?php
-											foreach (object::all() as $object) {
+											foreach (jeeObject::all() as $object) {
 												echo '<option value="' . $object->getId() . '">' . $object->getName() . '</option>';
 											}
 											?>
@@ -144,7 +144,7 @@ $eqLogics = eqLogic::byType($plugin->getId());
 								<div class="form-group">
 									<label class="col-sm-3 control-label">{{Zone}}</label>
 									<div class="col-sm-8">
-										<input type="hidden" class="zoneId eqLogicAttr" data-l1key="configuration" data-l2key="zoneId"/>
+										<input type="hidden" class="zoneId eqLogicAttr" data-l1key="logicalId" />
 										<select class="zoneIdTmp form-control">
 											<option value="-2">{{Aucune}}</option>
 										</select>

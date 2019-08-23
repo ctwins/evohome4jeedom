@@ -78,7 +78,7 @@ try {
 		if ( $result["success"] == false ) {
 			ajax::error($result["message"]);
 		} else {
-			ajax::success(array('added'=>$result["addedd"]));
+			ajax::success(array('added'=>$result["added"]));
 		}
 	}
 
