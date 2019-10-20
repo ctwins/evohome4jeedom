@@ -192,7 +192,7 @@ class evohome extends eqLogic {
 		$ret['progress_file'] = jeedom::getTmpFolder(__CLASS__) . '/dependance';
 
 		// 0.4.2 - change dependency check
-		$x = system::getCmdSudo() . ' dpkg-query --show python-requests 2>nul | wc -l';
+		$x = system::getCmdSudo() . ' dpkg-query --show python-requests 2>/dev/null | wc -l';
 		$r = exec($x);
 		if ( isDebug() ) logDebug("dependancy_info 1/2 [$x] = [$r]");
 		if ($r == 0) {
