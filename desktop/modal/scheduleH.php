@@ -84,17 +84,17 @@ echo "<div id='scheduleTable'></div>";
 		<td style="text-align:-webkit-center;">
 			<table><tr>
 				<td>
-					<a id="prevSlice" class="btn btn-default glyphicon glyphicon-chevron-left myButton" onclick="_evs.goSlice(-1);" />
+					<a id="prevSlice" class="btn btn-default glyphicon2 glyphicon2-chevron-left myButton" onclick="_evs.goSlice(-1);" />
 				</td>
 				<td style="width:20px;"/>
 				<td>
-					<a class="btn btn-default glyphicon glyphicon-minus myButton" onclick="_evs.adjustHours(-1);" />
+					<a class="btn btn-default glyphicon2 glyphicon2-minus myButton" onclick="_evs.adjustHours(-1);" />
 				</td>
 				<td class="_vtop" >
 					<input id="hours" type="text" onchange="_evs.checkAppendAndValid();" class="form-control text-center myInput" value="01">
 				</td>
 				<td>
-					<a class="btn btn-default glyphicon glyphicon-plus myButton" onclick="_evs.adjustHours(1);" />
+					<a class="btn btn-default glyphicon2 glyphicon2-plus myButton" onclick="_evs.adjustHours(1);" />
 				</td>
 				<td style="font-size:8px;width:16px;padding-bottom:2px;">
 					<table width=100% style="text-align:center;">
@@ -103,27 +103,27 @@ echo "<div id='scheduleTable'></div>";
 					</table>
 				</td>
 				<td>
-					<a class="btn btn-default glyphicon glyphicon-minus myButton" onclick="_evs.adjustMinutes(-1);" />
+					<a class="btn btn-default glyphicon2 glyphicon2-minus myButton" onclick="_evs.adjustMinutes(-1);" />
 				</td>
 				<td class="_vtop">
 					<input id="minutes" type="text" onchange="_evs.checkAppendAndValid();" class="form-control text-center myInput" value="10">
 				</td>
 				<td>
-					<a class="btn btn-default glyphicon glyphicon-plus myButton" onclick="_evs.adjustMinutes(1);" />
+					<a class="btn btn-default glyphicon2 glyphicon2-plus myButton" onclick="_evs.adjustMinutes(1);" />
 				</td>
 				<td style="width:20px;"/>
 				<td>
-					<a class="btn btn-default glyphicon glyphicon-minus myButton" onclick="_evs.adjustSetpoint(-1);" />
+					<a class="btn btn-default glyphicon2 glyphicon2-minus myButton" onclick="_evs.adjustSetpoint(-1);" />
 				</td>
 				<td class="_vtop">
 					<input id="setpoint" type="text" onchange="_evs.checkAppendAndValid();" class="form-control text-center myInput" value="18.5">
 				</td>
 				<td>
-					<a class="btn btn-default glyphicon glyphicon-plus myButton" onclick="_evs.adjustSetpoint(1);" />
+					<a class="btn btn-default glyphicon2 glyphicon2-plus myButton" onclick="_evs.adjustSetpoint(1);" />
 				</td>
 				<td style="width:20px;"/>
 				<td>
-					<a id="nextSlice" class="btn btn-default glyphicon glyphicon-chevron-right myButton" onclick="_evs.goSlice(1);" />
+					<a id="nextSlice" class="btn btn-default glyphicon2 glyphicon2-chevron-right myButton" onclick="_evs.goSlice(1);" />
 				</td>
 				<td style="width:50px;"/>
 				<td>
