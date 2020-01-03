@@ -1,5 +1,20 @@
 Changelog - Evohome (for Jeedom)
 
+# [version 0.4.3] - 2020-01-03 - Opened window & Day view on Horizontal Schedule & Full Jeedom V4 compatibility
+
+## Improvements
+
+1. TH widget : "Opened window" detection reported with an icon : based upon setPoint = minHeat and state = Follow schedule
+2. Schedule, Horizontal view, from Console only : a new button appears to view all zones by day. This mode is also editable.
+2bis. Schedule / Edition mode : the "Copy" function is now controlled from a single modal
+3. Jeedom V4 compatibiliy ('cosmetic' revision as 0.4.2 was already ready for J4) : specially, the dark mode is taken into account
+
+## Fixes
+
+1. data reading : add Battery Low cases
+2. TH widget / integrated +/- did not work in certain cases
+
+
 # [version 0.4.2] - 2019-08-23 - PHP7.2 & Mobile app compatibilities
 
 ## Fixes

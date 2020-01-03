@@ -1,47 +1,45 @@
+			<a href="#eqLink#" style="font-size:1.1em;color:var(--link-color) !important;"><strong>#name_display#</strong></a>
+		</div>
+	</div>
 <div data-cmd_id="#etatId#" style="margin-left:0px;margin-right:0px;text-align:center;">
 	<div>
-		<img class="modeIntegrated setMode#id#" style="display:#displaySetModePopup#;cursor:pointer;height:30px;width:30px;" src="plugins/evohome/img/#etatImg#" />
+		<img class="modeIntegrated setMode#id#" style="background-color:#F6F6FF;display:#displaySetModePopup#;cursor:pointer;height:30px;width:30px;" src="plugins/evohome/img/#etatImg#" />
 		<div style="display:#etatUntilDisplay#;vertical-align:middle;">
 			&nbsp;&nbsp;&nbsp;&nbsp;<img style="height:15px;width:15px;" src="plugins/evohome/img/#etatUntilImg#" />
 			<span style="color:black;" title="#etatUntilFull#">&nbsp;#etatUntil#</span>
 		</div>
 	</div>
 	<div style="display:#statDisplay#;margin-top:6px;">
-		<span style="font-size:12px;color:black;">#statTitle#</span>
-		<select class="statScope#id#" style="font-size:11px;color:black;">
+		<span style="font-size:12px;">#statTitle#</span>
+		<select class="statScope#id#" style="color: var(--txt-color);font-size:11px;width:80px;padding:4px !important;">
 			<option value="0" #statScope0#>#statScopeTitle0#</option>
 			<option value="1" #statScope1#>#statScopeTitle1#</option>
 			<option value="2" #statScope2#>#statScopeTitle2#</option>
 			<option value="3" #statScope3#>#statScopeTitle3#</option>
 		</select>
 	</div>
-	<span style="font-size:12px;color:black;">#scheduleTitle#</span><br/>
-	<select id="scheduleList#id#" style="width:146px;font-size:11px;color:black;">#options#</select>
+	<span style="font-size:12px;">#scheduleTitle#</span><br/>
+	<select id="scheduleList#id#" style="color: var(--txt-color);width:146px;font-size:11px;padding:4px !important;">#scheduleOptions#</select>
 	<div style="height:2px;"></div>
-	<a class="saveSchedule#id# btn btn-btn-sm" style="background-color:#evoCmdBackgroundColor#;border-color:transparent;
-			line-height:8px;width:14px;padding-left:8px;padding-right:18px;padding-top:8px;padding-bottom:8px;"
+	<a class="saveSchedule#id# btn btn-sm" style="background-color:#evoCmdBackgroundColor# !important;border-color:transparent;"
 			title="#title.save#">
-		<span class="saveCaption#id# fa fa-circle" style="color:#evoSaveColor#;font-size:12px;" />
+		<span class="saveCaption#id# fa fa-circle" style="color:#evoSaveColor#;" />
 	</a>
-	<a class="showCS showCurrentSchedule#id# btn btn-btn-sm" style="background-color:#evoCmdBackgroundColor#;border-color:transparent;
-			line-height:8px;width:14px;padding-left:6px;padding-right:20px;padding-top:8px;padding-bottom:8px;"
+	<a class="showCS showCurrentSchedule#id# btn btn-sm" style="background-color:#evoCmdBackgroundColor# !important;border-color:transparent;"
 			title="#title.showCurrent#">
-		<span class="fa fxa-folder-open" style="font-size:12px;">Pc</span>
+		<span style="color:white !important;">Pc</span>
 	</a>
-	<a class="showCS showSavedSchedule#id# btn btn-btn-sm" style="background-color:#evoCmdBackgroundColor#;border-color:transparent;
-			line-height:8px;width:14px;padding-left:6px;padding-right:20px;padding-top:8px;padding-bottom:8px;"
+	<a class="showCS showSavedSchedule#id# btn btn-sm" style="background-color:#evoCmdBackgroundColor# !important;border-color:transparent;"
 			title="#title.showSelected#">
-		<span class="fa fxa-folder-open showSavedScheduleCaption#id#" style="font-size:12px;">Ps</span>
+		<span class="showSavedScheduleCaption#id#">Ps</span>
 	</a>
-	<a class="restoreSchedule#id# btn btn-btn-sm" style="background-color:#evoCmdBackgroundColor#;border-color:transparent;
-			line-height:8px;width:14px;padding-left:7px;padding-right:19px;padding-top:8px;padding-bottom:8px;"
+	<a class="restoreSchedule#id# btn btn-sm" style="background-color:#evoCmdBackgroundColor# !important;border-color:transparent;"
 			title="#title.restore#">
-		<span class="restaureCaption#id# glyphicon glyphicon-floppy-open" style="font-size:12px;"/>
+		<span class="restaureCaption#id# fas fa-file-download"/>
 	</a>
-	<a class="removeSchedule#id# btn btn-btn-sm" style="background-color:#evoCmdBackgroundColor#;border-color:transparent;
-			line-height:8px;width:14px;padding-left:5px;padding-right:21px;padding-top:8px;padding-bottom:8px;"
+	<a class="removeSchedule#id# btn btn-sm" style="background-color:#evoCmdBackgroundColor# !important;border-color:transparent;"
 			title="#title.delete#">
-		<span class="deleteCaption#id# glyphicon glyphicon-trash" style="font-size:12px;"/>
+		<span class="deleteCaption#id# fas fa-trash-alt"/>
 	</a>
 	<br/>
 </div>

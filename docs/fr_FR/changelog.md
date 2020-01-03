@@ -1,5 +1,21 @@
 Changelog - Evohome (for Jeedom)
 
+# [version 0.4.3] - 2020-01-03 - Opened window & Day view on horizontal Schedule & Full Jeedom V4 compatibility
+
+## Improvements
+
+1. TH widget : "Opened window" detection reported with an icon : based upon setPoint = minHeat and state = Follow schedule
+2. Schedule, Horizontal view, from Console only : a new button appears to view all zones by day. This mode is also editable.
+2bis. Schedule / Edition mode : the "Copy" function is now controlled from a single modal
+3. Jeedom V4 compatibiliy ('cosmetic' revision as 0.4.2 was already ready for J4) : specially, the dark mode is taken into account
+
+## Fixes
+
+1. data reading : add Battery Low cases
+2. TH widget / integrated +/- did not work in certain cases
+3. Invalid check for python-requests (thanks to github/titidnh)
+
+
 # [version 0.4.2] - 2019-08-23 - PHP7.2 & Mobile app compatibilities
 
 ## Fixes
@@ -95,6 +111,7 @@ Please note that, in this case, the reading could run, as the API return again a
 4. manual heatpoint setting opens now a popup so the duration can be adjusted
 
 # [version 0.3.2] - 2019-02-18 - fix #7 - the verbose edition
+
 ## Added
 1. General configuration
 	 - A refresh button appears, to aid the first installation

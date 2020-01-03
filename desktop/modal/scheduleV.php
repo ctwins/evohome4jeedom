@@ -26,11 +26,9 @@ if (!is_object($evohome)) {
 	throw new Exception(inner::i18n("L'équipement Evohome est introuvable sur l'ID {0}", $id));
 }
 $locId = evohome::getLocationId($evohome);
-
 if ($evohome->getEqType_name() != 'evohome') {
 	throw new Exception(inner::i18n("Cet équipement n'est pas du type attendu : {0}", $evohome->getEqType_name()));
 }
-
 $scheduleToShow = evohome::getSchedule($locId,$fileId);
 if ( !is_array($scheduleToShow) ) {
 	echo "Erreur de lecture<br/><br/>";
@@ -40,10 +38,17 @@ $currentSchedule = evohome::getSchedule($locId,evohome::CURRENT_SCHEDULE_ID);
 $zoneId = init(evohome::ARG_ZONE_ID);
 $typeSchedule = init("typeSchedule");
 $subTitle = evohome::getScheduleSubTitle($id,$locId,$fileId,$currentSchedule,$scheduleToShow,evohome::CFG_SCH_MODE_HORIZONTAL,$zoneId,$typeSchedule);
-echo "<script>";
+echo "<script>$('.ui-widget-overlay.ui-front').hide();";
 echo "$('#md_modal')[0].previousSibling.firstChild.innerHTML = \"$subTitle\";";
 // so the background is really white (and not transparent) when printing
 //echo "if ( $('#md_modal')[0].style.cssText.search('background') == -1 ) $('#md_modal')[0].style.cssText += 'background-color:white !important'";
+echo "$('#md_modal').dialog('option', 'width', 700);\n";
+if ( $zoneId != 0 ) {
+	echo "$('#md_modal').dialog('option', 'height', 'auto');\n";
+} else {
+	echo "$('#md_modal').dialog('option', 'height', jQuery(window).height() - 60);\n";
+}
+echo "$('#md_modal').dialog('option', 'position', {my:'center top', at:'center top+40', of:window});\n";
 echo "</script>";
 
 if ( array_key_exists('comment', $scheduleToShow) && $scheduleToShow['comment'] != '') {

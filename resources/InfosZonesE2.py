@@ -236,12 +236,16 @@ try:
 				if len(zone.activeFaults) > 0:
 					faultDetected = False
 					for fault in zone.activeFaults:
-						if fault['faultType'] == 'TempZoneSensorLowBattery':
+						# 0.4.3 - add TempZoneActuatorLowBattery and break (take the first default)
+						if fault['faultType'] == 'TempZoneSensorLowBattery' or fault['faultType'] == 'TempZoneActuatorLowBattery':
 							jZones = jZones + ',"battLow":"' + fault['since'] + '"'
 							faultDetected = True
-						elif fault['faultType'] == 'TempZoneSensorCommunicationLost':
+							break
+						# 0.4.3 - add TempZoneActuatorCommunicationLost and break (take the first default)
+						elif fault['faultType'] == 'TempZoneSensorCommunicationLost' or fault['faultType'] == 'TempZoneActuatorCommunicationLost':
 							jZones = jZones + ',"cnxLost":"' + fault['since'] + '"'
 							faultDetected = True
+							break
 					if not faultDetected:
 						jZones = jZones + ',"unwaitedFaults":' + json.dumps(zone.activeFaults)
 				if devicesV1 != None:

@@ -49,7 +49,7 @@ if (!isConnect('admin')) {
 			<?php
 			if ( count(evohome::getEquipments()) > 0 ) {
 				echo '<div class="col-lg-3" style="margin-top:24px;">';
-				echo	'<input id="resizeWhenSynchronize" type="checkbox" style="height:24px;width:24px;top: 4px!important;" class="resizeWhenSynchronize" />';
+				echo	'<input id="resizeWhenSynchronize" type="checkbox" style="width:24px;top: 4px!important;" class="resizeWhenSynchronize" />';
 				echo	'<label for="resizeWhenSynchronize" style="font-style:italic;">';
 				echo 	'{{Redimensionner les widgets existants}}';
 				echo	'</label>';
@@ -66,15 +66,15 @@ if (!isConnect('admin')) {
 			<input type="hidden" class="configKey evoShowingModes" data-l1key="evoShowingModes" />
 			<div class="col-lg-2" style="width:auto;">
 				<label>
-					<?php echo '<input class="form-control" type="radio" id="esm' . evohome::CFG_SHOWING_MODE_CONSOLE . '" name="esm"
-							value="' . evohome::CFG_SHOWING_MODE_CONSOLE . '" style="height:24px;width:24px;display:inline;
+					<?php echo '<input type="radio" id="esm' . evohome::CFG_SHOWING_MODE_CONSOLE . '" name="esm"
+							value="' . evohome::CFG_SHOWING_MODE_CONSOLE . '" style="width:24px;
     vertical-align:middle">'; ?>&nbsp;&nbsp;{{Intégré à la console}}
 				</label>
 			</div>
 			<div class="col-lg-2" style="width:auto;">
 				<label>
-					<?php echo '<input class="form-control" type="radio" id="esm' . evohome::CFG_SHOWING_MODE_POPUP . '" name="esm"
-							value="' . evohome::CFG_SHOWING_MODE_POPUP . '" style="height:24px;width:24px;display:inline;
+					<?php echo '<input type="radio" id="esm' . evohome::CFG_SHOWING_MODE_POPUP . '" name="esm"
+							value="' . evohome::CFG_SHOWING_MODE_POPUP . '" style="width:24px;
     vertical-align:middle">'; ?>&nbsp;&nbsp;{{Par popup}}
 				</label>
 			</div>
@@ -83,7 +83,7 @@ if (!isConnect('admin')) {
 			<div class="col-lg-4">&nbsp;</div>
 			<div class="col-lg-5">
 				<label>
-					<input class="configKey" type="checkbox" style="height:24px;width:24px;" data-l1key="evoRefreshBeforeSave" />
+					<input class="configKey" type="checkbox" style="width:24px;" data-l1key="evoRefreshBeforeSave" />
 					{{Forcer la lecture des données avant de sauvegarder la programmation}}
 				</label>
 			</div>
@@ -116,16 +116,16 @@ if (!isConnect('admin')) {
 			<input type="hidden" class="configKey evoTempUnit" data-l1key="evoTempUnit" />
 			<div class="col-lg-1" style="width:auto;">
 				<label>
-					<?php echo '<input class="form-control" type="radio" id="etu' . evohome::CFG_UNIT_CELSIUS . '" name="etu"
-							value="' . evohome::CFG_UNIT_CELSIUS . '" style="height:24px;width:24px;display:inline;
+					<?php echo '<input type="radio" id="etu' . evohome::CFG_UNIT_CELSIUS . '" name="etu"
+							value="' . evohome::CFG_UNIT_CELSIUS . '" style="width:24px;
     vertical-align:middle">'; ?>&nbsp;&nbsp;°C&nbsp;(Celsius)
 				</label>
 				<br/>
 			</div>
 			<div class="col-lg-2">
 				<label>
-					<?php echo '<input class="form-control" type="radio" id="etu' . evohome::CFG_UNIT_FAHRENHEIT . '" name="etu"
-							value="' . evohome::CFG_UNIT_FAHRENHEIT . '" style="height:24px;width:24px;display:inline;
+					<?php echo '<input type="radio" id="etu' . evohome::CFG_UNIT_FAHRENHEIT . '" name="etu"
+							value="' . evohome::CFG_UNIT_FAHRENHEIT . '" style="width:24px;
     vertical-align:middle">'; ?>&nbsp;&nbsp;°F&nbsp;(Fahrenheit)
 				</label>
 			</div>
@@ -150,15 +150,15 @@ if (!isConnect('admin')) {
 			<input type="hidden" class="configKey evoHeatPointSettingModes" data-l1key="evoHeatPointSettingModes" />
 			<div class="col-lg-2" style="width:auto;">
 				<label>
-					<?php echo '<input class="form-control" type="radio" id="hpsm' . evohome::CFG_HP_SETTING_MODE_INTEGRATED . '" name="hpsm"
-							value="' . evohome::CFG_HP_SETTING_MODE_INTEGRATED . '" style="height:24px;width:24px;display:inline;
+					<?php echo '<input type="radio" id="hpsm' . evohome::CFG_HP_SETTING_MODE_INTEGRATED . '" name="hpsm"
+							value="' . evohome::CFG_HP_SETTING_MODE_INTEGRATED . '" style="width:24px;
     vertical-align:middle">'; ?>&nbsp;&nbsp;{{Intégré au widget}}
 				</label>
 			</div>
 			<div class="col-lg-2" style="width:auto;">
 				<label>
-					<?php echo '<input class="form-control" type="radio" id="hpsm' . evohome::CFG_HP_SETTING_MODE_POPUP . '" name="hpsm"
-							value="' . evohome::CFG_HP_SETTING_MODE_POPUP . '" style="height:24px;width:24px;display:inline;
+					<?php echo '<input type="radio" id="hpsm' . evohome::CFG_HP_SETTING_MODE_POPUP . '" name="hpsm"
+							value="' . evohome::CFG_HP_SETTING_MODE_POPUP . '" style="width:24px;
     vertical-align:middle">'; ?>&nbsp;&nbsp;{{Par popup}}
 				</label>
 			</div>
@@ -172,15 +172,15 @@ if (!isConnect('admin')) {
 			<input type="hidden" class="configKey evoDefaultShowingScheduleMode" data-l1key="evoDefaultShowingScheduleMode" />
 			<div class="col-lg-2" style="width:auto;">
 				<label>
-					<?php echo '<input class="form-control" type="radio" id="eshm' . evohome::CFG_SCH_MODE_HORIZONTAL . '" name="eshm"
-							value="' . evohome::CFG_SCH_MODE_HORIZONTAL . '" style="height:24px;width:24px;display:inline;
+					<?php echo '<input type="radio" id="eshm' . evohome::CFG_SCH_MODE_HORIZONTAL . '" name="eshm"
+							value="' . evohome::CFG_SCH_MODE_HORIZONTAL . '" style="width:24px;
     vertical-align:middle">'; ?>&nbsp;&nbsp;{{Horizontal}}
 				</label>
 			</div>
 			<div class="col-lg-2" style="width:auto;">
 				<label>
-					<?php echo '<input class="form-control" type="radio" id="eshm' . evohome::CFG_SCH_MODE_VERTICAL . '" name="eshm"
-							value="' . evohome::CFG_SCH_MODE_VERTICAL . '" style="height:24px;width:24px;display:inline;
+					<?php echo '<input type="radio" id="eshm' . evohome::CFG_SCH_MODE_VERTICAL . '" name="eshm"
+							value="' . evohome::CFG_SCH_MODE_VERTICAL . '" style="width:24px;
     vertical-align:middle">'; ?>&nbsp;&nbsp;{{Vertical}}
 				</label>
 			</div>
@@ -189,7 +189,7 @@ if (!isConnect('admin')) {
 			<div class="col-lg-4">&nbsp;</div>
 			<div class="col-lg-5">
 				<label>
-					<input class="configKey" type="checkbox" style="height:24px;width:24px;" data-l1key="evoEditAvailable" />
+					<input class="configKey" type="checkbox" style="width:24px;" data-l1key="evoEditAvailable" />
 					{{Mode édition disponible}}
 				</label>
 			</div>
@@ -211,7 +211,7 @@ if (!isConnect('admin')) {
 			</div>
 			<span class="col-lg-4 control-label" style="text-align:left;">
 				<label>
-					<input class="configKey" type="checkbox" style="height:24px;width:24px;" data-l1key="evoLoadingSync" />
+					<input class="configKey" type="checkbox" style="width:24px;" data-l1key="evoLoadingSync" />
 					{{Synchronisation horloge (HH:MM, avec MM=intervalle*n)}}
 				</label>
 			</span>

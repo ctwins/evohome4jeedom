@@ -1,23 +1,15 @@
-<div id="plugin_container" class="eqLogic-widget eqLogic allowResize allowReorderCmd" style="width:#width#;height:#height#;background-color:#new-background-color#;color:#color#;#style#" data-category="" data-eqtype="evohome" data-eqLogic_id="#id#" data-eqLogic_uid="#uid#" data-version="#version#">
+<script type="text/javascript" src="plugins/evohome/core/template/dashboard/dashboard_min.js"></script>
+<div id="plugin_container" class="eqLogic-widget eqLogic allowResize allowReorderCmd" style="overflow:unset;width:#width#;height:#height#;color:var(--txt-color) !important;#style#;#new-background-color#" data-category="" data-eqtype="evohome" data-eqLogic_id="#id#" data-eqLogic_uid="#uid#" data-version="#version#">
 	<div>
-		<div style="display:#batteryImgDisplay#;float:left;margin-top:7px;margin-left:6px;background-color:#new-background-color#;">
+		<div style="display:#batteryImgDisplay#;float:left;margin-top:7px;margin-left:6px;#new-background-color#">
 			<img class="hoverBattShowA#id#"style="padding:1px;" src="plugins/evohome/img/#batteryImg#"/>
 			<div class="hoverBattShowB#id# hoverTLRShow"><span nobreak>&nbsp;#batteryImgTitle#&nbsp;</span></div>
 		</div>
 		<div style="float:right;margin-top:7px;margin-right:#iazMarginRight#px;">
-			<span class="hoverTLRShowA#id# fa #iazIcon#" style="background-color:#new-background-color#;cursor:pointer;font-size:#iazIconSize#px;vertical-align:top;color:#iazColorState#;"/>
+			<span class="hoverTLRShowA#id# #iazIcon#" style="cursor:pointer;font-size:#iazIconSize#px;vertical-align:top;color:#iazColorState#;"/>
 			<div class="hoverTLRShowB#id# hoverTLRShow"><span nobreak>&nbsp;#iazLastRead#&nbsp;</span></div>
 		</div>
 		<div class="widget-name" style="padding-top:4px;margin-right:24px;text-align:center;background-image:linear-gradient(to right,#background-color-B#,#background-color-A#);">
-			<a href="#eqLink#" style="color:black;font-size:1.1em;#hideEqLogicName#"><strong>#name_display#</strong></a>
-		</div>
-	</div>
-	<script type="text/javascript" src="plugins/evohome/core/template/dashboard/dashboard_min.js"></script>
-	<script>
-	evoRegisterHover(#id#,'Batt');
-	evoRegisterHover(#id#,'TLR');
-	evoShowMsgInfo('#evoMsgInfo#');
-	</script>
 
 	<!-- Widget console -->
 	#consoleContent#

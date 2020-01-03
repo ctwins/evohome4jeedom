@@ -129,6 +129,7 @@
         "Etat": "Etat",
         "Etes-vous sûr de vouloir rétablir la programmmation avec '{0}' ?": "Etes-vous sûr de vouloir rétablir la programmmation avec '{0}' ?",
         "Etes-vous sûr de vouloir supprimer la programmmation '{0}' ?": "Etes-vous sûr de vouloir supprimer la programmmation '{0}' ?",
+        "Fenêtre ouverte détectée": "Fenêtre ouverte détectée",
         "Fichier introuvable": "Fichier introuvable",
         "Fonction indisponible (erreur en API)": "Fonction indisponible (erreur en API)",
         "Forçage de la consigne programmée de {0}° jusqu'à {1}__": "Forçage de la consigne programmée de {0}° jusqu'à {1}",
@@ -220,11 +221,14 @@
         "Confirmez-vous la création de '{0}' ?": "Confirmez-vous la création de '{0}' ?",
         "Confirmez-vous la sauvegarde vers '{0}' ?": "Confirmez-vous la sauvegarde vers '{0}' ?",
         "Confirmez-vous le remplacement de la sauvegarde '{0}' ?": "Confirmez-vous le remplacement de la sauvegarde '{0}' ?",
-        "Copier": "Copier",
+        "Copie de '{0}' vers": "Copie de '{0}' vers",
+        "Copie": "Copie",
         "Dimanche": "Dimanche",
         "Editer": "Editer",
         "Enregistre la programmation vers '{0}'...": "Enregistre la programmation vers '{0}'...",
         "Jeudi": "Jeudi",
+        "Jour": "Jour",
+        "Jours": "Jours",
         "L'id du fichier programme ne peut être vide": "L'id du fichier programme ne peut être vide",
         "L'id ne peut être vide": "L'id ne peut être vide",
         "L'équipement Evohome est introuvable sur l'ID {0}__": "L'équipement Evohome est introuvable sur l'ID {0}",
@@ -244,6 +248,8 @@
         "Valider": "Valider",
         "Vendredi": "Vendredi",
         "Vous devez spécifier un nom pour le fichier de sauvegarde": "Vous devez spécifier un nom pour le fichier de sauvegarde",
-        "Vous ne pouvez pas supprimer la dernière tranche horaire": "Vous ne pouvez pas supprimer la dernière tranche horaire"
+        "Vous ne pouvez pas supprimer la dernière tranche horaire": "Vous ne pouvez pas supprimer la dernière tranche horaire",
+        "Zone": "Zone",
+        "Zones": "Zones"
     }
 }

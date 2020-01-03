@@ -1,19 +1,27 @@
+			<a href="#eqLink#" style="font-size:1.1em;color:#TH-color# !important;"><strong>#name_display#</strong></a>
+		</div>
+	</div>
+<script>
+evoRegisterHover(#id#,'Batt');
+evoRegisterHover(#id#,'TLR');
+evoShowMsgInfo('#evoMsgInfo#');
+</script>
 <div style="height:6px;"></div>
 <div class="TH1" style="display:#temperatureDisplay#;">
 	<div class="hoverTH" style="display:#minMaxDisplay#;">
 		<table class="hoverTHShowA#id# THSAt">
-			<tr><td class="fa fa-thermometer-full THSAd1">#statThMax#</td></tr>
-			<tr><td class="fa fa-thermometer-half THSAd2">#statThAvg#</td></tr>
-			<tr><td class="fa fa-thermometer-empty THSAd3">#statThMin#</td></tr>
+			<tr style="background-color:lightgray !important"><td class="fas fa-thermometer-full THSAd1" style="font-size:11px !important;">#statThMax#</td></tr>
+			<tr style="background-color:lightgray !important"><td class="fas fa-thermometer-half THSAd2" style="font-size:11px !important;">#statThAvg#</td></tr>
+			<tr style="background-color:lightgray !important"><td class="fas fa-thermometer-empty THSAd3" style="font-size:11px !important;">#statThMin#</td></tr>
 		</table>
 		<div class="hoverTHShowB#id# hoverTHShow">
-			<table border="1" width=97% style="background-color:unset;margin:6px;"><tbody>
+			<table border="1" width=97% class="tableCmd" style="background-color:rgba(var(--eq-bg-color), var(--opacity));xcolor:black;margin:6px;"><tbody>
 				<tr><td colspan="4" class="THSBd1">#name_display# : #statTitle#</td></tr>
 				<tr><td colspan="2">#statRazTimeTitle#</td><td colspan="2">#statRazTime#</td></tr>
 				<tr><td colspan="2">#statLastReadTitle#</td><td colspan="2">#statLastRead#</td></tr>
-				<tr><td class="fa fa-thermometer-full" style="padding-left:8px;">&nbsp;#statMaxTitle#&nbsp;</td><td colspan="2">#statThMax#&nbsp;<span style="font-style:italic;">(#statWhenMax#)</span></td><td style="width:90px;" align=center>-1°&nbsp;>&nbsp;#statWhenMinus1#</td></tr>
-				<tr><td class="fa fa-thermometer-half" style="padding-left:8px;">&nbsp;#statAvgTitle#&nbsp;</td><td colspan="3">#statThAvg#&nbsp;<span style="font-style:italic;">(#statNbPoints#)</span></td></tr>
-				<tr><td class="fa fa-thermometer-empty" style="padding-left:8px;">&nbsp;#statMinTitle#&nbsp;</td><td colspan="2">#statThMin#&nbsp;<span style="font-style:italic;">(#statWhenMin#)</span></td><td align=center>+1°&nbsp;>&nbsp;#statWhenPlus1#</td></tr>
+				<tr><td class="fas fa-thermometer-full" style="padding-left:8px;">&nbsp;#statMaxTitle#&nbsp;</td><td colspan="2">#statThMax#&nbsp;<span style="font-style:italic;">(#statWhenMax#)</span></td><td style="width:90px;" align=center>-1°&nbsp;>&nbsp;#statWhenMinus1#</td></tr>
+				<tr><td class="fas fa-thermometer-half" style="padding-left:8px;">&nbsp;#statAvgTitle#&nbsp;</td><td colspan="3">#statThAvg#&nbsp;<span style="font-style:italic;">(#statNbPoints#)</span></td></tr>
+				<tr><td class="fas fa-thermometer-empty" style="padding-left:8px;">&nbsp;#statMinTitle#&nbsp;</td><td colspan="2">#statThMin#&nbsp;<span style="font-style:italic;">(#statWhenMin#)</span></td><td align=center>+1°&nbsp;>&nbsp;#statWhenPlus1#</td></tr>
 			</tbody></table>
 		 </div>
 	</div>
@@ -32,17 +40,17 @@
 </div>
 
 <table class="tableCmd TH2t" style="display:#consigneDisplay#;"><tr>
-<td class="showCurrentScheduleC#id# showCS TH2d1">
-	<a class="btn btn-sm TH2d1a"><i class="fa fxa-folder-open">Pc</i></a>
+<td class="showCurrentScheduleC#zoneId# showCS TH2d1">
+	<a class="TH2d1a btn btn-sm" style="background-color:inherit !important;color:white !important;">Pc</a>
 </td>
-<td class="showCurrentScheduleS#id# showCS TH2d2">
-	<a class="btn btn-sm TH2d2a"><i class="fa fxa-folder-open showSavedScheduleCaption#id#">Ps</i></a>
+<td class="showCurrentScheduleS#zoneId# showCS TH2d2">
+	<a class="TH2d2a btn btn-sm showSavedScheduleCaption#id#" style="background-color:inherit !important;color:white !important;">Ps</a>
 </td>
-<td class="zidBackConsigneVx#zoneId#" width="100%" style="text-align:center;background-color:#consigneBG#">
+<td class="zidBackConsigneVx#zoneId#" width="100%" style="text-align:center;font-weight:400;background-color:#consigneBG#">
 	<span data-cmd_id="#consigneId#" class="zidConsigneVx#zoneId# cmd-widget history cursor TH2d3s1" style="color:#evoConsigneColor#;" title="#consigneTip#">#consigne#</span>
 	<span class="zidSpDisplayImgVx#zoneId# TH2d3s2" style="display:#consigneTypeDisplay#;" title="#consigneTypeUntilFull#">
 		<img class="zidSpImgVx#zoneId# TH2d3s2i" src="plugins/evohome/img/#consigneTypeImg#"/>
-		<span class="zidConsigneTypeUntilVx#zoneId#">&nbsp;#consigneTypeUntil#</span>
+		<span class="zidConsigneTypeUntilVx#zoneId#" style="color:white;">&nbsp;#consigneTypeUntil#</span>
 	</span>
 	<span class="zidSetTempSpinnerVx#zoneId# fa fa-spinner fa-pulse" style="display:none;margin-top:9px;margin-left:4px;"/>
 	<div style="display:#minMaxDisplay#;float:right;padding-top:3px;padding-right:3px;">
@@ -61,19 +69,19 @@
 	</a>
 </td>
 <td style="display:#setConsigneDisplayV1#;">
-	<a class="zidAdjustV1Reset#zoneId# btn btn-sm TH2d5" title="#backScheduleTitle#">
-		<span class="zidAdjustV1ResetIcon#zoneId# glyphicon glyphicon-repeat" style="color:white;" />
+	<a class="zidAdjustV1Reset#zoneId# btn btn-sm TH2d5" title="#backScheduleTitle#v">
+		<span class="zidAdjustV1ResetIcon#zoneId# fas fa-redo" style="color:white;" />
 	</a>
 	<a class="zidAdjustV1Lowest#zoneId# btn btn-sm TH2d5">
 		<span class="zidAdjustV1LowestIcon#zoneId#" style="font-weight:100;">min</span>
 	</a>
 </td>
 <td style="display:#setConsigneDisplayV2#;">
-	<a class="zidAdjustV2Reset#zoneId# btn btn-sm TH2d5" style="width:20px;height:15px;" title="#backScheduleTitle#">
-		<span class="zidAdjustV2ResetIcon#zoneId# glyphicon glyphicon-repeat" style="color:white;" />
+	<a class="zidAdjustV2Reset#zoneId# btn btn-sm TH2d5" title="#backScheduleTitle#">
+		<span class="zidAdjustV2ResetIcon#zoneId# fas fa-redo" style="color:white;" />
 	</a>
-	<a class="zidAdjustV2#zoneId# btn btn-sm TH2d5" style="height:15px;">
-		<span class="zidAdjustV2Icon#zoneId#" style="font-weight:100;">
+	<a class="zidAdjustV2#zoneId# btn btn-sm TH2d5">
+		<span class="zidAdjustV2Icon#zoneId#" style="font-weight:100;color:white;">
 			<span class="fa fa-minus-circle" />
 			<span class="fa fa-plus-circle" />
 		</span>

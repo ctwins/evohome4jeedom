@@ -129,6 +129,7 @@
         "Etat": "State",
         "Etes-vous sûr de vouloir rétablir la programmmation avec '{0}' ?": "Do you confirm the loading with '{0}' ?",
         "Etes-vous sûr de vouloir supprimer la programmmation '{0}' ?": "Do you confirm the removing of '{0}' ?",
+        "Fenêtre ouverte détectée": "Opened Window detected",
         "Fichier introuvable": "File not found",
         "Fonction indisponible (erreur en API)": "Unavailable functionnality (API error)",
         "Forçage de la consigne programmée de {0}° jusqu'à {1}__": "Enforces the scheduled heatpoint of {0}° until {1}",
@@ -178,7 +179,7 @@
         "Semaine": "Week",
         "Set Consigne": "Set Consigne",
         "Set consigne {0}° sur {1}__": "Set consigne {0}° on {1}",
-        "Set Consigne zone {0} : valeurs reçues identiques aux valeurs courantes (consigne, durée)": "Set Consigne zone {0} : requested values are same as the current ones (heatpoint, duration)",
+        "Set Consigne zone {0} : valeurs reçues identiques aux valeurs courantes (consigne, durée)": "Set Consigne area {0} : requested values are same as the current ones (heatpoint, duration)",
         "Set Consigne est indisponible : API off": "Set Consigne is unavailable : API off",
         "Set Consigne est indisponible : mode de présence incompatible": "Set Consigne is unavailable : no compatible presence mode",
         "Statistiques de la semaine": "Statistics of the week",
@@ -220,11 +221,14 @@
         "Confirmez-vous la création de '{0}' ?": "Do you confirm the creation of '{0}' ?",
         "Confirmez-vous la sauvegarde vers '{0}' ?": "Do you confirm the saving to '{0}' ?",
         "Confirmez-vous le remplacement de la sauvegarde '{0}' ?": "Do you confirm the overide of '{0}' ?",
-        "Copier": "Copy",
+        "Copie de '{0}' vers": "Copy from '{0}' to",
+        "Copie": "Copy",
         "Dimanche": "Sunday",
         "Editer": "Edit",
         "Enregistre la programmation vers '{0}'...": "Saving the schedule to '{0}'...",
         "Jeudi": "Thursday",
+        "Jour": "Day",
+        "Jours": "Days",
         "L'id du fichier programme ne peut être vide": "The schedule file ID can not be empty",
         "L'id ne peut être vide": "The ID can not be empty",
         "L'équipement Evohome est introuvable sur l'ID {0}__": "The Evohome is unreachable on the ID {0}",
@@ -244,6 +248,8 @@
         "Valider": "Valid",
         "Vendredi": "Friday",
         "Vous devez spécifier un nom pour le fichier de sauvegarde": "You must set a filename",
-        "Vous ne pouvez pas supprimer la dernière tranche horaire": "You can not remove the last slice"
+        "Vous ne pouvez pas supprimer la dernière tranche horaire": "You can not remove the last slice",
+        "Zone": "Area",
+        "Zones": "Areas"
     }
 }

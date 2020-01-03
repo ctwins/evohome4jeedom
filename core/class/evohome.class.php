@@ -22,7 +22,7 @@ require_once 'evohome.utils.php';
 
 class evohome extends eqLogic {
 	//public static $_widgetPossibility = array('custom' => true, 'custom::layout' => false);
-	
+
 	const CFG_USER_NAME = 'evoUserName';
 	const CFG_PASSWORD = 'evoPassword';
 	const CFG_LOCATION_DEFAULT_ID = -1;
@@ -192,7 +192,8 @@ class evohome extends eqLogic {
 		$ret['progress_file'] = jeedom::getTmpFolder(__CLASS__) . '/dependance';
 
 		// 0.4.2 - change dependency check
-		$x = system::getCmdSudo() . ' dpkg-query --show python-requests 2>nul | wc -l';
+		// 0.4.3 - change 2>nul >> 2>dev/null (thanks github/titidnh)
+		$x = system::getCmdSudo() . ' dpkg-query --show python-requests 2>/dev/null | wc -l';
 		$r = exec($x);
 		if ( isDebug() ) logDebug("dependancy_info 1/2 [$x] = [$r]");
 		if ($r == 0) {
@@ -1096,20 +1097,21 @@ class evohome extends eqLogic {
 			$replace_action['#etatUntilDisplay#'] = 'none';
 		}
 
-		$selectStyle = ' selected style="background-color:green;color:white;"';
+		$selectStyle = ' selected style="background-color:green !important;color:white !important;"';
+		$unselectStyle = ' style="background-color:#efefef !important;color:black !important;"';
 		$statCmd = $this->getCmd(null,self::CMD_STATISTICS_ID);
 		$replace_action['#statDisplay#'] = (is_object($statCmd) && $statCmd->getIsVisible()) ? "block" : "none";
 		if ( $replace_action['#statDisplay#'] == 'block') {
 			$statScope = !is_object($statCmd) ? 1 : $statCmd->execCmd();
 			if ( $statScope === '' ) $statScope = 0;
 			$replace_action['#statTitle#'] = self::i18n('Statistiques');
-			$replace_action['#statScope0#'] = $statScope == 0 ? $selectStyle : '';
+			$replace_action['#statScope0#'] = $statScope == 0 ? $selectStyle : $unselectStyle;
 			$replace_action['#statScopeTitle0#'] = self::i18n('Désactivé');
-			$replace_action['#statScope1#'] = $statScope == 1 ? $selectStyle : '';
+			$replace_action['#statScope1#'] = $statScope == 1 ? $selectStyle : $unselectStyle;
 			$replace_action['#statScopeTitle1#'] = self::i18n('Jour');
-			$replace_action['#statScope2#'] = $statScope == 2 ? $selectStyle : '';
+			$replace_action['#statScope2#'] = $statScope == 2 ? $selectStyle : $unselectStyle;
 			$replace_action['#statScopeTitle2#'] = self::i18n('Semaine');
-			$replace_action['#statScope3#'] = $statScope == 3 ? $selectStyle : '';
+			$replace_action['#statScope3#'] = $statScope == 3 ? $selectStyle : $unselectStyle;
 			$replace_action['#statScopeTitle3#'] = self::i18n('Mois');
 		}
 
@@ -1118,14 +1120,14 @@ class evohome extends eqLogic {
 		$jsScheduleFileId = 0;
 		foreach ( self::getHebdoNames($locId) as $hn) {
 			$options .= '<option value="' . $hn['id'] . '"';
-			if ( $hn['id'] == 0 || $hn['id'] == $scheduleFileId ) $options .= $selectStyle;
+			$options .= ( $hn['id'] == 0 || $hn['id'] == $scheduleFileId ) ? $selectStyle : $unselectStyle;
 			if ( $hn['id'] == $scheduleFileId ) {
 				$jsScheduleFileId = $scheduleFileId;
 			}
 			$options .= '>' . $hn['name'] . '</option>';
 		}
 		$replace_action['#scheduleFileId#'] = $jsScheduleFileId;
-		$replace_action['#options#'] = $options;
+		$replace_action['#scheduleOptions#'] = $options;
 
 		// indicateur schedule modifié
 		$saveColor = 'white';
@@ -1287,16 +1289,16 @@ class evohome extends eqLogic {
 		$consigneTypeImg = null;
 		$cmdConsigneInfos = $this->getCmd(null,self::CMD_CONSIGNE_TYPE_ID);
 		if ( is_object($cmdConsigneInfos) ) {	// 0.4.1 - remove the check of isVisible (useless and side effects in case of)
+			$consigneInfos = explode(';', $cmdConsigneInfos->execCmd());
 			# $consigneInfos[0] = FollowSchedule / PermanentOverride / TemporaryOverride
 			# $consigneInfos[1] = 2018-01-28T23:00:00Z / <empty>
-			# $consigneInfos[2] = Celsius/??
+			# $consigneInfos[2] = Celsius/Fahrenheit
 			# $consigneInfos[3] = 0.5 (step)	)
-			# $consigneInfos[4] = 5 (min)		) 0.4.1 - these 3 values are now "adjusted by unit"
-			# $consigneInfos[5] = 25 (max)		)
+			# $consigneInfos[4] = 5 (min)  == self->getConfiguration('minHeat')		) 0.4.1 - these 3 values are now "adjusted by unit"
+			# $consigneInfos[5] = 25 (max) == self->getConfiguration('maxHeat')		)
 			# $consigneInfos[6] = delta previous measure (0/-1:+1)
 			# $consigneInfos[7] = timeBattLow / <empty>
 			# $consigneInfos[8] = timeCnxLost / <empty>
-			$consigneInfos = explode(';', $cmdConsigneInfos->execCmd());
 			$consignePair = self::getConsigneScheduled($scheduleCurrent,$zoneId);
 			$consigneScheduled = $consignePair == null ? null : self::adjustByUnit($consignePair['TH'],$consigneInfos[2]);	// 0.4.1 - adjust added
 			$sConsigneScheduled = $consigneScheduled == null ? ("[".self::i18n("non déterminé")."]") : $consigneScheduled;
@@ -1327,9 +1329,17 @@ class evohome extends eqLogic {
 				$adjustAvailable = false;		// unavailable when AWAY mode
 			} else if ( !$isEco &&!$isDayOff && !$isCustom && $consigneInfos[0] == self::FollowSchedule ) {
 				if ( $consigneScheduled != null && $consigne != null ) {
+					// SetPoint was auto-adjusted, let's see :
 					if ( $consigne < $consigneScheduled ) {
-						$consigneTypeUntilFull = self::i18n("Optimisation active : consigne inférieure à suivre active (remplace {0}°)", $consigneScheduled);
-						$consigneTypeImg = 'down green.svg';
+						$minHeat = $consigneInfos[4];
+						//$minHeat = self->getConfiguration('minHeat');
+						if ( $consigne == $minHeat ) {
+							$consigneTypeUntilFull = self::i18n("Fenêtre ouverte détectée");
+							$consigneTypeImg = 'o-window.png" style="height:15px;';
+						} else {
+							$consigneTypeUntilFull = self::i18n("Optimisation active : consigne inférieure à suivre active (remplace {0}°)", $consigneScheduled);
+							$consigneTypeImg = 'down green.svg';
+						}
 					} else if ( $consigne > $consigneScheduled ) {
 						$consigneTypeUntilFull = self::i18n("Optimisation active : consigne supérieure à suivre active (remplace {0}°)", $consigneScheduled);
 						$consigneTypeImg = 'up red.svg';
@@ -1498,6 +1508,7 @@ class evohome extends eqLogic {
 
 		// new 0.4.1 - adjust background title of the widgets
 		$bctMode = evoGetParam(self::CFG_BACKCOLOR_TITLE_MODES,self::CFG_BCT_MODE_NONE);
+		$THcolor = 'var(--link-color)';
 		//logDebug("bctMode = $bctMode");
 		if ( $bctMode == self::CFG_BCT_MODE_NONE ) {
 			// nothing to do
@@ -1507,20 +1518,25 @@ class evohome extends eqLogic {
 		} else if ( $bctMode == self::CFG_BCT_MODE_SYSTEM ) {
 			$tA = $replace['#background-color#'];
 			$tB = $replace['#background-color#'];
+			if ( jeedom::version() < 4 ) $THcolor = '#fff';
 			$tBp = $tB;
 		} else if ( $bctMode == self::CFG_BCT_MODE_2T ) {
 			if ( $temperature >= intval(evoGetParam(self::CFG_BCT_2N_B,28)) ) {
 				$tA = /*backgroundTopGradient ? "rgb(255,0,0,0)" :*/ "rgb(255,50,0,1)";
 				$tB = "rgb(255,50,0,1)";
+				$THcolor = '#fff';
 			} else if ( $temperature >= intval(evoGetParam(self::CFG_BCT_2N_A,26)) ) {
 				$tA = /*backgroundTopGradient ? "rgb(255,171,0,0)" :*/ "rgb(255,171,0,1)";
 				$tB = "rgb(255,171,0,1)";
+				$THcolor = '#fff';
 			} else {
 				$tA = $replace['#background-color#'];
 				$tB = $replace['#background-color#'];
+				if ( jeedom::version() < 4 ) $THcolor = '#fff';
 			}
 			$tBp = $tB;
 		} else { // CFG_BCT_MODE_NT
+			$THcolor = '#fff';
 			$tA = "rgb(0,0,0,0)";
 			$tB = "";
 			$pc = 75;
@@ -1536,6 +1552,7 @@ class evohome extends eqLogic {
 		$replace['#background-color-A#'] = $tA;
 		$replace['#background-color-B#'] = $tBp;
 		$replace['#background-color-Bf#'] = $tB;
+		$replace['#TH-color#'] = $THcolor;
 
 		return $replace;
 	}
@@ -1653,9 +1670,11 @@ class evohome extends eqLogic {
 		$this->removeToHtmlProperties();
 
 		$replace['#taskIsRunning#'] = $taskIsRunning ? "true" : "false";
-		$replace['#new-background-color#'] = '#F6F6FF';
 		$replace['#evoBackgroundColor#'] = '#F6F6FF';
 		$replace['#evoCmdBackgroundColor#'] = '#3498db';
+		if ( jeedom::version() < 4 ) {
+			$replace['#new-background-color#'] = 'background-color:#F6F6FF !important;';
+		}
 
 		$stateUnread = $states[self::STATE_UNREAD];
 		$stateCnxLost = $states[self::STATE_CNX_LOST];
@@ -1668,7 +1687,7 @@ class evohome extends eqLogic {
 		$replace['#evoTemperatureColor#'] = $stateUnread ? 'gray' : 'black';
 		$replace['#evoConsigneColor#'] = $stateUnread ? 'lightgray' : 'white';
 		$replace['#iazColorState#'] = $stateIsRunning ? 'crimson' : ($stateUnread || $stateCnxLost != '' ? 'red' : ($stateIsAccurate || evoGetParam(self::CFG_ACCURACY,1) == 1 ? 'lightgreen' : 'coral'));
-		$replace['#iazIcon#'] = $stateIsRunning ? 'fa-spinner fa-pulse' : ($stateCnxLost != '' ? 'fa-wifi' : ($stateUnread ? (!$stateCronActive ? 'fa-bell-slash-o' : 'fa-chain-broken') : 'fa-circle'));
+		$replace['#iazIcon#'] = $stateIsRunning ? 'fas fa-spinner fa-pulse' : ($stateCnxLost != '' ? 'fas fa-wifi' : ($stateUnread ? (!$stateCronActive ? 'fas fa-bell-slash' : 'fas fa-unlink') : 'fas fa-circle'));
 		$replace['#iazIconSize#'] = $stateIsRunning ? '16' : ($stateCnxLost != '' ? '14' : '10');
 		$replace['#iazMarginRight#'] = $stateIsRunning ? '5' : ($stateCnxLost != '' ? '5' : '7');
 
@@ -2301,15 +2320,26 @@ class evohome extends eqLogic {
 			logDebug("<<OUT - setConsigne");
 			return;
 		}
-		// -- 0.4.1 - if the requested value is the same as the current one, we could return, but we have to check the duration... $infosZone / status, until
-		foreach ( $infosZones['zones'] as &$infosZone ) {
-			if ( $infosZone['zoneId'] == $zoneId ) {
-				/*$tmp = $this->getCmd(null,self::CMD_CONSIGNE_ID);
-				$oldConsigne = $tmp->execCmd();	// btw, this value is against unit chosen*/
-				$oldConsigne = self::adjustByUnit($infosZone['setPoint'],$infosZone['units']);
-				$oldStatus = $infosZone['status'];
-				$oldUntil = $infosZone['until'];
-				$deviceUnit = $infosZone['units'];
+		$cmdConsigne = $this->getCmd(null,self::CMD_CONSIGNE_ID);
+		$cmdConsigneInfos = $this->getCmd(null,self::CMD_CONSIGNE_TYPE_ID);
+		if ( is_object($cmdConsigne) && is_object($cmdConsigneInfos) ) {
+			$oldConsigne = $cmdConsigne->execCmd();	// btw, this value is against unit chosen
+			$oldConsigneInfos = explode(';', $cmdConsigneInfos->execCmd());
+			# $oldConsigneInfos[0] = FollowSchedule / PermanentOverride / TemporaryOverride
+			# $oldConsigneInfos[1] = 2018-01-28T23:00:00Z / <empty>
+			# $oldConsigneInfos[2] = Celsius/Fahrenheit
+			# ...
+			$oldStatus = $oldConsigneInfos[0];
+			$oldUntil = $oldConsigneInfos[1];
+			$deviceUnit = $oldConsigneInfos[2];
+		} else {
+			foreach ( $infosZones['zones'] as &$infosZone ) {
+				if ( $infosZone['zoneId'] == $zoneId ) {
+					$oldConsigne = $infosZone['setPoint'];
+					$oldStatus = $infosZone['status'];
+					$oldUntil = $infosZone['until'];
+					$deviceUnit = $infosZone['units'];
+				}
 				break;
 			}
 		}
@@ -2339,6 +2369,7 @@ class evohome extends eqLogic {
 		}
 		$newStatus = $data['value'] == 0 ? self::FollowSchedule : ($data['until'] == null ? self::PermanentOverride : self::TemporaryOverride);
 		$newUntil = $data['until'] == null ? 'NA' : $data['until'];
+		if ( isDebug() ) logDebug("consigne=$oldConsigne<>$params[3] ; status=$oldStatus<>$newStatus ; until=$oldUntil<>$newUntil");
 		if ( $oldConsigne == $params[3] && $oldStatus == $newStatus && $oldUntil == $newUntil ) {
 			$msgInfo = $byScenario . self::i18n("Set Consigne zone {0} : valeurs reçues identiques aux valeurs courantes (consigne, durée)", $zoneId);
 			logError($msgInfo);

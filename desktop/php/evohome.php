@@ -8,62 +8,52 @@ $eqLogics = eqLogic::byType($plugin->getId());
 ?>
 
 <div class="row row-overflow">
-	<div class="col-lg-2 col-md-3 col-sm-4">
-		<div class="bs-sidebar">
-			<ul id="ul_eqLogic" class="nav nav-list bs-sidenav">
-				<li class="filter" style="margin-bottom:5px;">
-					<input class="filter form-control input-sm" placeholder="{{Rechercher}}" style="width:100%"/>
-				</li>
-				<?php foreach ($eqLogics as $eqLogic) {
-					echo '<li class="cursor li_eqLogic" data-eqLogic_id="' . $eqLogic->getId() . '"';
-					if ( !$eqLogic->getIsEnable() ) echo 'style="' . jeedom::getConfiguration('eqLogic:style:noactive') . '"';
-					echo '><a>' . $eqLogic->getHumanName(true) . '</a>';
-					echo '</li>';
-				} ?>
-			</ul>
-		</div>
-	</div>
-
-	<div class="col-lg-10 col-md-9 col-sm-8 eqLogicThumbnailDisplay" style="border-left:solid 1px #EEE;padding-left:25px;">
-		<legend>{{Installation}}</legend>
-		<legend><i class="fa fa-cog"></i>  {{Gestion}}</legend>
+	<div class="col-xs-12 eqLogicThumbnailDisplay">
+		<legend><i class="fas fa-cog"></i>  {{Gestion}}</legend>
 		<div class="eqLogicThumbnailContainer">
-			<div class="cursor eqLogicAction" data-action="gotoPluginConf" style="text-align:center;background-color:#ffffff;height:120px;margin-bottom:10px;padding:5px;border-radius:2px;width:160px;margin-left:10px;">
-				<i class="fa fa-wrench" style="font-size:6em;color:#767676;"></i>
+			<div class="cursor eqLogicAction logoSecondary" style="background-color:var(--bg-modal-color) !important;" data-action="gotoPluginConf">
+				<i class="fas fa-wrench"></i>
 				<br>
-				<span style="font-size:1.1em;position:relative;top:15px;word-break:break-all;white-space:pre-wrap;word-wrap:break-word;color:#767676;">{{Configuration}}</span>
+				<span>{{Configuration}}</span>
 			</div>
 		</div>
-		<br/>
-		<legend><i class="fa fa-table"></i>  {{Composants}}</legend>
+		<legend><i class="fas fa-table"></i>  {{Composants}}</legend>
+		<input class="form-control" placeholder="{{Rechercher}}" id="in_searchEqlogic" />
+
 		<div class="eqLogicThumbnailContainer">
 			<?php
 			foreach ($eqLogics as $eqLogic) {
-				$opacity = ($eqLogic->getIsEnable() && $eqLogic->getIsVisible()) ? '' : jeedom::getConfiguration('eqLogic:style:noactive');
-				echo '<div class="eqLogicDisplayCard cursor" data-eqLogic_id="' . $eqLogic->getId() . '" style="text-align:center;background-color:#ffffff;height:200px;margin-bottom:10px;padding:5px;border-radius:2px;width:160px;margin-left:10px;' . $opacity . '" >';
+				$opacity = ($eqLogic->getIsEnable() && $eqLogic->getIsVisible()) ? '' : 'disableCard';
+				echo '<div class="eqLogicDisplayCard cursor '.$opacity.'" data-eqLogic_id="' . $eqLogic->getId() . '">';
 				$typeEqu = $eqLogic->getConfiguration(evohome::CONF_TYPE_EQU);
 				$modelType = $eqLogic->getConfiguration(evohome::CONF_MODEL_TYPE);
 				$zoneId = $eqLogic->getLogicalId();
 				if ( $zoneId == evohome::ID_NO_ZONE ) $img = 'men_at_work.png';
 				else if ( $typeEqu == evohome::TYPE_EQU_CONSOLE || $zoneId == evohome::OLD_ID_CONSOLE) $img = $modelType == evohome::MODEL_TYPE_ROUND_WIRELESS ? 'round-console-small.png' : 'console-small.png';
 				else $img = $modelType == evohome::MODEL_TYPE_ROUND_WIRELESS ? 'round-th-small.png' : 'hr92-small.png';
-				echo '<br/><img src="plugins/evohome/img/' . $img . '" /><br>';
-				echo '<span style="font-size:1.1em;position:relative;top:15px;word-break:break-all;white-space:pre-wrap;word-wrap:break-word;">' . $eqLogic->getHumanName(true,true) . '</span>';
+				echo '<br/><img src="plugins/evohome/img/' . $img . '" style="width:unset !important;min-height:unset !important;" /><br>';
+				echo '<span class="name" style="position:relative;white-space:pre-wrap;word-wrap:break-word;">' . $eqLogic->getHumanName(true,true) .  '</span>';
 				echo '</div>';
 			}
 			?>
 		</div>
 	</div>
 
-	<div class="col-lg-10 col-md-9 col-sm-8 eqLogic" style="border-left:solid 1px #EEE;padding-left:25px;display:none;">
-		<a class="btn btn-success eqLogicAction pull-right" data-action="save"><i class="fa fa-check-circle"></i> {{Sauvegarder}}</a>
-		<a class="btn btn-danger eqLogicAction pull-right" data-action="remove"><i class="fa fa-minus-circle"></i> {{Supprimer}}</a>
-		<a class="btn btn-default eqLogicAction pull-right" data-action="configure"><i class="fa fa-cogs"></i> {{Configuration avancée}}</a>
+	<div class="col-xs-12 eqLogic" style="display: none;">
+		<div class="input-group pull-right" style="display:inline-flex">
+			<span class="input-group-btn">
+				<a class="btn btn-default btn-sm eqLogicAction roundedLeft" data-action="configure"><i class="fa fa-cogs"></i> {{Configuration avancée}}</a>
+				<a class="btn btn-sm btn-success eqLogicAction" data-action="save"><i class="fas fa-check-circle"></i> {{Sauvegarder}}</a>
+				<a class="btn btn-danger btn-sm eqLogicAction roundedRight" data-action="remove"><i class="fas fa-minus-circle"></i> {{Supprimer}}</a>
+			</span>
+		</div>
+
 		<ul class="nav nav-tabs" role="tablist">
 			<li role="presentation"><a href="#" class="eqLogicAction" aria-controls="home" role="tab" data-toggle="tab" data-action="returnToThumbnailDisplay"><i class="fa fa-arrow-circle-left"></i></a></li>
-			<li role="presentation" class="active"><a href="#eqlogictab" aria-controls="home" role="tab" data-toggle="tab"><i class="fa fa-tachometer"></i> {{Equipement}}</a></li>
+			<li role="presentation" class="active"><a href="#eqlogictab" aria-controls="home" role="tab" data-toggle="tab"><i class="fas fa-tachometer-alt"></i> {{Equipement}}</a></li>
 			<li role="presentation"><a href="#commandtab" aria-controls="profile" role="tab" data-toggle="tab"><i class="fa fa-list-alt"></i> {{Commandes}}</a></li>
 		</ul>
+
 		<div class="tab-content" style="height:calc(100% - 50px);overflow:auto;overflow-x:hidden;">
 			<div role="tabpanel" class="tab-pane active" id="eqlogictab">
 				<div class="row">
@@ -71,9 +61,7 @@ $eqLogics = eqLogic::byType($plugin->getId());
 						<br/>
 						<form class="form-horizontal">
 							<fieldset>
-								<legend>
-									<i class="fa fa-arrow-circle-left eqLogicAction cursor" data-action="returnToThumbnailDisplay"></i> {{General}}
-								</legend>
+								<legend>{{General}}</legend>
 								<div class="form-group">
 									<label class="col-sm-2 control-label">{{Nom Equipement}}</label>
 									<div class="col-sm-8">
@@ -127,7 +115,7 @@ $eqLogics = eqLogic::byType($plugin->getId());
 									<div class="col-sm-8">
 										<script>var oldLocId = -2;</script>
 										<select class="locationId eqLogicAttr form-control" data-l1key="configuration" data-l2key="locationId">
-											<option value="-2">Aucun</option>
+											<option value="-2">{{Aucun}}</option>
 											<?php
 											$locations = evohome::listLocations();
 											if ( is_array($locations) ) {
@@ -144,6 +132,7 @@ $eqLogics = eqLogic::byType($plugin->getId());
 								<div class="form-group">
 									<label class="col-sm-3 control-label">{{Zone}}</label>
 									<div class="col-sm-8">
+										<!-- <input type="hidden" class="zoneId eqLogicAttr" data-l1key="configuration" data-l2key="zoneId"/> -->
 										<input type="hidden" class="zoneId eqLogicAttr" data-l1key="logicalId" />
 										<select class="zoneIdTmp form-control">
 											<option value="-2">{{Aucune}}</option>
