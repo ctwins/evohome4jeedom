@@ -13,6 +13,7 @@ Changelog - Evohome (for Jeedom)
 
 1. data reading : add Battery Low cases
 2. TH widget / integrated +/- did not work in certain cases
+3. Invalid check for python-requests (thanks to github/titidnh)
 
 
 # [version 0.4.2] - 2019-08-23 - PHP7.2 & Mobile app compatibilities
