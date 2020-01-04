@@ -1,3 +1,9 @@
+@font-face {
+    font-family: 'Glyphicons Halflings';
+    src: url('fonts/glyphicons-halflings-regular.eot');
+    src: url('fonts/glyphicons-halflings-regular.eot?#iefix') format('embedded-opentype'), url('fonts/glyphicons-halflings-regular.woff2') format('woff2'), url('fonts/glyphicons-halflings-regular.woff') format('woff'), url('fonts/glyphicons-halflings-regular.ttf') format('truetype'), url('fonts/glyphicons-halflings-regular.svg#glyphicons_halflingsregular') format('svg');
+}
+
 .TH1 { margin-left:10px;margin-right:10px;height:50px;text-align:center;background-color:lightgray; }
 .TH1s { font-size:32px;font-weight:400;font-family:'Open Sans', sans-serif;margin-top:3px; }
 .hoverTH { float:left;margin-left:5px;height:50px;padding-top:2px;cursor:pointer;color:black; }
@@ -21,3 +27,16 @@
 .TH2d4v2 { padding-top:4px;padding-bottom:4px;font-size:16px;line-height:30px;border-radius:4px;height:39px; }
 .TH2d5v2 { padding-left:4px;padding-right:4px;padding-top:1px;padding-bottom:8px;font-size:16px;border-radius:4px;height:39px; }
 .hourMinutes { width:80px; }
+.glyphicon2 { position: relative;top: 1px;display: inline-block;font-family: 'Glyphicons Halflings';font-style: normal;font-weight: normal;line-height: 1;-webkit-font-smoothing: antialiased;-moz-osx-font-smoothing: grayscale; }
+.glyphicon2-floppy-open:before { content: "\e176"; }
+.glyphicon2-trash:before { content: "\e020"; }
+.glyphicon2-chevron-up:before { content: "\e113"; }
+.glyphicon2-chevron-down:before { content: "\e114"; }
+.glyphicon2-repeat:before { content: "\e030" }
+.glyphicon2-plus:before { content: "\002b"; }
+.glyphicon2-minus:before { content: "\2212"; }
+.glyphicon2-remove:before { content: "\e014"; }
+.glyphicon2-arrow-left:before { content: "\e091"; }
+.glyphicon2-arrow-right:before { content: "\e092"; }
+.glyphicon2-chevron-left:before { content: "\e079"; }
+.glyphicon2-chevron-right:before { content: "\e080"; }
