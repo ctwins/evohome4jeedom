@@ -2075,7 +2075,10 @@ class evohome extends eqLogic {
 	/************************ Actions ****************************/
 
 	function doCaseAction($paramAction, $parameters) {
-		if ( isDebug() ) logDebug("doCaseAction($paramAction)");
+		if ( isDebug() ){ 
+			logDebug("doCaseAction($paramAction)");
+			logDebug("Params - doCaseAction : ".print_r($parameters, TRUE));
+		}
 		switch ($paramAction) {
 			// -- Console
 			case self::CMD_SET_MODE:
