@@ -93,7 +93,7 @@ class evohome extends eqLogic {
 	const ARG_FILE_REM = 'remark';
 	const ARG_FILE_NEW_SCHEDULE = 'scheduleData';
 	const ARG_ZONE_ID = 'zoneId';
-	const ARG_CONSIGNES_DATA = 'selectEvoHome';
+	const ARG_CONSIGNES_DATA = 'select';
 	const CURRENT_SCHEDULE_ID = 0;
 	// Codes selon WebAPI/emea/api/v1/temperatureControlSystem/%s/mode
 	const CODE_MODE_AUTO = 0;
