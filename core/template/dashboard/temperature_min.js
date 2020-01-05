@@ -388,7 +388,7 @@ function setTempVx(zoneId, sp, spx, until) {
         id: cmdSetConsigneId[zoneId],
         notify: true,
         value: {
-            'select': consignesData
+            'selectEvoHome': consignesData
         }
     });
     $('.zidConsigneVx' + zoneId)[0].innerHTML = spx;
