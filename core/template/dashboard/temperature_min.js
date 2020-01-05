@@ -383,6 +383,7 @@ function resetIconAndTitleVx(zoneId) {
 
 function setTempVx(zoneId, sp, spx, until) {
     consignesData = 'manuel#' + zoneId + '#' + sp + '#' + spx + '#' + (until == null ? "null" : until);
+    alert(consignesData);
     jeedom.cmd.execute({
         id: cmdSetConsigneId[zoneId],
         notify: true,
