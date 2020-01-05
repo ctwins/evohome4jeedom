@@ -733,12 +733,15 @@ class evohome extends eqLogic {
 	static function fillSetConsigneData($cmd,$zoneId,$minHeat,$maxHeat, $doSave=false) {
 		if ( isDebug() ) logDebug("adjust min=$minHeat/max=$maxHeat of the SET_CONSIGNE command on the zone=$zoneId");
 		// 0.4.1 - 1st choice to go back to the scheduled value
-		$list = "auto#$zoneId#0#0#null|" . self::i18n("Annulation (retour à la valeur programmée)") . ";";
+		// 0.4.3bis - separators become '§' as int values lower than 15 were converted with the '#' (#13 => 19) when transmitted between JS>PHP
+		//		   WARNING ! Launch a Sync to re-generate these values inside each component/"Set Consigne"
+		$list = "auto§" . $zoneId . "§0§0§null|" . self::i18n("Annulation (retour à la valeur programmée)") . ";";
 		// 0.9 is the supposed value for the °F... (0.5 * 9/5)
 		$step = evoGetParam(self::CFG_TEMP_UNIT,self::CFG_UNIT_CELSIUS) == self::CFG_UNIT_CELSIUS ? 0.5 : 0.9;
 		for( $t=$minHeat ; $t<=$maxHeat ; $t+=$step ) {
 			// auto means the callback function must check availability of service (presence mode / api available)
-			$list .= "auto#$zoneId#$t#$t#null|$t" . ($t < $maxHeat ? ';' : '');
+			// 0.4.3bis - separators become '§'
+			$list .= "auto§" . $zoneId . "§" . $t . "§" . $t . "§null|$t" . ($t < $maxHeat ? ';' : '');
 		}
 		$cmd->setConfiguration('listValue', $list);
 		$cmd->setConfiguration('minHeat', $minHeat);
@@ -2309,7 +2312,8 @@ class evohome extends eqLogic {
 			logDebug("<<OUT - setConsigne");
 			return;
 		}
-		$params = explode('#', $params);
+		// 0.4.3bis - separators become '§'
+		$params = explode('§', $params);
 		$zoneId = $params[1];
 		$byScenario = $params[0] == 'auto' ? self::i18n("Par Scénario") . " : " : "";
 

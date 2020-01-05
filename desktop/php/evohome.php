@@ -11,12 +11,13 @@ $eqLogics = eqLogic::byType($plugin->getId());
 	<div class="col-xs-12 eqLogicThumbnailDisplay">
 		<legend><i class="fas fa-cog"></i>  {{Gestion}}</legend>
 		<div class="eqLogicThumbnailContainer">
-			<div class="cursor eqLogicAction logoSecondary" style="background-color:var(--bg-modal-color) !important;" data-action="gotoPluginConf">
+			<div class="cursor eqLogicAction" style="background-color:var(--bg-modal-color) !important;" data-action="gotoPluginConf">
 				<i class="fas fa-wrench"></i>
 				<br>
 				<span>{{Configuration}}</span>
 			</div>
 		</div>
+		<br/>
 		<legend><i class="fas fa-table"></i>  {{Composants}}</legend>
 		<input class="form-control" placeholder="{{Rechercher}}" id="in_searchEqlogic" />
 
