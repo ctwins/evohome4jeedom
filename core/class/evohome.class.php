@@ -2077,7 +2077,6 @@ class evohome extends eqLogic {
 	function doCaseAction($paramAction, $parameters) {
 		if ( isDebug() ){ 
 			logDebug("doCaseAction($paramAction)");
-			logDebug("Params - doCaseAction : ".print_r($parameters, TRUE));
 		}
 		switch ($paramAction) {
 			// -- Console
@@ -2463,7 +2462,7 @@ class evohomeCmd extends cmd {
 	public function execute($parameters = null) {
 		$eqLogic = $this->getEqLogic();
 		$paramAction = $this->getLogicalId();
-
+		logDebug("Params ".$paramAction." - execute : ".print_r($parameters, TRUE));
 		if ( $this->getType() == "action" ) {
 			$eqLogic->doCaseAction($paramAction, $parameters);
 		} else {
