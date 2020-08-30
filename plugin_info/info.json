@@ -1,10 +1,10 @@
 {
 	"id" : "evohome",
 	"name" : "Evohome",
-	"description" : "Plugin EVOHOME",
+	"description" : "Plugin Evohome - compatible Round T87RF, Lyric T6/T6R",
 	"licence" : "AGPL",
 	"author" : "ctwins95",
-	"version" : "0.4.3",
+	"version" : "0.5.0",
 	"require" : "3.3",
 	"category" : "energy",
 	"hasDependency" : true,

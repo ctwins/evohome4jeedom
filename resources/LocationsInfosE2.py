@@ -59,7 +59,7 @@ try:
 					modelType = zone.modelType
 				nbz += 1
 				jLocations = jLocations + ('[' if nbz == 1 else ',')
-				jLocations = jLocations + '{"id":' + zone.zoneId
+				jLocations = jLocations + '{"id":"' + zone.zoneId + '"'
 				jLocations = jLocations + ',"typeEqu":"TH"'
 				jLocations = jLocations + ',"name":"' + zone.name + '"}'
 		jLocations = jLocations + ('null' if nbz == 0 else ']')

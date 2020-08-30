@@ -1,11 +1,6 @@
 			<a href="#eqLink#" style="font-size:1.1em;color:#TH-color# !important;"><strong>#name_display#</strong></a>
 		</div>
 	</div>
-<script>
-evoRegisterHover(#id#,'Batt');
-evoRegisterHover(#id#,'TLR');
-evoShowMsgInfo('#evoMsgInfo#');
-</script>
 <div style="height:6px;"></div>
 <div class="TH1" style="display:#temperatureDisplay#;">
 	<div class="hoverTH" style="display:#minMaxDisplay#;">
@@ -28,28 +23,27 @@ evoShowMsgInfo('#evoMsgInfo#');
 	<div style="display:inline-flex;">
 		<div style="display:#temperatureDisplay2#;">
 			<span data-cmd_id="#temperatureId#" class="cmd-widget history cursor TH1s" style="color:#evoTemperatureColor#;">#temperature#</span>
-			<img style="display:#deltaDisplay#;margin-top:18px;" title="#deltaValue#" src="plugins/evohome/img/#deltaImg#"/>
+			<img style="display:#deltaDisplay#;margin-top:18px;" title="#deltaValue#" src="plugins/#pluginName#/img/#deltaImg#"/>
 		</div>
 		<div style="padding-left:4px;margin-top:8px;">
 			<div class="statDelta" style="display:#temperatureDeltaDisplay#" title="#statDeltaTitle#">#statDelta#</div>
-			<div>
-				<img style="#temperatureImgStyle#" title="#temperatureImgTitle#" src="plugins/evohome/img/#temperatureImg#"/>
-			</div>
+			<img style="#temperatureImgStyle#" title="#temperatureImgTitle#" src="plugins/#pluginName#/img/#temperatureImg#"/>
 		</div>
 	</div>
 </div>
 
 <table class="tableCmd TH2t" style="display:#consigneDisplay#;"><tr>
-<td class="showCurrentScheduleC#zoneId# showCS TH2d1">
+<td class="showCurrentScheduleC#zoneId# showCS TH2d1" style="display:#displayScheduling#;">
 	<a class="TH2d1a btn btn-sm" style="background-color:inherit !important;color:white !important;">Pc</a>
 </td>
-<td class="showCurrentScheduleS#zoneId# showCS TH2d2">
+<td class="showCurrentScheduleS#zoneId# showCS TH2d2" style="display:#displayScheduling#;">
 	<a class="TH2d2a btn btn-sm showSavedScheduleCaption#id#" style="background-color:inherit !important;color:white !important;">Ps</a>
 </td>
 <td class="zidBackConsigneVx#zoneId#" width="100%" style="text-align:center;font-weight:400;background-color:#consigneBG#">
+	<img style="display:#presenceDisplay#;height:16px;margin-right:4px;" src="plugins/#pluginName#/img/#presenceImg#"/>
 	<span data-cmd_id="#consigneId#" class="zidConsigneVx#zoneId# cmd-widget history cursor TH2d3s1" style="color:#evoConsigneColor#;" title="#consigneTip#">#consigne#</span>
 	<span class="zidSpDisplayImgVx#zoneId# TH2d3s2" style="display:#consigneTypeDisplay#;" title="#consigneTypeUntilFull#">
-		<img class="zidSpImgVx#zoneId# TH2d3s2i" src="plugins/evohome/img/#consigneTypeImg#"/>
+		<img class="zidSpImgVx#zoneId# TH2d3s2i" src="plugins/#pluginName#/img/#consigneTypeImg#"/>
 		<span class="zidConsigneTypeUntilVx#zoneId#" style="color:white;">&nbsp;#consigneTypeUntil#</span>
 	</span>
 	<span class="zidSetTempSpinnerVx#zoneId# fa fa-spinner fa-pulse" style="display:none;color:white;margin-top:9px;margin-left:4px;"/>
@@ -88,13 +82,11 @@ evoShowMsgInfo('#evoMsgInfo#');
 	</a>
 </td>
 </tr></table>
-<script type="text/javascript" src="plugins/evohome/core/template/dashboard/temperature_min.js"></script>
+<script type="text/javascript" src="plugins/#pluginName#/core/template/dashboard/dashboard_min.js?#dashboard_min_js_size#"></script>
+<script type="text/javascript" src="plugins/#pluginName#/core/template/dashboard/temperature_min.js?#temperature_min_js_size#"></script>
 <script>
-initVarsCommon('#evoBackgroundColor#','#evoCmdBackgroundColor#',#apiAvailable#,"#msgApiUnavailable#",'#evoDefaultShowingScheduleMode#','#showHorizontal#','#argLocId#','#argZoneId#','#argFileId#');
-initVarsTH('#locId#','#id#','#zoneId#');
-if ( '#setConsigneDisplayV1#' != 'none' || '#setConsigneDisplayV2#' != 'none' ) {
-	initVarsAC(#taskIsRunning#,'#adjustAvailable#',"#msgAdjustConsigneUnavailable#","#msgEnforceConsigne#",'#zoneId#','#currentConsigne#','#currentConsigneUntil#','#consigne#'.replace('°',''),'#adjustLow#','#adjustHigh#','#adjustStep#','#cmd_setConsigne_id#',"#canReset#" == "1",
-	'#setConsigneDisplayV1#' != 'none', "#name_display#",
-	"#lblAdjTHTitle1#","#lblAdjTHTitle2#","#lblAdjTHUntilCurrentSchedule#","#lblAdjTHPermanent#","#lblAdjTHUntil#","#lblAdjTHUntilEndOfDay#");
-}
+evoRegisterHover(#id#,'Batt');
+initVarsCommon('#pluginName#',#id#,'#evoBackgroundColor#','#evoCmdBackgroundColor#',#apiAvailable#,"#msgApiUnavailable#",'#evoDefaultShowingScheduleMode#','#showHorizontal#','#argZoneId#','#argFileId#',#dashboard_css_size#,'#evoMsgInfo#');
+initVarsTH('#locId#',#id#,'#zoneId#');
+if ( '#setConsigneDisplayV1#' != 'none' || '#setConsigneDisplayV2#' != 'none' ) initVarsAC(#taskIsRunning#,'#adjustAvailable#',"#msgAdjustConsigneUnavailable#","#msgEnforceConsigne#",'#zoneId#','#currentConsigne#','#currentConsigneUntil#','#consigneNoUnit#','#adjustLow#','#adjustHigh#','#adjustStep#','#cmd_setConsigne_id#',"#canReset#" == "1",'#setConsigneDisplayV1#' != 'none',"#name_display#","#lblAdjTHTitle1#",#setThModes#);
 </script>

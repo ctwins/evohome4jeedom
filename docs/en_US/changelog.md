@@ -1,44 +1,72 @@
-Changelog - Evohome (for Jeedom)
+# Changelog - Evohome for Jeedom V3/V4
 
-# [version 0.4.3] - 2020-01-03 - Opened window & Day view on Horizontal Schedule & Full Jeedom V4 compatibility
+## [version 0.5.0] - 2020-08-30 - The Lyric (T6/T6R) edition
+*Thanks to jcapelle, aalizon and Touns as beta testers*
 
-## Improvements
+#### Added
+
+1. In the title : the plugin manages now the Lyric T6/T6R device and full authentication under OAuth2 protocol.<br/>
+Please see the doc to know how to login (the plugin documentation or README.md on github).<br/>
+Technically, the token received is refreshed every 20mn by a cron created in Jeedom during installation (see the page "Task engine", class=evohome, function=main_refresh).<br/>
+By this approach, the token has an infinite live duration, as your network and internet connection is stable.
+
+#### Changes
+1. Plugin image was changed to be no more 'evohome' specialized ;)
+
+#### Fixes
+
+1. password can now contains any character (was KO with a ';' : Thanks [domonew](https://community.jeedom.com/t/plugin-evohome/12666/35))
+2. some image files were resized (avoid useless bigger files, and sometimes glitches on screen)
+3. some minor bugs ; it's not in my habit not to say which ones, but I lost my tracks (working on this version started at february, and the PC used broke down recently)
+
+#### Under the hood (technical parts)
+
+1. js files are now auto refreshed (no more need to clear the browser's cache after update)
+2. big refactoring of the core classes to be ready for many devices and protocols
+3. refactoring of JS parts (less globals variables) and minify all js files
+3. removing useless files and folders
+4. preparation to change the name of the plugin (evohome>honeywell) (delayed for a future version)
+5. the zoneId are now managed as String against Integer (previous schedules files remain compatibles)
+
+## [version 0.4.3] - 2020-01-03 - Opened window & Day view on horizontal Schedule & Full Jeedom V4 compatibility
+
+#### Improvements
 
 1. TH widget : "Opened window" detection reported with an icon : based upon setPoint = minHeat and state = Follow schedule
 2. Schedule, Horizontal view, from Console only : a new button appears to view all zones by day. This mode is also editable.
-2bis. Schedule / Edition mode : the "Copy" function is now controlled from a single modal
+2. (bis) Schedule / Edition mode : the "Copy" function is now controlled from a single modal
 3. Jeedom V4 compatibiliy ('cosmetic' revision as 0.4.2 was already ready for J4) : specially, the dark mode is taken into account
 
-## Fixes
+#### Fixes
 
 1. data reading : add Battery Low cases
 2. TH widget / integrated +/- did not work in certain cases
 3. Invalid check for python-requests (thanks to github/titidnh)
 
 
-# [version 0.4.2] - 2019-08-23 - PHP7.2 & Mobile app compatibilities
+## [version 0.4.2] - 2019-08-23 - PHP7.2 & Mobile app compatibilities
 
-## Fixes
+#### Improvements
+
+1. PHP7.2 (and more) : ensures compatibility now
+   - by the way, gives a compatibility with Jeedom V4. WARNING ! this first step gives a runnable plugin, lot of rendering has to be corrected for V4
+2. Mobile app : modifications on some cmd settings, so they are now compliant with the Mobile application (on smartphone)
+
+#### Fixes
 
 1. synchronization : small bug in the returned value
 2. schedule saving : avoid a minor error reported in http.error under certain condition
 3. change in check dependencies (look now for python-requests, no more avconv !). Thanks **Yotasky**.
 4. was missing one translation
 
-## Improvements
-
-1. PHP7.2 (and more) : ensures compatibility now
-   - by the way, gives a compatibility with Jeedom V4. WARNING ! this first step gives a runnable plugin, lot of rendering has to be corrected for V4
-2. Mobile app : modifications on some cmd settings, so they are now compliant with the Mobile application (on smartphone)
-
-## Under the hood
+#### Under the hood
 
 1. The field ZoneId is now stored in the logicalId field of equipment (**synchronization needed !**)
 
 
-# [version 0.4.1] - 2019-08-07 - the title edition ;)
+## [version 0.4.1] - 2019-08-07 - the title edition ;)
 
-## Added
+#### Added
 
 1. new section "Thermostats" in the general configuration (and TH widgets effects)<br/>
 You can now set :
@@ -57,17 +85,7 @@ You can now set :
 2. Set consigne by scenario : new value "Cancel" in top of list<br/>
 *This new choice replaces the scripting we discuss with pykforum around 2019-06-03 in the forum*
 
-## Fixes
-
-1. open a equipement (editing) : showing image of the equipment could be erroneous
-2. was missing translations of the new labels from 0.4.0
-3. Synchro action is now under control of a timeout of 2 mn (fix the double or multi clics bad effects)
-4. synchro action : the detection of the Virtual plugin is now really effective (caused some troubles)
-5. the Python module "requests" is now installed in the dependencies
-6. Set Consigne : corrections regarding the Unit chosen (+ values adjusted in selectable list for scenario)
-FUTURE - taking into account the Unit chosen for Schedule displaying & editing
-
-## Improvements
+#### Improvements
 1. changes in the general configuration of values which Console or TH widgets displaying effects are now auto-applied when you Save the conf. (interesting with 2 browser tabs or windows)
 3. Set Consigne
    - if the requested values are the same as the current ones (heatpoint and duration), no action is launched (and reported as 'error')
@@ -77,9 +95,19 @@ FUTURE - taking into account the Unit chosen for Schedule displaying & editing
    NB : these values are set during each data reading if needed (and not in the Synchro action, as, in this phase, the default values are used because real ones are unknown at this time)
      - these same values follow now the Units chosen (in the general configuration)
 
-# [version 0.4.0] - 2019-07-17 - the "multi-locations & Round-Thermostat Edition"
+#### Fixes
 
-## Added
+1. open a equipement (editing) : showing image of the equipment could be erroneous
+2. was missing translations of the new labels from 0.4.0
+3. Synchro action is now under control of a timeout of 2 mn (fix the double or multi clics bad effects)
+4. synchro action : the detection of the Virtual plugin is now really effective (caused some troubles)
+5. the Python module "requests" is now installed in the dependencies
+6. Set Consigne : corrections regarding the Unit chosen (+ values adjusted in selectable list for scenario)
+FUTURE - taking into account the Unit chosen for Schedule displaying & editing
+
+## [version 0.4.0] - 2019-07-17 - the "multi-locations & Round-Thermostat Edition"
+
+#### Added
 1. **/!\ [thanks to moldu59] The plugin can manage now multi-locations<br/>**
    - **IN ALL CASES**, please follow these steps when you update the plugin :
      - (update from the market panel)
@@ -92,15 +120,7 @@ FUTURE - taking into account the Unit chosen for Schedule displaying & editing
 2. [thanks to moldu59] Plugin is now compatible with the **Rounded Thermostat**<br/>
 (and takes into account the restricted Setting Modes as those presents on the Evohome device of official applications)
 
-## Fixes
-1. During changing setpoint, when interactive information appear, the grayed Consigne and spinner band disappeared
-2. When restore a schedule file which contains no change from the current one, screen was freezing with the big rolling wheel (refreshing the page - F5 or else - restablished the situation)
-3. [thanks to moldu59] Empty schedule was badly displayed
-4. Trying opening the Schedule panel in Horizontal view when no Console is currently displayed caused a JS error (and freezing the screen)
-5. [thanks to ecc] Small batt KO icon (on the top left of the TH widget) did'nt appear when the fault is not received from the API<br/>
-although no TH value is received (API says isAvailable=false).
-
-## Improvements
+#### Improvements
 1. [thanks to ecc] Get now the connection lost fault from the gateway (red wifi icon appears on the top right of each widget)<br/>
 Please note that, in this case, the reading could run, as the API return again and again the last values got
 2. [from above] For the Set Mode, Set Temp and Restore action, manage now the 'failed' status received from the task manager
@@ -110,8 +130,17 @@ Please note that, in this case, the reading could run, as the API return again a
    - else    : standard color (depending of the category)
 4. manual heatpoint setting opens now a popup so the duration can be adjusted
 
-# [version 0.3.2] - 2019-02-18 - fix #7 - the verbose edition
-## Added
+#### Fixes
+1. During changing setpoint, when interactive information appear, the grayed Consigne and spinner band disappeared
+2. When restore a schedule file which contains no change from the current one, screen was freezing with the big rolling wheel (refreshing the page - F5 or else - restablished the situation)
+3. [thanks to moldu59] Empty schedule was badly displayed
+4. Trying opening the Schedule panel in Horizontal view when no Console is currently displayed caused a JS error (and freezing the screen)
+5. [thanks to ecc] Small batt KO icon (on the top left of the TH widget) did'nt appear when the fault is not received from the API<br/>
+although no TH value is received (API says isAvailable=false).
+
+## [version 0.3.2] - 2019-02-18 - fix #7 - the verbose edition
+
+#### Added
 1. General configuration
 	 - A refresh button appears, to aid the first installation
         - enter user & password
@@ -126,17 +155,7 @@ Please note that, in this case, the reading could run, as the API return again a
 	 Detection of battery low / connection lost<br/>
    An icon appears on the left top corner, with the date/time on tip when the default appeared (reported by Evohome)
 
-## Fixes
-1. /!\ Blocked situation could appear when the task executed by python script took too much time (around 2mn).<br/>
-   This is due to the PHP disposition which stops execution of a script after a certain delay.<br/>
-	 Two dispositions taken :
-   - as this time limit can be reset while execution, it's now simply the case
-   - but, to avoid too much waiting time, all commands are now limited to a duration of 5mn (from the PHP side, it's a classical timeout disposition)
-2. Loading Schedule file from Scenario did not work (bad parameter sending)
-3. Schedule editor : the pre-selected day and slice (green background) did not revert their style after moving/chosing another slice
-4. The cached token was badly received by the LocationsInfoE2 and RestaureZonesE2 scripts (caused a token regeneration, and potentially gives a "Too much requests" error)
-
-## Improvements
+#### Improvements
 1. Configuration (of components)
    - if a component is not marked as Visible, its tile is now grayed (as for Activated)
    - if a component has no zone affected (yet), it shows now a 'men at work' image (and no more a TH image), to avoid confusion
@@ -156,25 +175,36 @@ Please note that, in this case, the reading could run, as the API return again a
 	 - only the zones containing different schedule as the current one are now sent
 	 - after sending the zones, it could be more than one reading data action to refresh correctly the current schedule data (each after 30sec of waiting)
 
-## Changes
+#### Fixes
+1. /!\ Blocked situation could appear when the task executed by python script took too much time (around 2mn).<br/>
+   This is due to the PHP disposition which stops execution of a script after a certain delay.<br/>
+	 Two dispositions taken :
+   - as this time limit can be reset while execution, it's now simply the case
+   - but, to avoid too much waiting time, all commands are now limited to a duration of 5mn (from the PHP side, it's a classical timeout disposition)
+2. Loading Schedule file from Scenario did not work (bad parameter sending)
+3. Schedule editor : the pre-selected day and slice (green background) did not revert their style after moving/chosing another slice
+4. The cached token was badly received by the LocationsInfoE2 and RestaureZonesE2 scripts (caused a token regeneration, and potentially gives a "Too much requests" error)
+
+#### Changes
 1. TH widget : the 'ok' icon is renewed
 
 
-# [version 0.3.1] - 2019-02-09 - fix #6
-## Fix
+## [version 0.3.1] - 2019-02-09 - fix #6
+
+#### Improvement
+- The version (here 0.3.1) appears now after the Version label on the General configuration (and has been removed from the title)
+
+#### Fix
 - Correction of regression for new installation (or user/password blanks)
 additional : introduce a timeout (5mn) in the "waiting for python loops" to avoid general blockings
 
-## Improvement
-- The version (here 0.3.1) appears now after the Version label on the General configuration (and has been removed from the title)
-
-## Under the hood
+#### Under the hood
 - Revision of logging around call of the method runPython, in case of internal and python error appears
 This could be have to effect to show additional errors in the "Jeedom messages" panel
 
 
-# [version 0.3.0] - 2019-02-07 - the "+/- edition"
-## Added
+## [version 0.3.0] - 2019-02-07 - the "+/- edition"
+#### Added
 - General configuration
 	- A Synchronize button appears in the general configuration<br/>
 		a. For the new installations : set your account, save => the location should appear in the list, choose it, then Synchronize<br/>
@@ -205,10 +235,7 @@ This could be have to effect to show additional errors in the "Jeedom messages" 
 
 (*) : no mouse hover, so the smartphone compatibility
 
-## Fix
-- Python/reading informations : better check of the Heating zone (fix the reported error by "jaktens")
-
-## Improvements
+#### Improvements
 - When editing Scenario, the SetMode, RestoreSchedule (and Adjustment) use now a selectable list<br/>
   Please note that if a Schedule file is used in a Scenario, it could no more be deleted from the Console
 - A status bar appears now on the top of the window after sending command to the system<br/>
@@ -217,11 +244,14 @@ This could be have to effect to show additional errors in the "Jeedom messages" 
   This is a more detailed state which completes the "different of the current schedule" ;)
 - The 'incoming' of the 0.2.2 is now available (Schedule edition : saving changes on the current - selected - schedule activates now the loading button)
 
-## Changes
+#### Fix
+- Python/reading informations : better check of the Heating zone (fix the reported error by "jaktens")
+
+#### Changes
 - now, only the admin profile has the possibility to do these things regarding the schedules :
 	1. Editing, Saving, Restore, Remove schedule
 
-## Under the hood
+#### Under the hood
 - The extra module evohomeclient is now embedded inside the plugin itself ('forked' to introduce the token cache and custom logs)<br/>
   If you restart the dependency (not mandatory) under the General configuration, the module will be removed in the OS (by a pip command)
 - So, all the API requests use now cached session information (session for V1 API, token for V2 API)<br/>
@@ -236,58 +266,51 @@ This could be have to effect to show additional errors in the "Jeedom messages" 
 - The Python layers logs now verbously under control of the Debug level of the plugin
 
 
-# [version 0.2.3] - 2018-12-19 - pictures adjustments
-## Changes
+## [version 0.2.3] - 2018-12-19 - pictures adjustments
+#### Changes
 - icon of the plugin to go out of the official Jeedom chart<br/>
 - changing of the 'Console' photo + the 2 photos have now a transparent background
 - adding the missing 'reverse' icon (needed since 0.2.1)
 - adding version info in the title of the conf. page (never visible elsewhere)
 
-# [version 0.2.2] - 2018-12-16 - fix #5
-## Improvements
+## [version 0.2.2] - 2018-12-16 - fix #5
+#### Improvements
 - Temperature tile<br/>
 	1. adjust display of icon and additional information 
 
-## Fixes
+#### Fixes
 - Schedules edition mode<br/>
 	1. adding a slice with the hh:mm after all existing was badly inserted<br/>
 	2. bad color when leaving a virtual slice (00:00 without setting)<br/>
 	3. could not remove any slice when only 2 slice defined with the first at 00:00
 	4. revert just after adding a slice caused js error (and no effect)  
 
-## Incoming
+#### Incoming
 - Schedules edition mode<br/>
 	1. saving change on the current schedule should activate the loading button<br/>
 	consider the active schedule has not to be loaded
 
-# [version 0.2.1] - 2018-12-11 - the 'schedule edition' 1.1
-## Fix
-- History graphs are now also displayable from the View mode
+## [version 0.2.1] - 2018-12-11 - the 'schedule edition' 1.1
 
-## Improvements
+#### Improvements
 - Schedules edition mode<br/>
 	1. indicator '*' added after the zone name in the zones list, when schedule for it has changed<br/>
 	2. you can now revert the changes on a day with the small button which appears on the right when changes has done<br/>
 
-## Change
+#### Fix
+- History graphs are now also displayable from the View mode
+
+#### Change
 - Category of the plugin becomes Energy
 
-# [version 0.2.0] - 2018-11-10 - the 'schedule edition' 1.0
-## Added
+## [version 0.2.0] - 2018-11-10 - the 'schedule edition' 1.0
+#### Added
 - Schedules edition mode (thanks to ecc for pre-testing)<br/>
 	1. the Edition mode has to be activated in the General configuration before to use it<br/>
 	2. first, use the Pc button (or Ps if you have already saved a full schedule) on console of any component, then Click on Edit button on the top right (or on the right on each zone name), and let's go !<br/>
 	3. changes are lost if you close the edition popup ; you have to Save before quit to keep your changes<br/>
 
-## Fixes
-- no more check python-pip in dependency_info (could fail after some update)
-- python part / get zones information (thanks to jaktens and ecc)<br/>
-	1. better management of exceptions. Due to that, you could see now exception messages in the Jeedom messages popup.<br/>
-	2. no more crash when encounter an incomplete device
-- python part / adjust mode<br/>
-	3. was KO after the 0.1.2 (no more compliant with the update of evohomeclient)<br/>
-
-## Improvements
+#### Improvements
 - better cache around cron/get informations from zones
 - Schedule popup :<br/>
 	1. zone names are now those defined in your components<br/>
@@ -298,20 +321,28 @@ This could be have to effect to show additional errors in the "Jeedom messages" 
 	2. now, the tip under the label for the Temporary Override shows the until time (already shown after the icon, but can be masked if you did not enlarge the tile width enough)<br/>
 - adjust look of the tiles (console and component)
 
-# [version 0.1.2] - 2018-10-28 - the 'evohomeclient fix' (+ minors)
-## Fixes
+#### Fixes
+- no more check python-pip in dependency_info (could fail after some update)
+- python part / get zones information (thanks to jaktens and ecc)<br/>
+	1. better management of exceptions. Due to that, you could see now exception messages in the Jeedom messages popup.<br/>
+	2. no more crash when encounter an incomplete device
+- python part / adjust mode<br/>
+	3. was KO after the 0.1.2 (no more compliant with the update of evohomeclient)<br/>
+
+## [version 0.1.2] - 2018-10-28 - the 'evohomeclient fix' (+ minors)
+#### Fixes
 - evohome-client-2.07/evohomeclient2 ; Zone and schedule data :<br/>
 	1. heatSetpointStatus becomes setpointStatus<br/>
 	2. targetTemperature becomes targetHeatTemperature<br/>
-## More
+#### More
 - InfosZonesE2.py<br/>
 	1. some dummy prints during the reading to avoid the broken pipe potential error<br/>
 	2. decoding zones infos protected under try/catch<br/>
 - evohome.class.php / dependancy_info<br/>
 	1. no more check python-pip (fails now after some upgrade in my conf)
 
-# [version 0.1.1] - 2018-03-11 - the 'INIT fix' (and some more)
-## Fixes
+## [version 0.1.1] - 2018-03-11 - the 'INIT fix' (and some more)
+#### Fixes
 - general configuration panel :<br/>
 	1. sorry for that, I missed the "just after the installation" and a big mistake in the user/password fields<br/>
 	2. still regarding these fields, 'something' fills them with your jeedom account when configuration has not been saved yet ; attempt to reset them in this case<br/>
@@ -320,8 +351,8 @@ This could be have to effect to show additional errors in the "Jeedom messages" 
 - the two files temperature_content.html was saved with BOM marker
 - about the two schedule php file : add a check for a optional field in the scheduleToShow array to avoid http.error logs
 
-# [version 0.1] - 2018-03-08 - dashboard version v1
-## Added
+## [version 0.1] - 2018-03-08 - dashboard version v1
+#### Added
 - general configuration panel :<br/>
 	1. choice between Celsius or Fahrenheit unit : please note it's not only a display setting, if affects the values stored in history<br/>
 	When unit changes, only incoming values are converted and stored (no history manipulation)
@@ -352,7 +383,10 @@ This could be have to effect to show additional errors in the "Jeedom messages" 
 	1. Commentary as seen in the Save action above, is showed on the top<br/>
 	2. Current day and current setpoint are now showed on a lightgreen background color<br/>
 
-## Fixes
+#### Improvements
+- Console : when you launch some actions, a waiting message is now displayed in the top of screen
+
+#### Fixes
 - labels in french rendered now without developer configuration
 - when a heating is lowbatt, no temperature is available (null value) : now, in the zones select list on a equipment, this is showed by '(unavailable)'
 - for the actions like : Set Mode, Restore, Save with refresh data :
@@ -360,16 +394,17 @@ This could be have to effect to show additional errors in the "Jeedom messages" 
 	- lock (then unlock) the cron to avoid concurrent api access (and response time degradation)
 - schedule popup is now closed just before launching any action (Set Mode, Save, Restore and Remove)
 
-## Improvements
-- Console : when you launch some actions, a waiting message is now displayed in the top of screen
-
-## Underground
+#### Underground
 - better manipulation of json data, in case of null or KO content (more log, no more bad effects)
 - after restore, refresh only temp. & setPoint data, and merge restored schedule (speed up process)
 
-# [beta 2] - 2018-02-25 - the 'ECC FIXES'
+## [beta 2] - 2018-02-25 - the 'ECC FIXES'
 
-## Fixed (many thanks to 'ecc')
+#### Improvements
+- *install_apt.sh*<br/>
+	1. restore the apt-get clean and update commands 
+
+#### Fixes (many thanks to 'ecc')
 - *install*<br/>
 	1. cron is now  blocked when/while plugin status = NOK, or if your credentials are not set (login/password)<br/>
 	2. check of the dependencies were incorrect, caused a permanent NOK status<br/>
@@ -382,9 +417,5 @@ This could be have to effect to show additional errors in the "Jeedom messages" 
 	1. split function replaced by explode<br/>
 	2. PHP7 restrictions on json : booleans built in python are now returned correctly formed<br/>
 
-## Improvements
-- *install_apt.sh*<br/>
-	1. restore the apt-get clean and update commands 
-
-# [beta 1] - 2012-02-18
+## [beta 1] - 2012-02-18
 first publication

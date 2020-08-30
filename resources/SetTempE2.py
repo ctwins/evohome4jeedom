@@ -42,7 +42,8 @@ def callSetting(zones,txtData):
 		evohome_log.warning("ret = %s" % r.text.replace('\r\n',''))
 	return r
 
-baseUrl = 'https://tccna.honeywell.com/WebAPI/emea/api/v1/'
+#baseUrl = 'https://tccna.honeywell.com/WebAPI/emea/api/v1/'
+baseUrl = 'https://mytotalconnectcomfort.com/WebAPI/emea/api/v1/'
 
 USERNAME = sys.argv[1]
 PASSWORD = sys.argv[2]

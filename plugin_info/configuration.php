@@ -15,66 +15,101 @@
  * along with Jeedom. If not, see <http://www.gnu.org/licenses/>.
  */
 require_once dirname(__FILE__) . '/../../../core/php/core.inc.php';
+require_once dirname(__FILE__) . '/../core/class/lyric.php';
 include_file('core', 'authentification', 'php');
 if (!isConnect('admin')) {
 	throw new Exception('{{401 - Accès non autorisé}}');
 }
 ?>
-
 <form class="form-horizontal">
 	<fieldset>
 		<div class="form-group">
-			<div class="col-lg-3"></div>
-			<div class="col-lg-2">
-				<label>{{Nom d'utilisateur}}</label>
-				<br/>
-				<?php echo '<input type="text" style="width:unset;" class="configKey form-control userName" data-l1key="' . evohome::CFG_USER_NAME . '" />'; ?>
+			<label class="col-lg-3 control-label" style="font-size:15px;"><u>{{Système}}</u></label>
+			<input type="hidden" class="configKey hnwSystem" data-l1key="hnwSystem" />
+			<div class="col-lg-2" style="width:auto;">
+				<label><input type="radio" id="sysChoice<?php echo honeywell::SYSTEM_EVOHOME;?>" name="sysChoice" value="<?php echo honeywell::SYSTEM_EVOHOME;?>" style="width:24px;vertical-align:middle;">&nbsp;&nbsp;Evohome</label>
 			</div>
-			<div class="col-lg-3">
-				<label>{{Préfixe de nommage des thermostats}}</label>
-				<br/>
-				<input type="text" class="form-control thPrefix" style="width:80px;" value="TH" />
+			<div class="col-lg-2" style="width:auto;">
+				<label><input type="radio" id="sysChoice<?php echo honeywell::SYSTEM_LYRIC;?>" name="sysChoice" value="<?php echo honeywell::SYSTEM_LYRIC;?>" style="width:24px;vertical-align:middle;">&nbsp;&nbsp;Lyric T6/T6R</label>
+			</div>
+		</div>
+		<div class="system<?php echo honeywell::SYSTEM_LYRIC;?> systems" style="display:none;">
+			<div class="form-group">
+				<div class="col-lg-3"></div>
+				<div class="col-lg-2">
+					<label>{{App Name}}</label><br/>
+					<input type="text" class="configKey lyricAppName" data-l1key="<?php echo lyric::CFG_APP_NAME;?>" />
+				</div>
+				<div class="col-lg-3">
+					<label>{{Consumer Key}}</label><br/>
+					<input type="text" class="configKey lyricConsKey" style="width:260px;" data-l1key="<?php echo lyric::CFG_CONS_KEY;?>" />
+				</div>
+			</div>
+			<div class="form-group">
+				<div class="col-lg-3"></div>
+				<div class="col-lg-2">
+					<label>{{Secret Key}}</label><br/>
+					<input type="password" class="configKey lyricSecretKey" data-l1key="<?php echo lyric::CFG_SECRET_KEY;?>" />
+				</div>
+				<div class="col-lg-4" style="padding-top:22px;">
+					<a style="display:none;" target="_blank" id="callHnwlOAuth2" />
+					<a class="btn btn-warning lyricToken" style="margin-left:32px;">{{Initialisation}}</a>
+				</div>
+			</div>
+		</div>
+		<div class="system<?php echo honeywell::SYSTEM_EVOHOME;?> systems" style="display:none;">
+			<div class="form-group">
+				<div class="col-lg-3"></div>
+				<div class="col-lg-2">
+					<label>{{Nom d'utilisateur}}</label>
+					<br/>
+					<?php echo '<input type="text" style="width:unset;" class="configKey form-control userName" data-l1key="' . evohome::CFG_USER_NAME . '" />'; ?>
+				</div>
+				<div class="col-lg-2">
+					<label>{{Mot de passe}}</label>
+					<br/>
+					<?php echo '<input type="password" style="width:unset;" class="configKey form-control password" data-l1key="' . evohome::CFG_PASSWORD . '" />'; ?>
+				</div>
 			</div>
 		</div>
 		<div class="form-group" style="margin-bottom:30px;">
 			<div class="col-lg-3"></div>
 			<div class="col-lg-2">
-				<label>{{Mot de passe}}</label>
+				<label>{{Préfixe de nommage des thermostats}}</label>
 				<br/>
-				<?php echo '<input type="password" style="width:unset;" class="configKey form-control password" data-l1key="' . evohome::CFG_PASSWORD . '" />'; ?>
+				<input type="text" class="form-control thPrefix" style="width:80px;" value="TH" />
 			</div>
-			<div class="col-lg-1" style="margin-top:20px;margin-right:20px;">
+			<div class="col-lg-3" style="margin-top:20px;margin-right:20px;">
+				<?php
+				if ( count(honeywell::getEquipments()) > 0 ) {
+					echo	'<input id="resizeWhenSynchronize" type="checkbox" style="width:24px;top: 4px!important;" class="resizeWhenSynchronize" />';
+					echo	'<label for="resizeWhenSynchronize" style="font-style:italic;">';
+					echo 	'{{Redimensionner les widgets existants}}';
+					echo	'</label>';
+				}
+				?>
+				<br/>
 				<a class="btn btn-warning btnSync">{{Synchroniser}}</a>
 			</div>
-			<?php
-			if ( count(evohome::getEquipments()) > 0 ) {
-				echo '<div class="col-lg-3" style="margin-top:24px;">';
-				echo	'<input id="resizeWhenSynchronize" type="checkbox" style="width:24px;top: 4px!important;" class="resizeWhenSynchronize" />';
-				echo	'<label for="resizeWhenSynchronize" style="font-style:italic;">';
-				echo 	'{{Redimensionner les widgets existants}}';
-				echo	'</label>';
-				echo '</div>';
-			}
-			?>
 		</div>
 
 		<div class="form-group">
 			<label class="col-lg-3 control-label" style="font-size:15px;"><u>{{Console}}</u></label>
 		</div>
-		<div class="form-group">
+		<div class="form-group system<?php echo honeywell::SYSTEM_EVOHOME;?> systems" style="display:none;">
 			<label class="col-lg-4 control-label" style="vertical-aglin:middle;">{{Modes de présence}}</label>
 			<input type="hidden" class="configKey evoShowingModes" data-l1key="evoShowingModes" />
 			<div class="col-lg-2" style="width:auto;">
 				<label>
-					<?php echo '<input type="radio" id="esm' . evohome::CFG_SHOWING_MODE_CONSOLE . '" name="esm"
-							value="' . evohome::CFG_SHOWING_MODE_CONSOLE . '" style="width:24px;
+					<?php echo '<input type="radio" id="esm' . honeywell::CFG_SHOWING_MODE_CONSOLE . '" name="esm"
+							value="' . honeywell::CFG_SHOWING_MODE_CONSOLE . '" style="width:24px;
     vertical-align:middle">'; ?>&nbsp;&nbsp;{{Intégré à la console}}
 				</label>
 			</div>
 			<div class="col-lg-2" style="width:auto;">
 				<label>
-					<?php echo '<input type="radio" id="esm' . evohome::CFG_SHOWING_MODE_POPUP . '" name="esm"
-							value="' . evohome::CFG_SHOWING_MODE_POPUP . '" style="width:24px;
+					<?php echo '<input type="radio" id="esm' . honeywell::CFG_SHOWING_MODE_POPUP . '" name="esm"
+						value="' . honeywell::CFG_SHOWING_MODE_POPUP . '" style="width:24px;
     vertical-align:middle">'; ?>&nbsp;&nbsp;{{Par popup}}
 				</label>
 			</div>
@@ -105,10 +140,10 @@ if (!isConnect('admin')) {
 			</div>
 			<div class="col-lg-3">
 				{{orange si}} >=&nbsp;
-				<?php echo '<input type="text" style="width:40px;text-align:center;" maxlength=4 class="bct2NA configKey form-control" data-l1key="' . evohome::CFG_BCT_2N_A . '" />'; ?>
+				<?php echo '<input type="text" style="width:40px;text-align:center;" maxlength=4 class="bct2NA configKey form-control" data-l1key="' . honeywell::CFG_BCT_2N_A . '" />'; ?>
 				&nbsp;&nbsp;
 				{{rouge si}} >=&nbsp;
-				<?php echo '<input type="text" style="width:40px;text-align:center;" maxlength=4 class="bct2NB configKey form-control" data-l1key="' . evohome::CFG_BCT_2N_B . '" />'; ?>
+				<?php echo '<input type="text" style="width:40px;text-align:center;" maxlength=4 class="bct2NB configKey form-control" data-l1key="' . honeywell::CFG_BCT_2N_B . '" />'; ?>
 			</div>
 		</div>
 		<div class="form-group">
@@ -116,16 +151,16 @@ if (!isConnect('admin')) {
 			<input type="hidden" class="configKey evoTempUnit" data-l1key="evoTempUnit" />
 			<div class="col-lg-1" style="width:auto;">
 				<label>
-					<?php echo '<input type="radio" id="etu' . evohome::CFG_UNIT_CELSIUS . '" name="etu"
-							value="' . evohome::CFG_UNIT_CELSIUS . '" style="width:24px;
+					<?php echo '<input type="radio" id="etu' . honeywell::CFG_UNIT_CELSIUS . '" name="etu"
+							value="' . honeywell::CFG_UNIT_CELSIUS . '" style="width:24px;
     vertical-align:middle">'; ?>&nbsp;&nbsp;°C&nbsp;(Celsius)
 				</label>
 				<br/>
 			</div>
 			<div class="col-lg-2">
 				<label>
-					<?php echo '<input type="radio" id="etu' . evohome::CFG_UNIT_FAHRENHEIT . '" name="etu"
-							value="' . evohome::CFG_UNIT_FAHRENHEIT . '" style="width:24px;
+					<?php echo '<input type="radio" id="etu' . honeywell::CFG_UNIT_FAHRENHEIT . '" name="etu"
+							value="' . honeywell::CFG_UNIT_FAHRENHEIT . '" style="width:24px;
     vertical-align:middle">'; ?>&nbsp;&nbsp;°F&nbsp;(Fahrenheit)
 				</label>
 			</div>
@@ -134,11 +169,11 @@ if (!isConnect('admin')) {
 			<label class="col-lg-4" />
 			<label class="col-lg-4" style="text-align:left;"><i>{{Attention : concerne l'affichage et le stockage historique}}</i></label>
 		</div>
-		<div class="form-group">
+		<div class="form-group system<?php echo honeywell::SYSTEM_EVOHOME;?> systems" style="display:none;">
 			<label class="col-lg-4 control-label">{{Précision}}</label>
 			<div class="col-lg-3">
 				<select class="configKey form-control configuration" data-l1key="evoDecimalsNumber">
-					<option value="1">{{0.5 par défaut (X.82 > X.5) = Défaut EvoHome}}</option>
+					<option value="1">{{0.5 par défaut (X.82 > X.5) = Défaut Honeywell}}</option>
 					<option value="2">{{0.5 arrondi (X.82 > X+1, X.44 > X.5)}}</option>
 					<option value="3">{{0.05 arrondi (X.82 > X.80, X.44 > X.45)}}</option>
 					<option value="4">{{0.01 = valeur native}}</option>
@@ -150,15 +185,15 @@ if (!isConnect('admin')) {
 			<input type="hidden" class="configKey evoHeatPointSettingModes" data-l1key="evoHeatPointSettingModes" />
 			<div class="col-lg-2" style="width:auto;">
 				<label>
-					<?php echo '<input type="radio" id="hpsm' . evohome::CFG_HP_SETTING_MODE_INTEGRATED . '" name="hpsm"
-							value="' . evohome::CFG_HP_SETTING_MODE_INTEGRATED . '" style="width:24px;
+					<?php echo '<input type="radio" id="hpsm' . honeywell::CFG_HP_SETTING_MODE_INTEGRATED . '" name="hpsm"
+							value="' . honeywell::CFG_HP_SETTING_MODE_INTEGRATED . '" style="width:24px;
     vertical-align:middle">'; ?>&nbsp;&nbsp;{{Intégré au widget}}
 				</label>
 			</div>
 			<div class="col-lg-2" style="width:auto;">
 				<label>
-					<?php echo '<input type="radio" id="hpsm' . evohome::CFG_HP_SETTING_MODE_POPUP . '" name="hpsm"
-							value="' . evohome::CFG_HP_SETTING_MODE_POPUP . '" style="width:24px;
+					<?php echo '<input type="radio" id="hpsm' . honeywell::CFG_HP_SETTING_MODE_POPUP . '" name="hpsm"
+							value="' . honeywell::CFG_HP_SETTING_MODE_POPUP . '" style="width:24px;
     vertical-align:middle">'; ?>&nbsp;&nbsp;{{Par popup}}
 				</label>
 			</div>
@@ -172,15 +207,15 @@ if (!isConnect('admin')) {
 			<input type="hidden" class="configKey evoDefaultShowingScheduleMode" data-l1key="evoDefaultShowingScheduleMode" />
 			<div class="col-lg-2" style="width:auto;">
 				<label>
-					<?php echo '<input type="radio" id="eshm' . evohome::CFG_SCH_MODE_HORIZONTAL . '" name="eshm"
-							value="' . evohome::CFG_SCH_MODE_HORIZONTAL . '" style="width:24px;
+					<?php echo '<input type="radio" id="eshm' . honeywell::CFG_SCH_MODE_HORIZONTAL . '" name="eshm"
+							value="' . honeywell::CFG_SCH_MODE_HORIZONTAL . '" style="width:24px;
     vertical-align:middle">'; ?>&nbsp;&nbsp;{{Horizontal}}
 				</label>
 			</div>
 			<div class="col-lg-2" style="width:auto;">
 				<label>
-					<?php echo '<input type="radio" id="eshm' . evohome::CFG_SCH_MODE_VERTICAL . '" name="eshm"
-							value="' . evohome::CFG_SCH_MODE_VERTICAL . '" style="width:24px;
+					<?php echo '<input type="radio" id="eshm' . honeywell::CFG_SCH_MODE_VERTICAL . '" name="eshm"
+							value="' . honeywell::CFG_SCH_MODE_VERTICAL . '" style="width:24px;
     vertical-align:middle">'; ?>&nbsp;&nbsp;{{Vertical}}
 				</label>
 			</div>
@@ -233,17 +268,25 @@ if (!isConnect('admin')) {
 		</div>
 	</fieldset>
 </form>
+
 <script>
+var PluginName = '<?php echo honeywell::PLUGIN_NAME?>';
+var PluginPath = '/plugins/'+PluginName;
+var HnwDomain = '<?php echo lyric::HNW_DOMAIN?>';
+var esm = null;
+var ModePopup = null;
 setTimeout(function() {
 	<?php
-	echo "var unitCelsius = '" . evohome::CFG_UNIT_CELSIUS . "';";
-	echo "var unitFahrenheit = '" . evohome::CFG_UNIT_FAHRENHEIT . "';";
-	echo "var showHorizontal = '" . evohome::CFG_SCH_MODE_HORIZONTAL . "';";
-	echo "var showVertical = '" . evohome::CFG_SCH_MODE_VERTICAL . "';";
-	echo "var modeConsole = '" . evohome::CFG_SHOWING_MODE_CONSOLE . "';";
-	echo "var modePopup = '" . evohome::CFG_SHOWING_MODE_POPUP . "';";
-	echo "var heatPointSettingModeConsole = '" . evohome::CFG_HP_SETTING_MODE_INTEGRATED . "';";
-	echo "var heatPointSettingModePopup = '" . evohome::CFG_HP_SETTING_MODE_POPUP . "';";
+	echo "var SYSTEM_EVOHOME = '" . honeywell::SYSTEM_EVOHOME . "';";
+	echo "var SYSTEM_LYRIC = '" . honeywell::SYSTEM_LYRIC . "';";
+	echo "var UnitCelsius = '" . honeywell::CFG_UNIT_CELSIUS . "';";
+	echo "var UnitFahrenheit = '" . honeywell::CFG_UNIT_FAHRENHEIT . "';";
+	echo "var ShowHorizontal = '" . honeywell::CFG_SCH_MODE_HORIZONTAL . "';";
+	echo "var ShowVertical = '" . honeywell::CFG_SCH_MODE_VERTICAL . "';";
+	echo "var ModeConsole = '" . honeywell::CFG_SHOWING_MODE_CONSOLE . "';";
+	echo "var ModePopup = '" . honeywell::CFG_SHOWING_MODE_POPUP . "';";
+	echo "var HeatPointSettingModeConsole = '" . honeywell::CFG_HP_SETTING_MODE_INTEGRATED . "';";
+	echo "var HeatPointSettingModePopup = '" . honeywell::CFG_HP_SETTING_MODE_POPUP . "';";
 	$data = json_decode(file_get_contents(dirname(__FILE__) . "/info.json"), true);
 	echo "var version = '" . (is_array($data) ? $data["version"] : null) . "';";
 	?>
@@ -252,29 +295,30 @@ setTimeout(function() {
 		$('.userName').val('');
 		$('.password').val('');
 	}
-	if ( etu !== unitCelsius && etu !== unitFahrenheit ) {
-		etu = unitCelsius;
+	if ( etu !== UnitCelsius && etu !== UnitFahrenheit ) {
+		etu = UnitCelsius;
 		$('.evoTempUnit').val(etu);
 	}
 	document.getElementById('etu'+etu).checked = true;
 	// Showing Schedule Mode
 	var eshm = $('.evoDefaultShowingScheduleMode').val();
-	if ( eshm !== showHorizontal && eshm !== showVertical ) {
-		eshm = showHorizontal;
+	if ( eshm !== ShowHorizontal && eshm !== ShowVertical ) {
+		eshm = ShowHorizontal;
 		$('.evoDefaultShowingScheduleMode').val(eshm);
 	}
 	document.getElementById('eshm'+eshm).checked = true;
 	// Console Showing Mode
-	var esm = $('.evoShowingModes').val();
-	if ( esm !== modeConsole && esm !== modePopup ) {
-		esm = modeConsole;
+	esm = $('.evoShowingModes').val();
+	if ( esm !== ModeConsole && esm !== ModePopup ) {
+		alert("esm was [" + esm + "]");
+		esm = ModeConsole;
 		$('.evoShowingModes').val(esm);
 	}
 	document.getElementById('esm'+esm).checked = true;
 	// HeatPoint Setting mode
 	var hpsm = $('.evoHeatPointSettingModes').val();
-	if ( hpsm !== heatPointSettingModeConsole && hpsm !== heatPointSettingModePopup ) {
-		hpsm = heatPointSettingModeConsole;
+	if ( hpsm !== HeatPointSettingModeConsole && hpsm !== HeatPointSettingModePopup ) {
+		hpsm = HeatPointSettingModeConsole;
 		$('.evoHeatPointSettingModes').val(hpsm);
 	}
 	document.getElementById('hpsm'+hpsm).checked = true;
@@ -282,26 +326,47 @@ setTimeout(function() {
 	if ( $('.bct2NA').value() == '' ) $('.bct2NA').val(26);
 	if ( $('.bct2NB').value() == '' ) $('.bct2NB').val(28);
 	adjustBCTfield();
-	if ( version  != null ) $('#span_plugin_install_date').html($('#span_plugin_install_date').html()+" ("+version+")");
+
+	var hnwSystem = $('.hnwSystem').val();
+	if ( hnwSystem == '' ) hnwSystem = SYSTEM_EVOHOME;
+	document.getElementById('sysChoice'+hnwSystem).checked = true;
+	showSystem(hnwSystem);
+
+	if ( version != null ) $('#span_plugin_install_date').html($('#span_plugin_install_date').html()+' ('+version+')');
 }, 250);
+$('input[name=sysChoice]').on('click', function(event) {
+	var hnwSystem = $('input[name=sysChoice]:checked').val();
+	$('.hnwSystem').val(hnwSystem);
+	showSystem(hnwSystem);
+});
+function showSystem(hnwSystem) {
+	$('.systems').hide();
+	$('.system'+hnwSystem).show();
+	if ( hnwSystem == SYSTEM_LYRIC ) {
+		$('.evoShowingModes').val(ModePopup);
+	} else {
+		$('.evoShowingModes').val(esm);
+	}
+}
 $('input[name=etu]').on('click', function(event) { $('.evoTempUnit').val($('input[name=etu]:checked').val()); });
 $('input[name=eshm]').on('click', function(event) { $('.evoDefaultShowingScheduleMode').val($('input[name=eshm]:checked').val()); });
-$('input[name=esm]').on('click', function(event) { $('.evoShowingModes').val($('input[name=esm]:checked').val()); });
+$('input[name=esm]').on('click', function(event) { esm=$('input[name=esm]:checked').val(); $('.evoShowingModes').val(esm); });
 $('input[name=hpsm]').on('click', function(event) { $('.evoHeatPointSettingModes').val($('input[name=hpsm]:checked').val()); });
 $('.bctMode').on('change', function(event) { adjustBCTfield(); });
 function adjustBCTfield() {
-	$('.bct2NA').attr('disabled', $('.bctMode').value() != "2");
-	$('.bct2NB').attr('disabled', $('.bctMode').value() != "2");
+	$('.bct2NA').attr('disabled', $('.bctMode').value() != '2');
+	$('.bct2NB').attr('disabled', $('.bctMode').value() != '2');
 }
 $('.btnSync').on('click', function() {
+	var hnwSystem = $('input[name=sysChoice]:checked').val();
 	$('#bt_savePluginConfig').click();
 	setTimeout(function() {
 		var _thPrefix = $('.thPrefix').value().trim();
-		if ( _thPrefix != '' ) _thPrefix += " ";
+		if ( _thPrefix != '' ) _thPrefix += ' ';
 		$.ajax({
-			type:"POST",
-			url:"plugins/evohome/core/ajax/evohome.ajax.php",
-			data:{action:"synchronizeTH",prefix:_thPrefix,resizeWhenSynchronize:$('.resizeWhenSynchronize').value()},
+			type:'POST',
+			url:PluginPath+'/core/ajax/honeywell.ajax.php',
+			data:{action:'ajaxSynchronizeTH',system:hnwSystem,prefix:_thPrefix,resizeWhenSynchronize:$('.resizeWhenSynchronize').value()},
 			dataType:'json',
 			error:function(request, status, error) {
 				handleAjaxError(request, status, error);
@@ -313,11 +378,34 @@ $('.btnSync').on('click', function() {
 					$('#div_alert').showAlert({message:'{{Synchronisation effectuée}}', level:'success'});
 					if ( data.result.added ) {
 						// reload the page if some components were added
-						document.location.href = "/index.php?v=d&m=evohome&p=evohome";
+						document.location.href = '/index.php?v=d&m='+PluginName+'&p='+PluginName;
 					}
 				}
 			}
 		})
 	}, 1000);
+});
+$('.lyricToken').on('click', function() {
+	var callbackUrl = document.location.protocol+'//'+document.location.host+(document.location.port==''?'':':'+document.location.port);
+	callbackUrl += PluginPath+'/core/class/lyric.callback.php';
+	var consumerKey = $('.lyricConsKey').value();
+	var params = '?apikey=' + consumerKey;
+	params += '&app=' + $('.lyricAppName').value();
+	params += '&state=1';
+	params += '&redirect_uri=' + encodeURI(callbackUrl);
+	var urlCode = HnwDomain + 'oauth2/app/login' + params;
+	$('#callHnwlOAuth2').attr('href',urlCode);
+	document.getElementById('callHnwlOAuth2').click();
+	var secretKey = $('.lyricSecretKey').value();
+	$.ajax({
+		type:'POST',
+		url:PluginPath+'/core/ajax/honeywell.ajax.php',
+		data:{action:'ajaxInitCallback',callbackUrl:callbackUrl,consumerKey:consumerKey,secretKey:secretKey},
+		dataType:'json',
+		error:function(request, status, error) {
+			handleAjaxError(request, status, error);
+		},
+		success:function(data) { }
+	});
 });
 </script>

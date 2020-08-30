@@ -1,92 +1,120 @@
 <img align="left" src="../img/evohome_icon.png" width="120" style="padding-right:16px;">
-Plugin permettant l'intégration du système Evohome de Honeywell.
+Plugin permettant l'intégration des systèmes Honeywell **Evohome, Round T87RF, Lyric T6/T6R**
 
-Basé sur l'excellente librairie "evohome" de watchforstock, **[disponible ici](https://github.com/watchforstock/evohome-client)** 
-(fork embarqué depuis 0.3.0)<br/><br/><br/><br/><br/>
-
+*Pour la partie Evohome/Round, basé sur l'excellente **[librairie de watchforstock](https://github.com/watchforstock/evohome-client)**&nbsp;(fork embarqué depuis 0.3.0)*<br/><br/><br/><br/><br/>
 
 
-Possibilités
-==
+
+# Possibilités
+- capacité de gérer plusieurs localisations, multi-systèmes (exemple : Evohome + Lyric)
+- supporte l'affichage des températures en °C ou °F
 - affichage des températures et consignes actives sur les widget (TH) de chaque zone, le tout avec gestion d'historique (qui comprend également les consignes programmées)
 - des statistiques minimalistes sont affichables sur les TH
-- réglage du mode de présence, manuellement via le widget Console (Console) ou par scénario
-- modifier les consignes manuellement via les TH ou par scénario
-- possibilité de sauvegarder et charger des programmes hebdomadaires (manuellement ou par scénario)
+- réglage du mode de présence, manuellement via le widget Console (Console) ou par Scénario (voir [contraintes](#lyric_presence) sur Lyric)
+- modifier les consignes manuellement via les TH ou par Scénario
+- possibilité de sauvegarder et charger des programmes hebdomadaires (manuellement ou par Scénario)
 - éditeur complet des programmes hebdomadaires
 
-Depuis 0.4.0 : gère la multi-localisation et le Round-Thermostat<br/>
-***/!\ ATTENTION - VOUS DEVEZ LANCER UNE SYNCHRONISATION LORS DE LA MISE A JOUR DE LA VERSION 0.3.x VERS 0.4.x***<br/>
-***/!\ Sauvegarde préalable hautement conseillée. Contactez-moi pour tout problème d'update***
+Depuis 0.4.0 : gère la multi-localisations et le Round-Thermostat T87RF (2025=NL,2033=EN,2041=IT,FR,ES,2059=DE)<br/>
+**/!\ ATTENTION - VOUS DEVEZ LANCER UNE SYNCHRONISATION LORS DE LA MISE A JOUR DE LA VERSION 0.3.x VERS 0.4.x**<br/>
+**/!\ Sauvegarde préalable hautement conseillée. Contactez-moi pour tout problème d'update**
+
+Depuis 0.5.0 : gère désormais les thermostats **Lyric T6/T6R**<br/><br/>
 
 
-Configuration du plugin
-==
+# Page configuration
+## Initialisation
+### Evohome et Round T87RF
+Saisir login et mot de passe, tels que vous les avez définis sur le site officiel.<br/>
 
-Sur la page principale, saisir login et mot de passe, tels que vous les avez définis sur le site officiel.<br/>
-Cliquer alors sur le bouton Synchroniser :
-- sur chaque localisation existante, une Console va être créée, ainsi que les équipements pour chaque zone trouvée.<br/>
+### Lyric T6/T6R
+Un peu plus compliqué, vu que l'authentificaiton s'effectue sous protocole OAuth2 :
+- Créer un compte sur le [site développeurs d'Honeywell](https://developer.honeywellhome.com) ("SIGN UP")
+- Cliquer sur 'Create New App', mettre le nom 'Jeedom' (par exemple), et 'Callback URL' avec l'URL de Jeedom, terminée par "/plugins/evohome/core/class/lyric.callback.php".<br/>
+Ce qui donne quelque chose du genre :<br/>
+http://[ip-de-votre-jeedom]/plugins/evohome/core/class/lyric.callback.php<br/>
+Peu d'intérêt à utiliser votre URL publique, puisque vous ne ferez cette opération qu'une fois *(et supposément depuis votre réseau local)*.
+- Cliquer sur le nom de l'application pour accéder aux clefs 'consumer key' et 'consumer secret'
+- Recopier alors ces informations dans la page de configuration *(après avoir sélectionné le Système Lyric, évidemment)*
+- Cliquer sur Initialisation.<br/>
+Cela ouvre une page d'authentification sur le site d'Honeywell, qui vous invite à saisir login et mot de passe de votre compte Lyric (qui n'est donc pas celui créé ci-dessus), puis finaliser la procédure en suivant les instructions
+- Après cela, la page doit se fermer et un token est initialisé dans le plugin (puis automatiquement rafraîchi toutes les 20mn *(via une tâche cron créée dans le moteur de tâches : class=evohome, function=main_refresh)*<br/>
+
+### Cliquer ensuite sur le bouton Synchroniser
+sur chaque localisation existante, une Console va être créée, ainsi que les équipements pour chaque zone trouvée.<br/>
 NB1 : le nommage des équipements utilise le préfixe modifiable "TH" + " " + [nom de la zone].<br/>
 NB2 : les TH sont rattachés aux objets parents comportant le même nom ou similaire que celui de la zone (A dans B ou B dans A, indépendant de la casse)<br/>
-NB3 : expérimental : si vous disposez du plugin Virtuel, des composants sont ajoutés dans ce plugin (ce qui vous permet de profiter des informations dans l'application Jeedom ou autre bridge de votre smartphone).<br/>
 **=> en cas d'erreur lors de la synchronisation, n'hésitez pas à me contacter via le forum**
 
 
-Les autres réglages disponibles :<br/>
+## Autres réglages disponibles
 
-- Console
-  - choix de l'affichage des choix des modes de présence (intégré à la Console, ou déporté en popup)
-  - possibilité de forcer la lecture du système avant sauvegarde de la programmation (était utile avant la présence de l'éditeur intégré, afin de prendre en compte les modifications effectuées sur la console Evohome physique)
+### Console
+  - (sauf Lyric) choix de l'affichage des choix des modes de présence : intégré à la Console ou déporté en popup
+  - possibilité de forcer la lecture du système avant sauvegarde de la programmation<br/>
+    *(était surtout utile avant la présence de l'éditeur intégré, afin de prendre en compte les modifications effectuées sur la console Evohome physique)*
 
-- Thermostats
+### Thermostats
   - style de la barre de titre
   - unité d'affichage des températures et consigne
-  - précision d'affichage
+  - (sauf Lyric) précision d'affichage
   - mode de réglage manuel des consignes : intégré (mode permanent), par popup (réglage de la durée)
 
-- Programmes hebdomadaires
+### Programmes hebdomadaires
   - mode d'affichage par défaut (lors de l'action des boutons Pc et Ps)
   - activation du mode édition
 
-- Historique
-  - période de lecture (des températures, mais aussi du programme hebdomadaire)
-  - possibilité de caler la période sur l'horloge (exemple : 15mn donnera HH:00, HH:15, etc.)
-  NB : bien que le système de lecture ait été amélioré au fil des versions, il reste déconseillé de régler la période à 10mn pour éviter des erreurs à répétition
-  - Durée de rétention de l'historique (des températures, consignes réelles et programmées) : permet de régler toutes vos zones en une seule action
+### Historique
+  - période de lecture (des températures et du programme hebdomadaire)
+  - possibilité de caler la période sur l'horloge (exemple : 15mn donnera HH:00, HH:15, etc.)<br/>
+    NB : bien que le système de lecture ait été amélioré au fil des versions, il reste déconseillé de régler la période à 10mn pour éviter des erreurs à répétition (sur la lecture précise, dite V1)
+  - durée de rétention de l'historique (des températures, consignes réelles et programmées) : permet de régler toutes vos zones en une seule action
 
-Utilisation
-==
+
+# Utilisation
 Tout est fait pour être intuitif, faites-moi savoir si vous avez besoin d'explication détaillée !
 
-Quelques détails :
-- les boutons Pc et Ps sur les widgets signifient :
-  - Pc : programmation courante
-  - Ps : programmation de la sauvegarde (celle affichée dans la liste déroulante)
-- un indicateur Batterie apparait dans le coin gauche de la barre de titre des TH, en cas de défaillance. Si la batterie est 100% HS (le thermostat ne répond plus), la température elle-même est remplacée par un icone indicatif
+## Quelques détails
+- boutons Pc et Ps
+    - Pc : programmation courante
+    - Ps : programmation de la sauvegarde (celle affichée dans la liste déroulante)
+- un indicateur Batterie apparait dans le coin gauche de la barre de titre des TH, en cas de défaillance.<br/>
+Si la batterie est 100% HS (le thermostat ne répond plus), la température elle-même est remplacée par un icone indicatif.
 - si un mode statistique est activé, des flèches animées verte (vers le haut) et rouge (vers le bas) peuvent apparaitre à droite des températures. Signifient respectivement : température en hausse ou en baisse par rapport à la mesure précédente.
 - l'édition des programmes hebdomadaires n'est disponible que sur l'affichage horizontal
-- les valeurs min/max des consignes réglables sur chaque thermostat sont récupérées dans les données Honeywell. Pour information, ces valeurs sont réglables sur la console physique (par défaut 5/25).
+- les valeurs min/max des consignes réglables sur chaque thermostat sont dynamiques (données Honeywell). Ces valeurs sont réglables sur la console physique (par défaut 5/25).
+
+## Spécificités Lyric
+
+- <a id="lyric_presence"></a>Modes de présence
+    - le mode Vacances n'est pas sélectionnable, mais est affiché si vous l'avez sélectionné depuis votre système
+    - le choix du mode Planning ou Détection s'accompagne du choix d'un programme. Idem via les Scénarios ;)
+- Programmation
+    - l'édition n'est disponible qu'en mode Planning
+    - est affichée (sans possibilité d'édition) en mode Geofence et Vacances<br/>
+      Vous pouvez cependant sauvegarder la programmation Geofence, et la réinjecter *(non disponible en mode Vacances)*
+- Widget TH
+    - ne dispose pas des boutons Pc/Pc (inutiles, puisque identiques sur la console)
+    - un icone est affiché représentant la présence *(selon vos paramétrages Geofence dans votre système)*
 
 
-Scénario
-==
+# Scénario
 
-Le pilotage par scénario est très simple : il vous suffit d'ajouter une commande de type action, et choisir le paramètre dans la liste déroulante.<br/>
+Le pilotage par Scénario est très simple : il vous suffit d'ajouter une commande de type action, et choisir le paramètre dans la liste déroulante.<br/>
 Soit :
-- Réglage mode : pour le pilotage du mode de présence
-- Set consigne : pour modifier une consigne<br/>
-new 0.4.1 : le premier choix permet de revenir à la température programmée (remplace le script documenté dans le **[forum](https://www.jeedom.com/forum/viewtopic.php?f=143&t=31647&p=736308#p736308)**)<br/>
-=> pour ces réglages, le résultat est un changement permanent (aucun intérêt à prévoir une durée, justement par le fait que ces changements sont pilotés par scénario !)
-
-- Restaure : pour charger une programmation (sauvegardée au préalable via la Console ou l'éditeur de programmes, sur le Dashboard)<br/>
-=> lorsqu'un programme est utilisé dans un scénario, vous ne pouvez plus le supprimer depuis la Console
-
-
-Forum
-==
-N'hésitez pas à visiter le **[forum dédié](https://www.jeedom.com/forum/viewtopic.php?f=143&t=31647)** pour toute question ou suggestion.
+- Réglage mode<br/>
+/!\ Lyric : accompagné du programme à restaurer
+- Set consigne<br/>
+    - le premier choix permet de revenir à la température programmée<br/>
+    - le résultat est un changement permanent (aucun intérêt à prévoir une durée, justement par le fait que ces changements sont pilotés par Scénario)
+- Restaure<br/>
+Charge une programmation sauvegardée au préalable via la Console ou l'éditeur de programmes
+    - /!\ lorsqu'un programme est utilisé dans un Scénario, vous ne pouvez plus le supprimer depuis la Console
 
 
-Changelog
-==
-Se trouve dans le fichier dédié (en anglais), et accessible en standard via le bouton dédié sur les écrans de Jeedom : market, configuration générale du plugin, tableau des versions.
+# Forum
+N'hésitez pas à visiter le **[forum dédié](https://community.jeedom.com/t/plugin-evohome)** pour toute question ou suggestion.
+
+
+# Changelog
+Se trouve dans le fichier dédié (en anglais), et accessible en standard via le bouton dédié sur les écrans de Jeedom : market ou configuration générale du plugin.

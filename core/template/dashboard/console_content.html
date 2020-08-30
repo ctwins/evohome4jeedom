@@ -3,9 +3,9 @@
 	</div>
 <div data-cmd_id="#etatId#" style="margin-left:0px;margin-right:0px;text-align:center;">
 	<div>
-		<img class="modeIntegrated setMode#id#" style="background-color:#F6F6FF;display:#displaySetModePopup#;cursor:pointer;height:30px;width:30px;" src="plugins/evohome/img/#etatImg#" />
+		<img class="modeIntegrated setMode#id#" style="background-color:#F6F6FF;display:#displaySetModePopup#;cursor:pointer;height:30px;width:30px;" src="plugins/#pluginName#/img/#etatImg#" />
 		<div style="display:#etatUntilDisplay#;vertical-align:middle;">
-			&nbsp;&nbsp;&nbsp;&nbsp;<img style="height:15px;width:15px;" src="plugins/evohome/img/#etatUntilImg#" />
+			&nbsp;&nbsp;&nbsp;&nbsp;<img style="height:15px;width:15px;" src="plugins/#pluginName#/img/#etatUntilImg#" />
 			<span style="color:black;" title="#etatUntilFull#">&nbsp;#etatUntil#</span>
 		</div>
 	</div>
@@ -18,6 +18,7 @@
 			<option value="3" #statScope3#>#statScopeTitle3#</option>
 		</select>
 	</div>
+	
 	<span style="font-size:12px;">#scheduleTitle#</span><br/>
 	<select id="scheduleList#id#" style="color: var(--txt-color);width:146px;font-size:11px;padding:4px !important;">#scheduleOptions#</select>
 	<div style="height:2px;"></div>
@@ -25,14 +26,16 @@
 			title="#title.save#">
 		<span class="saveCaption#id# fa fa-circle" style="color:#evoSaveColor#;" />
 	</a>
-	<a class="showCS showCurrentSchedule#id# btn btn-sm" style="background-color:#evoCmdBackgroundColor# !important;border-color:transparent;"
-			title="#title.showCurrent#">
-		<span style="color:white !important;">Pc</span>
-	</a>
-	<a class="showCS showSavedSchedule#id# btn btn-sm" style="background-color:#evoCmdBackgroundColor# !important;border-color:transparent;"
-			title="#title.showSelected#">
-		<span class="showSavedScheduleCaption#id#">Ps</span>
-	</a>
+	<!--div style="display:#displayScheduling#;"-->
+		<a class="showCS showCurrentSchedule#id# btn btn-sm" style="background-color:#evoCmdBackgroundColor# !important;border-color:transparent;"
+				title="#title.showCurrent#">
+			<span style="color:white !important;">Pc</span>
+		</a>
+		<a class="showCS showSavedSchedule#id# btn btn-sm" style="background-color:#evoCmdBackgroundColor# !important;border-color:transparent;"
+				title="#title.showSelected#">
+			<span class="showSavedScheduleCaption#id#">Ps</span>
+		</a>
+	<!--/div-->
 	<a class="restoreSchedule#id# btn btn-sm" style="background-color:#evoCmdBackgroundColor# !important;border-color:transparent;"
 			title="#title.restore#">
 		<span class="restaureCaption#id# fas fa-file-download"/>
@@ -41,22 +44,10 @@
 			title="#title.delete#">
 		<span class="deleteCaption#id# fas fa-trash-alt"/>
 	</a>
-	<br/>
 </div>
-<script type="text/javascript" src="plugins/evohome/core/template/dashboard/console_min.js"></script>
+<script type="text/javascript" src="plugins/#pluginName#/core/template/dashboard/dashboard_min.js?#dashboard_min_js_size#"></script>
+<script type="text/javascript" src="plugins/#pluginName#/core/template/dashboard/console_min.js?#console_min_js_size#"></script>
 <script>
-initVarsCommon('#evoBackgroundColor#','#evoCmdBackgroundColor#',#apiAvailable#,'#msgApiUnavailable#','#evoDefaultShowingScheduleMode#','#showHorizontal#','#argLocId#','#argZoneId#','#argFileId#');
-var evoModePairs = [ [#codeAuto#, 'i_calendar', "#modeAuto#"],
-					 [#codeEco#, 'i_economy', "#modeEco#"],
-					 [#codeAway#, 'i_away', "#modeAway#"],
-					 [#codeDayOff#, 'i_dayoff', "#modeDayOff#"],
-					 [#codeCustom#, 'i_custom', "#modeCustom#"],
-					 [#codeOff#, 'i_off', "#modeOff#"] ];
-initVarsConsole('#locId#',#id#,#isAdmin#,"#scheduleFileId#",'#canRestoreCurrent#',#taskIsRunning#,
-"#title.setMode#", #codesAllowed#, #etatCode#, "#displaySetModeConsole#",
-"#cmd_setmode_id#", '#argCodeMode#', "#setModeConfirm#", "#setModeInfoList#",
-"#cmd_save_id#", "#saveAs#", "#saveInfoList#", "#saveReplace#", "#saveName#", "#saveRemark#", "#argFileName#", "#argFileRem#",
-"#cmd_restore_id#", "#restoreConfirm#", "#restoreInfoList#",
-"#cmd_delete_id#", "#deleteConfirm#", "#deleteInfoList#"
-);
+initVarsCommon('#pluginName#',#id#,'#evoBackgroundColor#','#evoCmdBackgroundColor#',#apiAvailable#,'#msgApiUnavailable#','#evoDefaultShowingScheduleMode#','#showHorizontal#','#argZoneId#','#argFileId#',#dashboard_css_size#,'#evoMsgInfo#');
+initVarsConsole('#locId#','#argLocId#',#id#,#isAdmin#,"#scheduleFileId#",'#scheduleType#','#canRestoreCurrent#',#taskIsRunning#,"#title.setMode#",#codesAllowed#,#modesArray#,#schedulesList#,'#etatCode#',"#displaySetModeConsole#","#cmd_setmode_id#",'#argCodeMode#',"#setModeConfirm#","#setModeInfoList#","#cmd_save_id#","#saveAs#","#saveInfoList#","#saveReplace#","#saveName#","#saveRemark#","#argFileName#","#argFileRem#","#cmd_restore_id#","#restoreConfirm#","#restoreInfoList#","#cmd_delete_id#","#deleteConfirm#","#deleteInfoList#");
 </script>

@@ -1,15 +1,10 @@
 ﻿<?php
-require_once dirname(__FILE__) . '/../../core/class/evohome.utils.php';
+require_once dirname(__FILE__) . '/../../core/class/honeywell.class.php';
 
 class inner {
-	static function i18n($iText, $args=null) {
-		if ( substr($iText,-1) == '}' ) $iText .= '__';
-		$txt = __($iText, "plugins/evohome/desktop/modal/schedule");
-		if ( substr($txt,-2) == '__' ) $txt = substr($txt,0,-2);
-		if ( $args == null ) return $txt;
-		if ( !is_array($args) ) return str_replace('{0}', $args, $txt);
-		for ( $i=0 ; $i<count($args) ; $i++ ) $txt = str_replace("{".$i."}", $args[$i], $txt);
-		return $txt;
+	static function i18n($txt, $args=null) {
+	    //honeyutils::logDebug("scheduleH.i18($txt,$args)");
+		return honeyutils::i18n($txt, "plugins/".honeywell::PLUGIN_NAME."/desktop/modal/schedule", $args);
 	}
 }
 if (!isConnect()) {
@@ -19,30 +14,30 @@ $id = init('id');
 if ($id == '') {
 	throw new Exception(inner::i18n("L'id ne peut être vide"));
 }
-$fileId = init(evohome::ARG_FILE_ID);
+$fileId = init(honeywell::ARG_FILE_ID);
 if ($fileId == '') {
 	throw new Exception(inner::i18n("L'id du fichier programme ne peut être vide"));
 }
-$evohome = evohome::byId($id);
-if (!is_object($evohome)) {
+$eqLogic = honeywell::byId($id);
+if (!is_object($eqLogic)) {
 	throw new Exception(inner::i18n("L'équipement Evohome est introuvable sur l'ID {0}", $id));
 }
-if ($evohome->getEqType_name() != 'evohome') {
-	throw new Exception(inner::i18n("Cet équipement n'est pas du type attendu : {0}", $evohome->getEqType_name()));
+if ($eqLogic->getEqType_name() != honeywell::PLUGIN_NAME) {
+	throw new Exception(inner::i18n("Cet équipement n'est pas du type attendu : {0}", $eqLogic->getEqType_name()));
 }
-$locId = evohome::getLocationId($evohome);
+$locId = $eqLogic->getLocationId();
 
-$scheduleToShow = evohome::getSchedule($locId,$fileId);
+$scheduleToShow = honeywell::getSchedule($locId,$fileId);
 if ( !is_array($scheduleToShow) ) {
 	echo "Erreur de lecture<br/><br/>";
 	return;
 }
-$currentSchedule = evohome::getSchedule($locId,evohome::CURRENT_SCHEDULE_ID);
-$zoneId = init(evohome::ARG_ZONE_ID);
+$currentSchedule = honeywell::getSchedule($locId,honeywell::CURRENT_SCHEDULE_ID);
+$zoneId = init(honeywell::ARG_ZONE_ID);
 $edit = init('edit') === "1";
-$typeSchedule = init("typeSchedule");
-$subTitle = evohome::getScheduleSubTitle($id,$locId,$fileId,$currentSchedule,$scheduleToShow,evohome::CFG_SCH_MODE_VERTICAL,$zoneId,$typeSchedule,$edit);
-$editAvailable = isAdmin() == 'true' && evoGetParam(evohome::CFG_SCH_EDIT_AVAILABLE,0) == 1;
+$scheduleSource = init("scheduleSource");
+$subTitle = honeywell::getScheduleSubTitle($id,$locId,$fileId,'T',$currentSchedule,$scheduleToShow,honeywell::CFG_SCH_MODE_VERTICAL,$zoneId,$scheduleSource,$edit);
+$editAvailable = honeyutils::isAdmin() == 'true' && honeyutils::getParam(honeywell::CFG_SCH_EDIT_AVAILABLE,0) == 1;
 if ( !$edit && array_key_exists('comment', $scheduleToShow) && $scheduleToShow['comment'] != '') {
 	echo "<table width=100% style='background-color:white;color:black;'><tr>";
 	echo "<td class='_vtop'>" . inner::i18n('Commentaire') . "&nbsp;:&nbsp;</td>";
@@ -166,30 +161,28 @@ echo "<div id='scheduleTable'></div>";
 		</td>
 	</tr>
 </table>
-<?php } ?>
-<script type="text/javascript" src="plugins/evohome/desktop/js/scheduleH-min.js"></script>
+<?php }
+echo '<script type="text/javascript" src="plugins/'.honeywell::PLUGIN_NAME.'/desktop/js/scheduleH-min.js?' . filemtime('plugins/'.honeywell::PLUGIN_NAME.'/desktop/js/scheduleH-min.js') . '"></script>';
+ ?>
 <script>
 $('.ui-widget-overlay.ui-front').hide();	// 0.4.3
 <?php
-echo "var _evs = new EvoSchedule(typeof genConsoleId == 'undefined' ? 0 : genConsoleId[$locId]);\n";
-echo "var ts='$typeSchedule';\n";
-if ( $edit && $typeSchedule == 'S' ) echo "$('#saveName')[0].value = _evs.scheduleSelectedName;\n";
+echo "var _evs = new EvoSchedule('".honeywell::PLUGIN_NAME."', typeof hnwConsole =='undefined' || typeof hnwConsole.genConsoleId == 'undefined' ? 0 : hnwConsole.genConsoleId[$locId]);\n";
+echo "var ts='$scheduleSource';\n";
+if ( $edit && $scheduleSource == 'S' ) echo "$('#saveName')[0].value = _evs.scheduleSelectedName;\n";
 $iZone = 0;
-$equNamesById = evohome::getEquNamesAndId($locId);
+$equNamesById = honeywell::getEquNamesAndId($locId);
 if ( is_array($scheduleToShow) ) {
 	foreach ( $scheduleToShow['zones'] as $mydata ) {
 		$myZoneId = $mydata['zoneId'];
-		if ( !$edit && $zoneId != 0 && $zoneId != $myZoneId ) continue;
+		if ( !$edit && $zoneId != '0' && $zoneId != $myZoneId ) continue;
 		if ( $equNamesById[$myZoneId] == null ) continue;
-		echo '_evs.zones[' . $iZone++ . '] = new _evs.Zone(' . $myZoneId . ',"' . $mydata['name'] . '","' . $equNamesById[$myZoneId];
-		if ( !$edit && $fileId != evohome::CURRENT_SCHEDULE_ID && json_encode($mydata) != json_encode(extractZone($currentSchedule,$myZoneId)) ) {
+		echo '_evs.zones[' . $iZone++ . '] = new _evs.Zone("' . $myZoneId . '","' . $mydata['name'] . '","' . $equNamesById[$myZoneId];
+		if ( !$edit && $fileId != honeywell::CURRENT_SCHEDULE_ID && json_encode($mydata) != json_encode(honeyutils::extractZone($currentSchedule,$myZoneId)) ) {
 			echo ' *';
 		}
 		echo "\",[\n";
 		$iSchedule = 0;
-		$dsSunday = $mydata['schedule']['DailySchedules'][6];	// ATTENTION, valable si Schedule semaine complète
-		$spSundayLast = $dsSunday['Switchpoints'][sizeof($dsSunday['Switchpoints'])-1];
-		$lastTemp = $spSundayLast['heatSetpoint'];
 		// 0.4.0 - manage now an empty schedule
 		if ( count($mydata['schedule']['DailySchedules']) == 0 ) {
 			for ($d=0 ; $d<=6 ; $d++) {
@@ -210,30 +203,30 @@ if ( is_array($scheduleToShow) ) {
 					echo "_evs._P(" . $sp['heatSetpoint'] . ",'" . $sp['TimeOfDay'] . "')";
 				}
 				echo "])";
-				$lastTemp = $ds['Switchpoints'][sizeof($ds['Switchpoints'])-1]['heatSetpoint'];
 			}
 		}
 		echo "]);\n";
 	}
 }
-const cDays = ["Lundi","Mardi","Mercredi","Jeudi","Vendredi","Samedi","Dimanche"];
-for ( $i=0; $i<7 ;$i++ ) echo "_evs.days[$i] = '" . inner::i18n(cDays[$i]) . "';";
-echo "_evs.typeSchedule = '$typeSchedule';";
-echo "_evs.zoneId = $zoneId;";
+for ( $i=0; $i<7 ;$i++ ) {
+    echo "_evs.days[$i] = '" . inner::i18n(["Lundi","Mardi","Mercredi","Jeudi","Vendredi","Samedi","Dimanche"][$i]) . "';";
+}
+echo "_evs.scheduleSource = '$scheduleSource';";
+echo "_evs.zoneId = '$zoneId';";
 echo "_evs.editAvailable = " . ($editAvailable /*&& $fileId != 0*/ ? "true" : "false") . ";";
 echo "_evs.edit = " . ($edit ? "true" : "false") . ";\n";
 $lblEdit = inner::i18n("Editer");
 echo "var subTitle = \"$subTitle\";\n";
 $displayMode = init("displayMode");	// empty ('') by default
 $nDay = init("nDay");
-if ( $zoneId == 0 && ($nDay == '' || $nDay == -1) ) {
+if ( $zoneId == '0' && ($nDay == '' || $nDay == -1) ) {
 	$lblNewDisplayMode = inner::i18n($displayMode == 'D' ? "Zone" : "Jour");
 	echo "subTitle += \"<div style='position:absolute;top:0px;right:40px;padding:5px;'><a id='btnDisplayMode' class='btn btn-success btn-sm'";
-	$modeH = evohome::CFG_SCH_MODE_HORIZONTAL;
-	echo " onclick='showScheduleCO($id,\\\"$typeSchedule\\\",$fileId,\\\"$modeH\\\",\\\"$displayMode\\\" === _evs.DM_BY_DAY ? _evs.DM_BY_ZONE : _evs.DM_BY_DAY);'";
+	$modeH = honeywell::CFG_SCH_MODE_HORIZONTAL;
+	echo " onclick='showScheduleCO($id,\\\"T\\\",\\\"$scheduleSource\\\",$fileId,\\\"$modeH\\\",\\\"$displayMode\\\" === _evs.DM_BY_DAY ? _evs.DM_BY_ZONE : _evs.DM_BY_DAY);'";
 	echo ">/$lblNewDisplayMode</a></div>\";\n";
 } else {
-	echo "if ( _evs.isEditAvailable() ) subTitle += \"<div style='position:absolute;top:0px;right:40px;;padding:5px;'><a id='btnEdit' class='btn btn-success btn-sm' onclick='_evs.openEdit($zoneId,-1,1,_evs.DM_BY_ZONE);'>$lblEdit</a></div>\";\n";
+	echo "if ( _evs.isEditAvailable() ) subTitle += \"<div style='position:absolute;top:0px;right:40px;;padding:5px;'><a id='btnEdit' class='btn btn-success btn-sm' onclick='_evs.openEdit(\\\"$zoneId\\\",-1,1,_evs.DM_BY_ZONE);'>$lblEdit</a></div>\";\n";
 }
 echo "$('#md_modal')[0].previousSibling.firstChild.innerHTML = subTitle;\n";
 echo "$('#md_modal').dialog('option', 'width', Math.min(1000,jQuery(window).width()-16));\n";
@@ -258,16 +251,16 @@ echo "_evs.lblCreate = \"" . inner::i18n("Confirmez-vous la création de '{0}' ?
 echo "_evs.lblReplaceSave = \"" . inner::i18n("Confirmez-vous le remplacement de la sauvegarde '{0}' ?") . "\";\n";
 echo "_evs.lblConfirmSave = \"" . inner::i18n("Confirmez-vous la sauvegarde vers '{0}' ?") . "\";\n";
 echo "_evs.scheduleOpenCmd = 'index.php?v=d" .
-	"&plugin=evohome" .
-	"&modal=schedule" . evohome::CFG_SCH_MODE_HORIZONTAL .
+    "&plugin=" . honeywell::PLUGIN_NAME .
+	"&modal=schedule" . honeywell::CFG_SCH_MODE_HORIZONTAL .
 	"&id=$id" .
-	"&" . evohome::ARG_ZONE_ID . "=_zoneId_" .
-	"&" . evohome::ARG_FILE_ID . "=$fileId" .
+	"&" . honeywell::ARG_ZONE_ID . "=_zoneId_" .
+	"&" . honeywell::ARG_FILE_ID . "=$fileId" .
 	"&displayMode=_displayMode_" .
 	"&nDay=_nDay_" .
-	"&mode=" . evohome::CFG_SCH_MODE_HORIZONTAL .
+	"&mode=" . honeywell::CFG_SCH_MODE_HORIZONTAL .
 	"&edit=_edit_" .
-	"&typeSchedule=$typeSchedule'\n";
+	"&scheduleSource=$scheduleSource'\n";
 echo "lblSaveTo = \"" . inner::i18n("Enregistre la programmation vers '{0}'...") . "\";\n";
 // 0.4.3 - displayMode and nDay choices :
 echo "_evs.displayMode = '$displayMode' == '' ? _evs.DM_BY_ZONE : '$displayMode';";
@@ -275,9 +268,9 @@ echo "_evs.nDay = '$nDay' == '' ? -1 : parseInt('$nDay');";
 ?>
 _evs.displayHTable();
 function evohomeSave(fileId, fileName, eComm, scheduleToSave) {
-	jeedom.cmd.execute({id:"<?php echo evohome::getActionSaveId($locId);?>", notify:false,
-		value:{<?php echo evohome::ARG_FILE_ID?>:fileId, <?php echo evohome::ARG_FILE_NAME?>:fileName,
-			   <?php echo evohome::ARG_FILE_REM?>:eComm, <?php echo evohome::ARG_FILE_NEW_SCHEDULE?>:scheduleToSave}
+	jeedom.cmd.execute({id:"<?php echo honeywell::getActionSaveId($locId);?>", notify:false,
+		value:{<?php echo honeywell::ARG_FILE_ID?>:fileId, <?php echo honeywell::ARG_FILE_NAME?>:fileName,
+			   <?php echo honeywell::ARG_FILE_REM?>:eComm, <?php echo honeywell::ARG_FILE_NEW_SCHEDULE?>:scheduleToSave}
 		});
 	waitingMessage(getMsg(lblSaveTo,[fileName]));
 }

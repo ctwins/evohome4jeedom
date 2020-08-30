@@ -39,7 +39,9 @@ UNTIL = None
 
 CLIENT = None
 
-baseUrl = 'https://tccna.honeywell.com/WebAPI/emea/api/v1/'
+#baseUrl = 'https://tccna.honeywell.com/WebAPI/emea/api/v1/'
+baseUrl = 'https://mytotalconnectcomfort.com/WebAPI/emea/api/v1/'
+
 lastResponse = None
 
 try:

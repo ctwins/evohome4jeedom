@@ -9,7 +9,8 @@ logging.basicConfig()
 evohome_log = logging.getLogger("evohomeBridge-InfosZones")
 evohome_logV1 = logging.getLogger("evohomeBridge-InfosZones(APIV1)")
 
-baseurl = 'https://tccna.honeywell.com/WebAPI/api/'
+#baseurl = 'https://tccna.honeywell.com/WebAPI/api/'
+baseurl = 'https://mytotalconnectcomfort.com/WebAPI/api/'
 
 SESSION_ID_V1 = None
 USER_ID_V1 = None
@@ -218,7 +219,7 @@ try:
 				nb += 1
 				if nb > 1:
 					jZones = jZones + ','
-				jZones = jZones + '{"zoneId":' + zone.zoneId
+				jZones = jZones + '{"zoneId":"' + zone.zoneId + '"'
 				jZones = jZones + ',"name":"' + zone.name + '"'
 				if not zone.temperatureStatus['isAvailable']:
 					jZones = jZones + ',"temperature":null'

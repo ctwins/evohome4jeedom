@@ -19,7 +19,8 @@ def addTokenTags():
 		ret = ret + ', "access_token_expires":0'
 	return ret
 
-baseUrl = 'https://tccna.honeywell.com/WebAPI/emea/api/v1/'
+#baseUrl = 'https://tccna.honeywell.com/WebAPI/emea/api/v1/'
+baseUrl = 'https://mytotalconnectcomfort.com/WebAPI/emea/api/v1/'
 
 # Ser login details in the 2 fields below
 USERNAME = sys.argv[1]

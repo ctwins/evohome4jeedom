@@ -18,7 +18,9 @@ class EvohomeClientSC(EvohomeBase):
 		self.password = password
 		self.debug = debug
 		self.request_timeout = 15
-		self.baseurl = 'https://tccna.honeywell.com/WebAPI/emea/api/v1'
+		#self.domain = 'https://tccna.honeywell.com/'
+		self.domain = 'https://mytotalconnectcomfort.com/'
+		self.baseurl = self.domain + 'WebAPI/emea/api/v1'
 
 		if pAccessToken == None or pAccessToken == '0' or pTokenTimeout == None or pTokenTimeout == 0:
 			if debug:
@@ -95,7 +97,7 @@ class EvohomeClientSC(EvohomeBase):
 		self.access_token = None
 		self.access_token_expires = None
 
-		url = 'https://tccna.honeywell.com/Auth/OAuth/Token'
+		url = self.domain + 'Auth/OAuth/Token'
 		headers = {
 			'Authorization': 'Basic NGEyMzEwODktZDJiNi00MWJkLWE1ZWItMTZhMGE0MjJiOTk5OjFhMTVjZGI4LTQyZGUtNDA3Yi1hZGQwLTA1OWY5MmM1MzBjYg==',
 			'Accept': 'application/json, application/xml, text/json, text/x-json, text/javascript, text/xml'
