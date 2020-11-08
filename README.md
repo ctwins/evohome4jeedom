@@ -2,7 +2,7 @@
 
 <img align="left" src="plugin_info/evohome_icon.png" width="120" style="padding-right:16px;">
 This is a plugin for Jeedom 3.x and 4.x platform, regarding the Honeywell Evohome system.<br/>
-State is : v0.5.0 - Lyric Edition (and stil Full Jeedom V4 compatibility)
+State is : v0.5.1 - Lyric fixes & TH min/max usage
 
 Written in php, the Jeedom main langage, a bit of javascript, of course some html, and, at this time (from 0.3.0), a forked Python bridge (from the excellent python library "evohome" of watchforstock).<br/>
 Great thanks to him. His implementation can be ***[found here](https://github.com/watchforstock/evohome-client)*** <br/>
