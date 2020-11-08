@@ -55,6 +55,7 @@ echo "</script>";
 	._t1b { background-color:#C0C0C0;width:60px;text-align:center; }
 	._t2 { padding-left:16px;background-color:#F0F0F0;color:gray;height:32px; }
 	._t2b { padding-left:32px;background-color:#F0F0F0;color:gray;padding-bottom:4px; }
+	._t2b2 { padding-left:32px;padding-right:8px;background-color:#F0F0F0;color:gray;padding-bottom:4px; }
 	._t2c { padding-left:16px;background-color:#F0F0F0;color:gray;height:32px;width:200px; }
 	._t3 { background-color:#F0F0F0;color:black;text-align:center; }
 	._t3b { background-color:#F0F0F0;color:black;width:180px; }
@@ -88,9 +89,15 @@ if ( $scheduleType == 'G' ) {
 	echo "<td class=_t2>" . inner::i18n('Utiliser les réglages du mode Nuit') . "</td>";
 	echo "<td class=_t3 rowspan=2>" . honeywell::adjustByUnit($data["sleepMode"]["heatSetPoint"],honeywell::CFG_UNIT_FAHRENHEIT) . "°</td>";
 	echo "</tr>";
-	echo "<tr>";
-	echo "<td class=_t2b>de " . $data["sleepMode"]["startTime"] . " à " . $data["sleepMode"]["endTime"] . "</td>";
-	echo "</tr>";
+	if ( $data["sleepMode"]["triggers"] ) {
+		foreach ( $data["sleepMode"]["triggers"] as $trigger ) {
+			echo "<tr><td class=_t2b>" . inner::i18n('de {0} à {1}', [$trigger["startTime"],$trigger["endTime"]]) . "</td></tr>";
+			foreach ( $trigger[days] as &$day ) $day = honeyutils::getDayNameFromECDayName($day);
+			echo "<tr><td class=_t2b2 colspan=2>" . inner::i18n('pour ') . implode (", ", $trigger[days]) . "</td></tr>";
+		}
+	} else {
+		echo "<tr><td class=_t2b>" . inner::i18n('de {0} à {1}', [$data["sleepMode"]["startTime"],$data["sleepMode"]["endTime"]]) . "</td></tr>";
+	}
 
 	// Away
 	echo "<tr><td class=_t1>" . inner::i18n('QUAND JE SUIS ABSENT') . "</td>";

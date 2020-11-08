@@ -1,8 +1,15 @@
 <?php
 require_once dirname(__FILE__) . '/../../../../core/php/core.inc.php';
-
+/**
+ * Before 0.5.0, this file was evohome.utils.php, this class was evoutils
+ * @author ctwins95
+ *
+ */
 class honeyutils {
-	static function i18n($txt, $file, $arg=null) {
+	static function i18n($txt, $file=null, $arg=null) {
+		if ( $file == null ) {
+			$file = "plugins/".honeywell::PLUGIN_NAME."/core/class/evohome.class.php";
+		}
 		if ( substr($txt,-1) == '}' ) $txt .= '__';
 		$txt = __($txt, $file);
 		if ( substr($txt,-2) == '__' ) $txt = substr($txt,0,-2);
@@ -21,6 +28,13 @@ class honeyutils {
 			 $msg .= " : <$addInfos>";
 		}
 		log::add(honeywell::PLUGIN_NAME, 'debug', $msg);
+	}
+	static function logWarn($msg, $addInfos="") {
+		if ($addInfos !== "" ) {
+			 if ( is_array($addInfos) ) $addInfos = json_encode($addInfos);
+			 $msg .= " : <$addInfos>";
+		}
+		log::add(honeywell::PLUGIN_NAME, 'warn', $msg);
 	}
 	static function logError($msg, $addInfos="") {
 		if ($addInfos !== "" && !self::isDebug() ) {
@@ -165,5 +179,21 @@ class honeyutils {
 		// 0.4.1 - fix of the check ! :(
 		return count($results) > 0 && intval($results[0]["cnt"]) == 1;
 	}*/
+
+	const CDays = ["Lundi","Mardi","Mercredi","Jeudi","Vendredi","Samedi","Dimanche"];
+	const ECDayToNumDay = array("Monday"=>0,"Tuesday"=>1,"Wednesday"=>2,"Thursday"=>3,"Friday"=>4,"Saturday"=>5,"Sunday"=>6);
+	const NumDayToECDay = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"];
+	static function getDayName($numDay) {
+		return self::i18n(self::CDays[$numDay]);
+	}
+	static function getNumDayFromECDay($ecDay) {
+		return self::ECDayToNumDay[$ecDay];
+	}
+	static function getECDayFromNumDay($numDay) {
+		return self::NumDayToECDay[$numDay];
+	}
+	static function getDayNameFromECDayName($ecDay) {
+		return self::getDayName(self::ECDayToNumDay[$ecDay]);
+	}
 
 }

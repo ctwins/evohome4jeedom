@@ -62,7 +62,7 @@ try {
 		if ( $result["success"] == false ) {
 			ajax::error($result["message"]);
 		} else {
-			ajax::success(array('added'=>$result["added"]));
+		    ajax::success($result);
 		}
 	}
 	else if ($action == 'refresh') {

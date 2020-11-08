@@ -1,8 +1,14 @@
 <?php
 require_once dirname(__FILE__) . '/../../../../core/php/core.inc.php';
 require_once 'honeyutils.php';
-require_once 'HeatMode.php';
-
+require_once 'structures.php';
+/**
+ * This class appears with version 0.5.0, and content is large parts from original evohome.class.php
+ * It is the parent of evohome.class.php (still the entry point from jeedom, and lyric.php)
+ * 
+ * @author ctwins95
+ *
+ */
 abstract class honeywell extends eqLogic {
     const PLUGIN_NAME = "evohome";
     const RELOAD = true;
@@ -21,11 +27,6 @@ abstract class honeywell extends eqLogic {
 	const CONF_MODEL_TYPE = 'modelType';
 	const CONF_ALLOWED_SYSTEM_MODE = 'allowedSystemMode';
 	const ID_NO_ZONE = -2;
-	const MODE_PERMANENT_ON = '1';
-	const MODE_PERMANENT_OFF = '0';
-	const PRESENCE_UNDEFINED = '0';
-	const PRESENCE_OUTSIDE = '1';
-	const PRESENCE_INSIDE = '2';
 	const SET_TH_MODE_PERMANENT = 'STM_1';
 	const SET_TH_MODE_UNTIL_CURRENT_SCH = 'STM_2';
 	const SET_TH_MODE_UNTIL_HHMM = 'STM_3';
@@ -154,7 +155,7 @@ abstract class honeywell extends eqLogic {
 		$cmd = $this->getCmd(null, $logicalId);
 		$created = false;
 		if (is_object($cmd) && $cmd->getSubType() != $subType) {
-			honeyutils::logDebug('0.2.1 : createOrUpdateCmd replace MODE/RESTORE cmd');
+			// 0.2.1 : createOrUpdateCmd replace MODE/RESTORE cmd
 			$cmd->remove();
 			$cmd = null;
 		}
@@ -171,11 +172,10 @@ abstract class honeywell extends eqLogic {
 		$cmd->setType($type);
 		$cmd->setSubType($subType);
 		if ( $logicalId == self::CMD_SET_CONSIGNE_ID ) {
-			// 0.4.1 - become a default setting, before reading real values of min/max inside "injectInformationsFromZone"
-			self::fillSetConsigneData($cmd,$this->getLogicalId(),self::adjustbyUnit(5,"C"),self::adjustbyUnit(25,"C"));
-		}
-		// 0.4.2 - les infos précédentes n'étaient pas compatibles "appli mobile"
-		if ( $logicalId == self::CMD_TEMPERATURE_ID ) {
+			// 0.4.1 - become a default setting, before reading real values of min/max with "injectInformationsFromZone"
+			self::fillSetConsigneData($cmd,$this->getLogicalId(),self::adjustbyUnit(5,self::CFG_UNIT_CELSIUS),self::adjustbyUnit(25,self::CFG_UNIT_CELSIUS));
+		// 0.4.2 - previous infos was not "appli mobile" compliant
+		} else if ( $logicalId == self::CMD_TEMPERATURE_ID ) {
 			//$cmd->setDisplay('generic_type', 'THERMOSTAT_TEMPERATURE');
 			$cmd->setDisplay('generic_type', 'TEMPERATURE');
 			$cmd->setGeneric_type('TEMPERATURE');
@@ -450,14 +450,13 @@ abstract class honeywell extends eqLogic {
 		$replace_console['#argLocId#'] = self::ARG_LOC_ID;
 		$replace_console['#etatId#'] = is_object($cmdEtat) ? $cmdEtat->getId() : '';
 
-		$_etat = is_object($cmdEtat) ? $cmdEtat->execCmd() : '';
-		$aEtat = explode(';',$_etat);
-		$currentMode = $this->getModeFromHName($aEtat[0]);
+		$state = State::buildObj($this);
+		$currentMode = $this->getModeFromHName($state->currentMode);
 		$replace_console['#etatImg#'] = $this->getEtatImg($currentMode);
 		$replace_console['#etatCode#'] = $currentMode;
 
 		// *******************************************************
-		$this->iSetHtmlConsole($replace_console,$aEtat,$currentMode);
+		$this->iSetHtmlConsole($replace_console,$state,$currentMode);
 		// *******************************************************
 
 		$scheduleType = self::getScheduleType($scheduleCurrent);
@@ -626,22 +625,9 @@ abstract class honeywell extends eqLogic {
 		$consigne = $forcedConsigne != null ? $forcedConsigne : (is_object($cmdConsigne) ? $cmdConsigne->execCmd() : 0);
 		$currentMode = self::getCurrentMode($locId);
 
-		$cmdConsigneInfos = $this->getCmd(null,self::CMD_CONSIGNE_TYPE_ID);
-		//if ( is_object($cmdConsigneInfos) ) {	// 0.4.1 - remove the check of isVisible (useless and side effects in case of) ; 0.5 - remove check
-			$consigneInfos = explode(';', $cmdConsigneInfos->execCmd());
-			# $consigneInfos[0] = see __iSetHtmlTH
-			# $consigneInfos[1] = 2018-01-28T23:00:00Z / <empty>
-			# $consigneInfos[2] = Celsius/Fahrenheit
-			# $consigneInfos[3] = step : 0.5 si °C ; 1 si °F					 	)
-			# $consigneInfos[4] = 5 (min)  == self->getConfiguration('minHeat')		) 0.4.1 - these 3 values are now "adjusted by unit"
-			# $consigneInfos[5] = 25 (max) == self->getConfiguration('maxHeat')		)
-			# $consigneInfos[6] = delta previous measure (0/-1:+1)
-			# $consigneInfos[7] = timeBattLow / <empty>
-			# $consigneInfos[8] = timeCnxLost / <empty>
-			# $consigneInfos[9] = Lyric : if TemporaryHold or HoldUntil, the endHeatSetpoint value
-			# $consigneInfos[10] = Lyric : 0=heating off ; 1=heating on
-		//}
-		switch ( $temperatureNative == null ? 0 : ( ((count($consigneInfos)==11 and $consigneInfos[10] == '1') or $temperatureNative < $consigne) ? 2 : 1) ) {
+		$consigneInfos = ConsigneInfos::buildObj($this);
+
+		switch ( $temperatureNative == null ? 0 : ( $consigneInfos->heating or $temperatureNative < $consigne ? 2 : 1) ) {
 			case 0 :
 			$replace_TH['#temperatureImg#'] = 'batt-hs.png';
 			$replace_TH['#temperatureImgStyle#'] = 'height:36px;width:36px;margin-top:2px;';
@@ -679,7 +665,7 @@ abstract class honeywell extends eqLogic {
 			//$replace_TH['#currentConsigneUntil#'] = '';
 			//$consigneScheduled = (count($consigneInfos) < 9 or $consigneInfos[9] == null) ? null : self::adjustByUnit( $consigneInfos[9],$consigneInfos[2]);
 		//}
-		$consigneScheduled = $consignePair == null ? null : self::adjustByUnit($consignePair['TH'],$consigneInfos[2]);	// 0.4.1 - adjust added
+		$consigneScheduled = $consignePair == null ? null : self::adjustByUnit($consignePair['TH'],$consigneInfos->unit);	// 0.4.1 - adjust added
 		//  additional infos
 		$replace_TH['#currentConsigneUntil#'] = $consignePair == null ? '' : $consignePair['UNTIL'];
 		$sConsigneScheduled = $consigneScheduled == null ? ("[".self::i18n("non déterminé")."]") : $consigneScheduled;
@@ -695,8 +681,7 @@ abstract class honeywell extends eqLogic {
 		$adjustAvailable = true;
 		$consigneTypeImg = null;
 		if ( $consigneInfos != null ) {
-			# $consigneInfos[0] = FollowSchedule / PermanentOverride / TemporaryOverride
-
+			# $consigneInfos->status = for Evohome : FollowSchedule / PermanentOverride / TemporaryOverride
 			$consigneTip = '';
 			$consigneTypeUntil = '';
 			$consigneTypeUntilFull = '';
@@ -725,8 +710,7 @@ abstract class honeywell extends eqLogic {
 				if ( $consigneScheduled != null && $consigne != null ) {
 					// SetPoint was auto-adjusted, let's see :
 					if ( $consigne < $consigneScheduled ) {
-						$minHeat = $consigneInfos[4];
-						//$minHeat = self->getConfiguration('minHeat');
+						$minHeat = $consigneInfos->minHeat;
 						if ( $consigne == $minHeat ) {
 							$consigneTypeUntilFull = self::i18n("Fenêtre ouverte détectée");
 							$consigneTypeImg = 'o-window.png" style="height:15px;';
@@ -743,8 +727,8 @@ abstract class honeywell extends eqLogic {
 			} else if ( $isTemporary ) {
 				$consigneTip = '';
 				$consigneTypeImg = 'temp-override.svg';
-				// example : $consigneInfos[1] = "2018-01-28T23:00:00Z"
-				$time = honeyutils::gmtToLocalHM($consigneInfos[1]);
+				// example : $consigneInfos->until = "2018-01-28T23:00:00Z"
+				$time = honeyutils::gmtToLocalHM($consigneInfos->until);
 				$consigneTypeUntil = $time;
 				$consigneTypeUntilFull = $sConsigneScheduled == null ? self::i18n("Forçage de la consigne programmée jusqu'à {0}", $time) : self::i18n("Forçage de la consigne programmée de {0}° jusqu'à {1}", [$sConsigneScheduled, $time]);
 			} else if ( $isPermanent ) {
@@ -768,12 +752,12 @@ abstract class honeywell extends eqLogic {
 			$replace_TH['#adjustAvailable#'] = $adjustAvailable ? 'true' : 'false';
 			$replace_TH['#msgAdjustConsigneUnavailable#'] = self::i18n("Le mode actif ne permet pas d'ajuster les consignes");
 			$replace_TH['#msgEnforceConsigne#'] = self::i18n("Forçage de la consigne programmée de {0}°", $sConsigneScheduled);
-			$replace_TH['#adjustStep#'] = $consigneInfos[3];
+			$replace_TH['#adjustStep#'] = $consigneInfos->adjustStep;
 			$replace_TH['#canReset#'] = $consigneScheduled == null || $consigneScheduled == $consigne ? 0 : 1;
 			$replace_TH['#backScheduleTitle#'] = $consigneScheduled == null ? '' : self::i18n('Retour à la valeur programmée de {0}°', $consigneScheduled);
 		}
-		$replace_TH['#adjustLow#'] = $consigneInfos[4];
-		$replace_TH['#adjustHigh#'] = $consigneInfos[5];
+		$replace_TH['#adjustLow#'] = $consigneInfos->minHeat;
+		$replace_TH['#adjustHigh#'] = $consigneInfos->maxHeat;
 		$replace_TH['#consigneTypeImg#'] = $consigneTypeImg == null ? 'empty.svg' : $consigneTypeImg;
 		$replace_TH['#consigneTypeDisplay#'] = $consigneTypeImg == null ? 'none' : 'inline-block';
 		// arguments names
@@ -785,7 +769,7 @@ abstract class honeywell extends eqLogic {
 		$replace_TH['#evoDefaultShowingScheduleMode#'] = honeyutils::getParam(self::CFG_DEF_SHOW_SCHEDULE_MODE,self::CFG_SCH_MODE_HORIZONTAL);
 
 		// Info Batterie (A)
-		$replace_TH['#temperatureImgTitle#'] = $consigneInfos[8] == '' && $temperatureNative != null ? '' : ($temperatureNative == null  ? self::i18n("Connexion perdue (date inconnue), batterie HS") : self::i18n("Connexion perdue depuis {0}, batterie HS", honeyutils::gmtToLocalDateHMS($consigneInfos[8])));
+		$replace_TH['#temperatureImgTitle#'] = $consigneInfos->timeCnxLost == '' && $temperatureNative != null ? '' : ($temperatureNative == null  ? self::i18n("Connexion perdue (date inconnue), batterie HS") : self::i18n("Connexion perdue depuis {0}, batterie HS", honeyutils::gmtToLocalDateHMS($consigneInfos->timeCnxLost)));
 
 		// fix 7 - error reported by TLoo - 2019-02-09 - btw, plugin without Console is uncomplete ;)
 		$console = self::getConsole($locId);
@@ -805,10 +789,10 @@ abstract class honeywell extends eqLogic {
 			$temperature = self::applyRounding($temperatureNative);
 			$replace_TH['#statDelta#'] = $temperature == 0 ? '' : ($temperature > $consigne ? '+' : '') . round($temperature - $consigne,2) . '°';
 			$replace_TH['#statDeltaTitle#'] = self::i18n("Ecart consigne");
-			$delta = $consigneInfos[6] == 0 ? 0 : round($temperature - self::applyRounding($consigneInfos[6]),2);
-			$replace_TH['#deltaDisplay#'] = $delta == 0 ? "none" : "inline-block";
-			$replace_TH['#deltaValue#'] = ($delta > 0 ? "+" : "") . self::i18n("{0}° depuis la précédente mesure", $delta);
-			$replace_TH['#deltaImg#'] = $delta > 0 ? 'green-up-anim.gif' : 'red-down-anim.gif';
+			$delta = $consigneInfos->delta == 0.0 ? 0.0 : round($temperature - $consigneInfos->delta,2);
+			$replace_TH['#deltaDisplay#'] = $delta == 0.0 ? "none" : "inline-block";
+			$replace_TH['#deltaValue#'] = ($delta > 0.0 ? "+" : "") . self::i18n("{0}° depuis la précédente mesure", $delta);
+			$replace_TH['#deltaImg#'] = $delta > 0.0 ? 'green-up-anim.gif' : 'red-down-anim.gif';
 			// https://www.w3schools.com/sql/func_mysql_date_format.asp
 			if ( $timeWindow == 1 ) {
 				// timeWindow = 1 : same day
@@ -887,10 +871,14 @@ abstract class honeywell extends eqLogic {
 		$replace['#temperatureContent#'] = template_replace($replace_TH, getTemplate('core', $version, 'temperature_content', honeywell::PLUGIN_NAME));
 
 		// Battery info (B)
-		$replace['#batteryImgDisplay#'] = $consigneInfos[7] . $consigneInfos[8] === '' && $temperatureNative != null ? 'none' : 'flex';
-		$replace['#batteryImg#'] = $consigneInfos[8] != '' || $temperatureNative == null ? 'batt-hs-small.png' : ($consigneInfos[7] != '' ? 'batt-low-small.png' : 'empty.svg');
-		$replace['#batteryImgTitle#'] = $consigneInfos[8] != '' ? self::i18n("Batterie HS depuis {0}", honeyutils::gmtToLocalDateHMS($consigneInfos[8])) : ($temperatureNative == null ? self::i18n("Batterie HS (date inconnue)") : ($consigneInfos[7] != '' ? self::i18n("Batterie faible depuis {0}", honeyutils::gmtToLocalDateHMS($consigneInfos[7])) : ''));
-		
+		$replace['#batteryImgDisplay#'] = $consigneInfos->timeBattLow . $consigneInfos->timeCnxLost === '' && $temperatureNative != null ? 'none' : 'flex';
+		$replace['#batteryImg#'] = $consigneInfos->timeCnxLost != '' || $temperatureNative == null ?
+		                  'batt-hs-small.png' :
+		                  ($consigneInfos->timeBattLow != '' ? 'batt-low-small.png' : 'empty.svg');
+		$replace['#batteryImgTitle#'] = $consigneInfos->timeCnxLost != '' ?
+		  self::i18n("Batterie HS depuis {0}", honeyutils::gmtToLocalDateHMS($consigneInfos->timeCnxLost)) :
+		  ($temperatureNative == null ? self::i18n("Batterie HS (date inconnue)") :
+		                                ($consigneInfos->timeCnxLost != '' ? self::i18n("Batterie faible depuis {0}", honeyutils::gmtToLocalDateHMS($consigneInfos->timeCnxLost)) : ''));
 		$replace['#reloadDisplay#'] = 'none';
 
 		// new 0.4.1 - Adjust TH - labels go to i18n
@@ -949,8 +937,8 @@ abstract class honeywell extends eqLogic {
 		// new 0.5.0
 		$presence = self::getPresence($locId);
 		//honeyutils::logDebug("Presence($locId) => $presence");
-		$replace['#presenceDisplay#'] = $presence == self::PRESENCE_UNDEFINED ? 'none' : 'inline';
-		$replace['#presenceImg#'] = $presence == self::PRESENCE_UNDEFINED ? 'empty.svg' : ($presence == self::PRESENCE_INSIDE ? 'inside.png' : 'outside.png');
+		$replace['#presenceDisplay#'] = $presence == State::PRESENCE_UNDEFINED ? 'none' : 'inline';
+		$replace['#presenceImg#'] = $presence == State::PRESENCE_UNDEFINED ? 'empty.svg' : ($presence == State::PRESENCE_INSIDE ? 'inside.png' : 'outside.png');
 	}
 
 	function getLocationId() {
@@ -968,7 +956,11 @@ abstract class honeywell extends eqLogic {
 
 	function setAllowedSystemModes($asmList) {
 		$allowedModes = array();
-		foreach ($asmList as $asm) if ( ($code = $this->getModeFromHName($asm)) !== null ) $allowedModes[] = $code;
+		foreach ($asmList as $asm) {
+			if ( ($code = $this->getModeFromHName($asm)) !== null ) {
+				$allowedModes[] = $code;
+			}
+		}
 		$this->setConfiguration(self::CONF_ALLOWED_SYSTEM_MODE, $allowedModes);
 	}
 
@@ -1018,11 +1010,7 @@ abstract class honeywell extends eqLogic {
 		if ( $this->getConfiguration(self::CONF_TYPE_EQU) == self::TYPE_EQU_CONSOLE ) {
 			$tmp = $this->getCmd(null,self::CMD_STATE);
 			if(is_object($tmp)){
-				$etat = $infosZones['currentMode']
-					. ";" . ($infosZones['permanentMode'] ? self::MODE_PERMANENT_ON : self::MODE_PERMANENT_OFF)
-					. ";" . $infosZones['untilMode']
-					. ";" . (array_key_exists('inside',$infosZones) ? ($infosZones['inside'] ? self::PRESENCE_INSIDE : self::PRESENCE_OUTSIDE) : self::PRESENCE_UNDEFINED);
-				$tmp->event($etat);
+				$tmp->event(State::buildStr($infosZones));
 			}
 
 		} else /*if ( $zoneId > 0 || $zoneId !== '' )*/ {	// this check should be useless
@@ -1048,31 +1036,20 @@ abstract class honeywell extends eqLogic {
 			    $consigneScheduled = self::getConsigneScheduledForZone($this->getLocationId(),$infosZone,$infosZone['units'],self::getScheduleType($infosZones))['TH'];
 				$tmp->event(self::adjustByUnit($consigneScheduled,$infosZone['units']));
 			}
-			$spc = $infosZone['setPointCapabilities'];
-			// 0.4.1 - now, these 3 values are "unit adjusted"
-			$minHeat = self::adjustByUnit($spc['minHeat'],$infosZone['units']);
-			$maxHeat = self::adjustByUnit($spc['maxHeat'],$infosZone['units']);
-			$resolution = self::adjustByUnit($spc['resolution'],$infosZone['units'],true);
-			$consigneInfo = $infosZone['status']
-				. ";" . $infosZone['until']
-				. ";" . $infosZone['units']
-				. ";$resolution;$minHeat;$maxHeat;$prev"
-				. ";" . (array_key_exists('battLow',$infosZone) ? $infosZone['battLow'] : '')
-				. ";" . (array_key_exists('cnxLost',$infosZone) ? $infosZone['cnxLost'] : '')
-				. ";" . (array_key_exists('endHeatSetpoint',$infosZone) ? $infosZone['endHeatSetpoint'] : '')
-				. ";" . (array_key_exists('heating',$infosZone) ? $infosZone['heating'] : '0');
+			$consigneInfos = ConsigneInfos::buildStr($infosZone,$prev);
 			$tmp = $this->getCmd(null,self::CMD_CONSIGNE_TYPE_ID);
 			if (is_object($tmp) ) {
-				$tmp->event($consigneInfo);
+				$tmp->event($consigneInfos);
 			}
-			// 0.4.1 - auto-adjust the list of available values for the SET_CONSIGNE action :
+			// 0.4.1 - auto-adjust the list of available values for the SET_CONSIGNE action if min or max has changed :
 			$tmp = $this->getCmd(null,self::CMD_SET_CONSIGNE_ID);
-			if (is_object($tmp) && (intval($tmp->getConfiguration('minHeat')) != $minHeat || intval($tmp->getConfiguration('maxHeat')) != $maxHeat) ) {
-				self::fillSetConsigneData($tmp,$zoneId,$minHeat,$maxHeat,true);
+			$oCI = ConsigneInfos::buildObjFromStr($consigneInfos);
+			if (is_object($tmp) && (intval($tmp->getConfiguration('minHeat')) != $oCI->minHeat || intval($tmp->getConfiguration('maxHeat')) != $oCI->maxHeat) ) {
+			    self::fillSetConsigneData($tmp,$zoneId,$oCI->minHeat,$oCI->maxHeat,true);
 			}
 
 			if ( honeyutils::isDebug() ) {
-				honeyutils::logDebug("zone$zoneId=" . $infosZone['name'] . " : temp = " . $infosZone['temperature'] . ", consigne = " . $infosZone['setPoint'] . ", type = $consigneInfo");
+				honeyutils::logDebug("zone$zoneId=" . $infosZone['name'] . " : temp = " . $infosZone['temperature'] . ", consigne = " . $infosZone['setPoint'] . ", consigneInfos = $consigneInfos");
 			}
 		}
 		honeyutils::logDebug("<<OUT - injectInformationsFromZone");
@@ -1120,17 +1097,15 @@ abstract class honeywell extends eqLogic {
 	/* ******************** Static ******************** */
 
 	static function fillSetConsigneData($cmd,$zoneId,$minHeat,$maxHeat,$doSave=false) {
-		if ( honeyutils::isDebug() ) honeyutils::logDebug("adjust min=$minHeat/max=$maxHeat of the SET_CONSIGNE command on the zone=$zoneId");
 		// 0.4.1 - 1st choice to go back to the scheduled value
-		// 0.4.3bis - separators become '§' as int values lower than 15 were converted with the '#' (#13 => 19) when transmitted between JS>PHP
-		//		   WARNING ! Launch a Sync to re-generate these values inside each component/"Set Consigne"
-		$list = "auto§" . $zoneId . "§0§0§null|" . self::i18n("Annulation (retour à la valeur programmée)") . ";";
+		$list = (new SetConsigneData(SetConsigneData::AUTO, $zoneId, 0, 0, null))->buildStrForSelect(self::i18n("Annulation (retour à la valeur programmée)"));
 		// 0.9 is the supposed value for the °F... (0.5 * 9/5)
-		$step = honeyutils::getParam(self::CFG_TEMP_UNIT,self::CFG_UNIT_CELSIUS) == self::CFG_UNIT_CELSIUS ? 0.5 : 0.9;
+		$unit = honeyutils::getParam(self::CFG_TEMP_UNIT,self::CFG_UNIT_CELSIUS);
+		$step = $unit == self::CFG_UNIT_CELSIUS ? 0.5 : 0.9;
+		if ( honeyutils::isDebug() ) honeyutils::logDebug("adjust min=$minHeat/max=$maxHeat/step=$step of the SET_CONSIGNE command on zone=$zoneId");
 		for( $t=$minHeat ; $t<=$maxHeat ; $t+=$step ) {
 			// auto means the callback function must check availability of service (presence mode / api available)
-			// 0.4.3bis - separators become '§'
-			$list .= "auto§" . $zoneId . "§" . $t . "§" . $t . "§null|$t" . ($t < $maxHeat ? ';' : '');
+			$list .= ";" . (new SetConsigneData(SetConsigneData::AUTO, $zoneId, $t, $t, null))->buildStrForSelect($t."°".$unit);
 		}
 		$cmd->setConfiguration('listValue', $list);
 		$cmd->setConfiguration('minHeat', $minHeat);
@@ -1287,6 +1262,16 @@ abstract class honeywell extends eqLogic {
 	    return eqLogic::byType(honeywell::PLUGIN_NAME);
 	}
 
+	static function getEquipmentsForLoc($locId) {
+	    $equipments = array();
+	    foreach (self::getEquipments() as $eqLogic) {
+	        if ( $eqLogic->getLocationId() == $locId) {
+	            $equipments[] = $eqLogic;
+	        }
+	    }
+	    return $equipments;
+	}
+
 	static function getOneEquByLocation() {
 		$locIdAndEqus = array();
 		foreach (self::getEquipments() as $eqLogic) {
@@ -1294,7 +1279,7 @@ abstract class honeywell extends eqLogic {
 				$locId = $eqLogic->getLocationId();
 				// don't keep console equ (for Lyric.setMode)
               	if ( $eqLogic->getLogicalId() != $locId && !array_key_exists($locId,$locIdAndEqus) ) {
-                  $locIdAndEqus[$locId] = $eqLogic;
+					$locIdAndEqus[$locId] = $eqLogic;
                 }
 			}
 		}
@@ -1325,7 +1310,7 @@ abstract class honeywell extends eqLogic {
 	    $console = self::getConsole($locId);
 	    foreach ($console->getCmd('action') as $cmd) {
 	        if ( $cmd->getLogicalId() === 'save' ) {
-	            return $cmd->getId();
+				return $cmd->getId();
 	        }
 	    }
 	    return null;
@@ -1333,10 +1318,8 @@ abstract class honeywell extends eqLogic {
 	
 	public static function getEquNamesAndId($locId) {
 		$table = array();
-		foreach (self::getEquipments() as $eqLogic) {
-			if ( $eqLogic->getLocationId() == $locId ) {
-				$table[$eqLogic->getLogicalId()] = $eqLogic->getName();
-			}
+		foreach (self::getEquipmentsForLoc($locId) as $eqLogic) {
+			$table[$eqLogic->getLogicalId()] = $eqLogic->getName();
 		}
 		if ( honeyutils::isDebug() ) honeyutils::logDebug("getEquNamesAndId($locId) : " . json_encode($table));
 		return $table;
@@ -1344,14 +1327,9 @@ abstract class honeywell extends eqLogic {
 
 	static function getPresence($locId) {
 		$console = self::getConsole($locId);
-		$cmdEtat = $console->getCmd(null,self::CMD_STATE);
-		if ( is_object($cmdEtat) ) {
-			$aEtat = explode(';',$cmdEtat->execCmd());
-			if ( count($aEtat) == 4 ) {
-				return $aEtat[3];
-			}
-		}
-		return self::PRESENCE_UNDEFINED;
+		$state = State::buildObj($console);
+		return $state == null ? State::PRESENCE_UNDEFINED : $state->presence;
+
 	}
 
 	static function getLoadingInterval() {
@@ -1445,13 +1423,11 @@ abstract class honeywell extends eqLogic {
 		if ( honeyutils::isDebug() ) honeyutils::logDebug("IN>> - refreshAllForLoc($locId)");
 		$states = self::getStates($locId,$infosZones);
 		$scheduleCurrent = self::getSchedule($locId,self::CURRENT_SCHEDULE_ID);
-		foreach (self::getEquipments() as $equipment) {
-			if ( $equipment->getLocationId() == $locId ) {
-				// NB : $taskIsRunning should be set on console only
-				$equipment->setToHtmlProperties($states,$scheduleCurrent,$msgInfo,$taskIsRunning && $equipment->getConfiguration(self::CONF_TYPE_EQU) == self::TYPE_EQU_CONSOLE);
-				$msgInfo = '';	// set only on the first equipment
-				$equipment->iRefreshComponent($infosZones,$inject);
-			}
+		foreach (self::getEquipmentsForLoc($locId) as $equipment) {
+			// NB : $taskIsRunning should be set on console only
+			$equipment->setToHtmlProperties($states,$scheduleCurrent,$msgInfo,$taskIsRunning && $equipment->getConfiguration(self::CONF_TYPE_EQU) == self::TYPE_EQU_CONSOLE);
+			$msgInfo = '';	// set only on the first equipment
+			$equipment->iRefreshComponent($infosZones,$inject);
 		}
 		if ( honeyutils::isDebug() ) honeyutils::logDebug("<<OUT - refreshAllForLoc($locId)");
 	}
@@ -1544,13 +1520,10 @@ abstract class honeywell extends eqLogic {
 	}
 	static function getCurrentMode($locId) {
 		$console = self::getConsole($locId);
-		$cmdEtat = $console->getCmd(null,self::CMD_STATE);
-		if ( $cmdEtat != null && is_object($cmdEtat) ) {
-			$etat = $cmdEtat->execCmd();
-			if ( $etat != null ) {
-				// self::CODE_MODE_AUTO and so on...
-				return $console->getModeFromHName(explode(';', $etat)[0]);
-			}
+		$state = State::buildObj($console);
+		if ( $state != null ) {
+			// self::CODE_MODE_AUTO and so on...
+			return $console->getModeFromHName($state->currentMode);
 		}
 		return null;
 	}
@@ -1615,7 +1588,7 @@ abstract class honeywell extends eqLogic {
 				}
 			}
 		} else if ( $scheduleType == HeatMode::SCHEDULE_TYPE_GEOFENCE ) {
-			if ( self::getPresence($locId) == self::PRESENCE_OUTSIDE ) {
+			if ( self::getPresence($locId) == State::PRESENCE_OUTSIDE ) {
 				$temp = $schedule['GeofenceSchedule']['awayPeriod']['heatSetPoint'];
 				$ret = array('TH'=>$temp, 'UNTIL'=>'');
 			} else {	// assume INSIDE
@@ -1694,7 +1667,19 @@ abstract class honeywell extends eqLogic {
 		$subTitle .= $infoDiff == '' ? '' : "<br/><i>$infoDiff</i>";
 		return $subTitle;
 	}
-
+	
+	const AdjustDefault = array("min"=>5,"max"=>25,"step"=>0.5);
+	public static function getAdjustData($locId) {
+	    $adjData = array();
+		foreach ( self::getEquipmentsForLoc($locId) as $eqLogic) {
+			if ( $eqLogic->getLogicalId() != $locId ) {
+				$consigneInfos = ConsigneInfos::buildObj($eqLogic);
+				$adjData[$eqLogic->getLogicalId()] = array("min"=>$consigneInfos->minHeat,"max"=>$consigneInfos->maxHeat,"step"=>$consigneInfos->adjustStep);
+			}
+		}
+		honeyutils::logDebug("getAdjustData - a : " . json_encode($adjData));
+	    return $adjData;
+	}
 
 	/* ******************** ROUTAGE via méthode instance / hnwSystem / static vers les classes idoines ******************** */
 
@@ -1725,9 +1710,9 @@ abstract class honeywell extends eqLogic {
 		return $obj->__iGetModesArray();
 	}
 
-	function iSetHtmlConsole(&$replace,$aEtat,$etatCode) {
+	function iSetHtmlConsole(&$replace,$state,$etatCode) {
 		$obj = $this->iGetInstance();
-		$obj->__iSetHtmlConsole($replace,$aEtat,$etatCode);
+		$obj->__iSetHtmlConsole($replace,$state,$etatCode);
 	}
 
 	function iGetThModes($currentMode,$scheduleType,$consigneInfos=null) {
@@ -2025,21 +2010,16 @@ abstract class honeywell extends eqLogic {
 	}
 
 	function actionSetConsigne($locId,$parameters) {
-		$params = $parameters[self::ARG_CONSIGNES_DATA];
-		if ( $params == null || $params == "" ) {
+		$sParams = $parameters[self::ARG_CONSIGNES_DATA];
+		if ( $sParams == null || $sParams == "" ) {
 			honeyutils::logError(self::i18n("Par Scénario : Set Consigne : paramètre reçu invalide (le choix 'Aucun' dans la liste déroulante ne peut pes être évité, mais il est inutile !)"));
 			return;
 		}
-		if ( honeyutils::isDebug() ) honeyutils::logDebug("IN>> - actionSetConsigne($params)");
+		if ( honeyutils::isDebug() ) honeyutils::logDebug("IN>> - actionSetConsigne($sParams)");
 		// 0.4.3bis - separators become '§'
-		$params = explode('§', $params);
-		// $params[0] = auto / manuel
-		// $params[1] = zoneId
-		// $params[2] = temp requested (new value) ; 0 means return to FollowSchedule (back to scheduled setpoint)
-		// $params[3] = a) = $params[2] if setting else than scheduled value ; b) by JS : scheduled value if $params[2] = 0 ; c) by Scenario : 0
-		// $params[4] = null (for permanent) or time as HH:MM:SS
-		$zoneId = $params[1];
-		$prefixByScenario = $params[0] == 'auto' ? self::i18n("Par Scénario") . " : " : "";
+		$params = SetConsigneData::buildFromStr($sParams);
+		$zoneId = $params->zoneId;
+		$prefixByScenario = $params->mode == SetConsigneData::AUTO ? self::i18n("Par Scénario") . " : " : "";
 
 		$infosZones = $this->iGetInformations();
 		if ( !is_array($infosZones) ) {
@@ -2048,17 +2028,12 @@ abstract class honeywell extends eqLogic {
 			return;
 		}
 		$cmdConsigne = $this->getCmd(null,self::CMD_CONSIGNE_ID);
-		$cmdConsigneInfos = $this->getCmd(null,self::CMD_CONSIGNE_TYPE_ID);
-		if ( is_object($cmdConsigne) && is_object($cmdConsigneInfos) ) {
+		$oldConsigneInfos = ConsigneInfos::buildObj($this);
+		if ( is_object($cmdConsigne) && is_object($oldConsigneInfos) ) {
 			$oldConsigne = $cmdConsigne->execCmd();	// btw, this value is against unit chosen
-			$oldConsigneInfos = explode(';', $cmdConsigneInfos->execCmd());
-			# $oldConsigneInfos[0] = FollowSchedule / PermanentOverride / TemporaryOverride
-			# $oldConsigneInfos[1] = 2018-01-28T23:00:00Z / <empty>
-			# $oldConsigneInfos[2] = C-elsius/F-ahrenheit
-			# ...
-			$oldStatus = $oldConsigneInfos[0];
-			$oldUntil = $oldConsigneInfos[1];
-			$deviceUnit = $oldConsigneInfos[2];
+			$oldStatus = $oldConsigneInfos->status;
+			$oldUntil = $oldConsigneInfos->until;
+			$deviceUnit = $oldConsigneInfos->unit;
 		} else {
 			foreach ( $infosZones['zones'] as &$infosZone ) {
 				if ( $infosZone['zoneId'] == $zoneId ) {
@@ -2071,19 +2046,19 @@ abstract class honeywell extends eqLogic {
 			}
 		}
 
-		$newValue = $params[2] == 0 ? 0 : self::revertAdjustByUnit($params[2],$deviceUnit);	// 0.4.1 - convert if needed
-		if ( $params[3] == 0 ) {
+		$newValue = $params->t1 == 0 ? 0 : self::revertAdjustByUnit($params->t1,$deviceUnit);	// 0.4.1 - convert if needed
+		if ( $params->t2 == 0 ) {
 			$tmp = $this->getCmd(null,self::CMD_SCH_CONSIGNE_ID);
-			$params[3] = $tmp->execCmd();	// btw, this value is against unit chosen
+			$params->t2 = $tmp->execCmd();	// btw, this value is against unit chosen
 		}
-		$realValue = self::revertAdjustByUnit($params[3],$deviceUnit);
+		$realValue = self::revertAdjustByUnit($params->t2,$deviceUnit);
 
 		// $data = 'manuel/auto # zoneId # value (nn.n or 0=reset) # realValue # until ('null' or 'timevalue'
-		$data = array('mode'=>$params[0],
-						'zoneId'=>$zoneId,		// string only (since 0.5.0)
-						'value'=>$newValue,	// keep in string
+		$data = array('mode'=>$params->mode,
+						'zoneId'=>$zoneId,			// string only (since 0.5.0)
+						'value'=>$newValue,			// keep in string
 						'realValue'=>$realValue,
-						'until'=>$params[4]);	// (PermanentOverride when null)
+						'until'=>$params->until);	// (PermanentOverride when null)
 
 		// ************* EVOHOME Dependant ***************************************************************************************************************
 		$obj = $this->iGetInstance();
@@ -2097,8 +2072,8 @@ abstract class honeywell extends eqLogic {
 		// ***********************************************************************************************************************************************
 
 		$newUntil = $data['until'] == null ? 'NA' : $data['until'];
-		if ( honeyutils::isDebug() ) honeyutils::logDebug("consigne=$oldConsigne<>$params[3] ; status=$oldStatus<>$newStatus ; until=$oldUntil<>$newUntil");
-		if ( $oldConsigne == $params[3] && $oldStatus == $newStatus && $oldUntil == $newUntil ) {
+		if ( honeyutils::isDebug() ) honeyutils::logDebug("consigne=$oldConsigne<>$params->t2 ; status=$oldStatus<>$newStatus ; until=$oldUntil<>$newUntil");
+		if ( $oldConsigne == $params->t2 && $oldStatus == $newStatus && $oldUntil == $newUntil ) {
 			$msgInfo = $prefixByScenario . self::i18n("Set Consigne zone {0} : valeurs reçues identiques aux valeurs courantes (consigne, durée)", $zoneId);
 			honeyutils::logError($msgInfo);
 			if ( $prefixByScenario == "" ) {
@@ -2110,7 +2085,7 @@ abstract class honeywell extends eqLogic {
 		}
 		// -----
 
-		if ( $data['mode'] == 'auto' ) {	// triggered by scenario
+		if ( $data['mode'] == SetConsigneData::AUTO ) {	// triggered by scenario
 			if ( self::getStates($locId)[self::STATE_UNREAD] ) {
 				honeyutils::logError($prefixByScenario . self::i18n("Set Consigne est indisponible : API off"));
 				honeyutils::logDebug("<<OUT - actionSetConsigne");
@@ -2126,10 +2101,10 @@ abstract class honeywell extends eqLogic {
 		$execUnitId = rand(0,10000);
 		$zname = $this->getName();
 		//self::waitingIAZReentrance("actionSetConsigne-$execUnitId");
-		$taskName = $prefixByScenario . self::i18n("Set consigne {0}° sur {1} ({2})", [$params[3],$zname,$data['until'] == null ? 'permanent' : self::i18n("jusqu'à {0}", $data['until'])]);
+		$taskName = $prefixByScenario . self::i18n("Set consigne {0}° sur {1} ({2})", [$params->t2,$zname,$data['until'] == null ? 'permanent' : self::i18n("jusqu'à {0}", $data['until'])]);
 		
 		// ****** EVOHOME Dependant *****************************************************************
-		$infos = $obj->__iSetConsigne($execUnitId,$locId,$zoneId,$data,$params[3],$taskName);
+		$infos = $obj->__iSetConsigne($execUnitId,$locId,$zoneId,$data,$params->t2,$taskName);
 		// ******************************************************************************************
 
 		$updated = false;
@@ -2147,7 +2122,7 @@ abstract class honeywell extends eqLogic {
 					$infosZone['setPoint'] = $data['realValue'];
 					$infosZone['status'] = $newStatus;
 					$infosZone['until'] = $newUntil;
-					$msgInfo = "1" . self::i18n("La consigne de {0}° a été correctement envoyée vers : {1}", [$params[3],$zname]);
+					$msgInfo = "1" . self::i18n("La consigne de {0}° a été correctement envoyée vers : {1}", [$params->t2,$zname]);
 					honeyutils::setCacheData(self::CACHE_IAZ, $infosZones, self::CACHE_IAZ_DURATION, $locId);
 					$updated = true;
 					break;
@@ -2165,7 +2140,8 @@ abstract class honeywell extends eqLogic {
 
 	/*	* ************************* CRON parts ****************************** */
 
-	/* see hnw_install() above ; Called by specific cron via evohome.class.php/main_refresh */
+	/* see hnw_install() above ; Called by programmatic cron via evohome.class.php/main_refresh */
+	/* NB : will be called directly when plugin will be renamed */
 	public static function honeywell_refresh() {
 		if ( honeyutils::getParam(self::CONF_HNW_SYSTEM,'') == self::SYSTEM_LYRIC ) {
 		    require_once 'lyric.php';

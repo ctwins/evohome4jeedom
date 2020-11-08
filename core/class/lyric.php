@@ -1,6 +1,11 @@
 <?php
 require_once 'honeywell.class.php';
 
+/**
+ * This class appears with version 0.5.0
+ * @author ctwins95
+ *
+ */
 class lyric extends honeywell {
 	const HNW_DOMAIN = "https://api.honeywell.com/";
 	const CFG_APP_NAME = "lyricAppName";
@@ -160,12 +165,11 @@ class lyric extends honeywell {
 		);
 		$data = "grant_type=refresh_token&refresh_token=" . $authData["refresh_token"];
 		$ret = self::postRequest($uri, $header, $data, $retry);
-		if ( $ret[self::SUCCESS] ) {
-			$result = $ret["data"];
-			self::saveAuthData($result);
-		} else {
-			$result = null;
+		if ( !$ret[self::SUCCESS] ) {
+			return null;
 		}
+		$result = $ret["data"];
+		self::saveAuthData($result);
 		return $result;
 	}
 
@@ -202,7 +206,6 @@ class lyric extends honeywell {
 		return null;
 	}
 
-
 	static function apiReadThermostats($locId,$readSchedule) {
 		$infosZones = array();
 		$infosZones[self::SUCCESS] = true;
@@ -211,7 +214,6 @@ class lyric extends honeywell {
 		$infosZones["permanentMode"] = true;
 		$infosZones["untilMode"] = "NA";
 		$zones = array();
-
 
 		$location = self::_getLocation($locId,true);
 		$authData = self::readAuthData();
@@ -230,7 +232,6 @@ class lyric extends honeywell {
 				} else if ( $device["scheduleType"]["scheduleType"] == self::VMODE_GEOFENCE ) {
 					$infosZones["currentMode"] = self::VMODE_GEOFENCE;
 					// Check location/geoFences data to check the Presence status
-					// ... $$
 					$infosZones["inside"] = $location["geoFences"][0]["geoOccupancy"]["withinFence"] > 0;
 				} else {
 					// Heat means for the plugin : follow the schedule (so, mode schedule, not geofence)
@@ -240,7 +241,8 @@ class lyric extends honeywell {
 				$zoneInfos["zoneId"] = $device["deviceID"];
 				$zoneInfos["name"] = $device["name"];
 				//if ( !$device["isAlive"] ) {
-					//$zoneInfos[self::IZ_GATEWAY_CNX_LOST] = honeyutils::localDateTimeToGmtZ(new DateTime());	// GMT datetime for compatibility (will be revert to local time for display !)
+					// GMT datetime for compatibility (will be revert to local time for display !)
+					// $zoneInfos[self::IZ_GATEWAY_CNX_LOST] = honeyutils::localDateTimeToGmtZ(new DateTime());
 				//}
 				$zoneInfos["temperature"] = $device["indoorTemperature"];
 				$zoneInfos["units"] = substr($device["units"],0,1);
@@ -318,7 +320,23 @@ class lyric extends honeywell {
 					"awayPeriod": { "heatSetPoint": 64.4, "coolSetPoint": 85.1 },
 					"sleepMode":  { "startTime": "22:00:00", "endTime": "07:00:00", "heatSetPoint": 64.4, "coolSetPoint": 82.4 }
 				}
-			}*/
+			} 0.5.1 - alternate for sleepMode, seen around 2020-11 :
+					"sleepMode": { "triggers": [{
+								"startTime": "22:00:00", "endTime": "07:00:00",
+								"days": ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"] } ],
+						"heatSetPoint": 64.4, "coolSetPoint": 82.4 } */
+			// 0.5.1 - convert when there is triggers with a single choice of the 7 week days ;)
+			if ( $schedule['geoFenceSchedule']['sleepMode']['triggers'] ) {
+				$t0 = $schedule['geoFenceSchedule']['sleepMode']['triggers'][0];
+				if ( count($t0['days']) == 7 ) {
+					honeyutils::logDebug("geoFenceSchedule defined with triggers with full week set on first, what is useless : convert to schedule without trigger");
+					$newSleepMode = array("startTime"=>$t0["startTime"],
+										  "endTime"=>$t0["endTime"],
+										  "heatSetPoint"=>$schedule['geoFenceSchedule']['sleepMode']['heatSetPoint'],
+										  "coolSetPoint"=>$schedule['geoFenceSchedule']['sleepMode']['coolSetPoint']);
+					$schedule['geoFenceSchedule']['sleepMode'] = $newSleepMode;
+				}
+			}
 			return array("type"=>HeatMode::SCHEDULE_TYPE_GEOFENCE,"data"=>array("GeofenceSchedule"=>$schedule["geoFenceSchedule"]));
 		}
 
@@ -336,7 +354,7 @@ class lyric extends honeywell {
 				);
 			}
 			$evoSchedule[] = array(
-				"DayOfWeek"=>array("Monday"=>0,"Tuesday"=>1,"Wednesday"=>2,"Thursday"=>3,"Friday"=>4,"Saturday"=>5,"Sunday"=>6)[$data["day"]],
+				"DayOfWeek"=>honeyutils::getNumDayFromECDay($data["day"]),
 				"Switchpoints"=>$points);
 		}
 
@@ -350,6 +368,7 @@ class lyric extends honeywell {
 		return honeyutils::i18n($txt, __FILE__, $arg);
 	}
 
+	// called by programmatic cron via honeywell::honeywell_refresh
 	static function lyric_refresh() {
 		self::apiTokenRefresh();
 	}
@@ -390,6 +409,7 @@ class lyric extends honeywell {
 			return array(self::SUCCESS=>false, "message"=>self::i18n("Erreur en lecture des localisations"));
 		}
 
+		$nbModified = 0;
 		$nbAdded = 0;
 		foreach ( $locations as $loc ) {
 			$locId = $loc['locationId'];
@@ -440,8 +460,8 @@ class lyric extends honeywell {
 							$allowedModes[] = self::VMODE_GEOFENCE;
 							// $device["scheduleCapabilities"]["availableScheduleTypes"] : None, Geofenced, TimedEmea/TimedNorthAmerica
 						}
-						//$eqLogic->setObject_id(8);	// $$ objectId $$
 						$eqLogic->save();
+						$nbModified += 1;
 						$todo = false;
 						break;
 					}
@@ -470,7 +490,6 @@ class lyric extends honeywell {
 							}
 						}
 					}*/
-					//$eqLogic->setObject_id(8);
 					if ( $type == self::TYPE_EQU_CONSOLE ) {
 						$eqLogic->setDisplay("height", "162px");
 						$eqLogic->setDisplay("width", "176px");
@@ -492,11 +511,10 @@ class lyric extends honeywell {
 					honeyutils::logDebug("-- done !");
 				}
 			}
-			
 			// 'postSave'
 			self::__iGetInformations($locId,true);
 		}
-		return array(self::SUCCESS=>true, "added"=>$nbAdded);
+		return array(self::SUCCESS=>true, "added"=>$nbAdded, "modified"=>$nbModified);
 	}
 
 
@@ -589,21 +607,21 @@ class lyric extends honeywell {
 		honeyutils::logDebug("<<< Lyric::__iGetInformations");
 	}
 
-	function __iSetHtmlConsole(&$replace,$aEtat,$currentMode) {
+	function __iSetHtmlConsole(&$replace,$state,$currentMode) {
 		// Off;1 ; "Heat";1 / Geofence;?? ; DayOff;0;D
 		// with 1=True ; 0=False ; is the permanentMode flag
 		// if False, until part is added : Xxx;False;2018-01-29T20:34:00Z, with H for hours, D for days
 		# permanent
-		if ( $aEtat[1] == self::MODE_PERMANENT_ON && $currentMode != self::CODE_MODE_HEAT ) {
+		if ( $state->permanent == State::MODE_PERMANENT_ON && $currentMode != self::CODE_MODE_HEAT ) {
 			$replace['#etatUntilImg#'] = 'override-active.png';
 			$replace['#etatUntilDisplay#'] = 'none';
 		}
 		# delay
-		else if ( $aEtat[1] == self::MODE_PERMANENT_OFF ) {
+		else if ( $state->permanent == State::MODE_PERMANENT_OFF ) {
 			$replace['#etatUntilImg#'] = 'temp-override-black.svg';
 			// example : $aEtat[2] = "2018-01-28T23:00:00Z"
-			$replace['#etatUntil#'] = $currentMode == self::CODE_VMODE_DAYOFF ? honeyutils::gmtToLocalDate($aEtat[2]) : honeyutils::gmtToLocalHM($aEtat[2]);
-			$replace['#etatUntilFull#'] = $aEtat[2];
+			$replace['#etatUntil#'] = $currentMode == self::CODE_VMODE_DAYOFF ? honeyutils::gmtToLocalDate($state->until) : honeyutils::gmtToLocalHM($state->until);
+			$replace['#etatUntilFull#'] = $state->until;
 			$replace['#etatUntilDisplay#'] = 'inline';
 		}
 		else {
@@ -620,9 +638,9 @@ class lyric extends honeywell {
 			"isDayOff" => $currentMode == self::CODE_VMODE_DAYOFF,
 			"isCustom" => false,
 			
-			"follow" => $consigneInfos == null ? false : $consigneInfos[0] == self::NoHold,
-			"temporary" => $consigneInfos == null ? false : ($consigneInfos[0] == self::TemporaryHold || $consigneInfos[0] == self::HoldUntil),
-			"permanent" => $consigneInfos == null ? false : $consigneInfos[0] == self::PermanentHold,
+		    "follow" => $consigneInfos == null ? false : $consigneInfos->status == self::NoHold,
+		    "temporary" => $consigneInfos == null ? false : ($consigneInfos->status == self::TemporaryHold || $consigneInfos->status == self::HoldUntil),
+		    "permanent" => $consigneInfos == null ? false : $consigneInfos->status == self::PermanentHold,
 			
 			"scheduling" => $currentMode == self::CODE_MODE_HEAT,
 
@@ -724,7 +742,7 @@ class lyric extends honeywell {
 									  "coolSetPoint"=>honeyutils::C2F($slice["heatSetpoint"]));
 				}
 				$days[] = array(
-					"day"=>array(0=>"Monday",1=>"Tuesday",2=>"Wednesday",3=>"Thursday",4=>"Friday",5=>"Saturday",6=>"Sunday")[$data["DayOfWeek"]],
+					"day"=>honeyutils::getECDayFromNumDay($data["DayOfWeek"]),
 					"periods"=>$slices
 					);
 			}

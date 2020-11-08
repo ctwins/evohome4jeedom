@@ -1,5 +1,26 @@
 # Changelog - Evohome for Jeedom V3/V4
 
+## [version 0.5.1] - 2020-11-08 - Lyric fixes & TH min/max usage
+
+#### Changes
+
+1. Lyric & geofencing schedule : manage now the triggers data seen on the sleep section (used when displaying the schedule, and save/restore actions).
+2. TH : each of min/max settings now used in the editor
+3. General configuration : added "'x' equ. added, 'y' equ. modified" on the status message, after Synchronization action (all devices)
+
+#### Fixes
+
+1. [thanks to jcapelle] Lyric : the URL callback for authentication part could now have a port specified
+2. [thanks to jeedommaison59] Minor fixes in the General configuration
+
+#### Under the hood (technical parts)
+
+1. js part of evohome.php sent to honeywell.js, and minified
+2. core/HeatMode.php replaced by core/structures.php with more structures (classes) parts and their converters (better 'object' approach)
+3. Evohome users : auto-update a new field when updating plugin (avoid the previous request 'Do a Sync. after update')
+4. info.json structure a bit modified to better match the required
+
+
 ## [version 0.5.0] - 2020-08-30 - The Lyric (T6/T6R) edition
 *Thanks to jcapelle, aalizon and Touns as beta testers*
 
@@ -11,7 +32,7 @@ Technically, the token received is refreshed every 20mn by a cron created in Jee
 By this approach, the token has an infinite live duration, as your network and internet connection is stable.
 
 #### Changes
-1. Plugin image was changed to be no more 'evohome' specialized ;)
+1. The plugin image has been changed to no longer be specialized 'evohome' ;)
 
 #### Fixes
 

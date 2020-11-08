@@ -1,6 +1,11 @@
 <?php
 require_once 'honeywell.class.php';
-
+/**
+ * This class is the original of the plugin ; from version 0.5.0, is now splitted as a child of honeywell.class.php.
+ * It will remain the entry point from Jeedom, as long as the plugin is named 'evohome'
+ * @author ctwins95
+ *
+ */
 class evohome extends honeywell {
 	//public static $_widgetPossibility = array('custom' => true, 'custom::layout' => false);
 
@@ -315,6 +320,7 @@ class evohome extends honeywell {
 			return array(self::SUCCESS=>false, "message"=>self::i18n("Erreur en lecture des localisations"));
 		}
 
+		$nbModified = 0;
 		$nbAdded = 0;
 		foreach ( $locations as $loc ) {
 			$locId = $loc['locationId'];
@@ -343,10 +349,11 @@ class evohome extends honeywell {
 							}
 						}
 						$eqLogic->setConfiguration(self::CONF_LOC_ID, $locId);
+						// 0.5.0 - Specify the System
 						$eqLogic->setConfiguration(self::CONF_HNW_SYSTEM, self::SYSTEM_EVOHOME);
 						// 0.4.2 - ZONE_ID now in LogicalID
 						$eqLogic->setConfiguration(self::CONF_ZONE_ID, null);
-						$eqLogic->setConfiguration("zone", null);	// from one previous version
+						$eqLogic->setConfiguration("zone", null);	// remove from previous version
 
 						// TYPE_EQU_CONSOLE(C)/TYPE_EQU_THERMOSTAT(TH) :
 						$eqLogic->setConfiguration(self::CONF_TYPE_EQU, $zone["typeEqu"]);
@@ -383,6 +390,7 @@ class evohome extends honeywell {
 							$eqLogic->setLogicalId($zone["id"]);
 						}
 						$eqLogic->save();
+						$nbModified += 1;
 						$todo = false;
 						break;
 					}
@@ -398,9 +406,9 @@ class evohome extends honeywell {
 					$eqLogic->setIsEnable(1);
 					$eqLogic->setCategory("heating", 1);
 					$eqLogic->setConfiguration(self::CONF_LOC_ID, $locId);
-					$eqLogic->setConfiguration(self::CONF_HNW_SYSTEM, self::SYSTEM_EVOHOME);
-					$eqLogic->setConfiguration(self::CONF_TYPE_EQU, $zone["typeEqu"]);
 					$eqLogic->setConfiguration(self::CONF_MODEL_TYPE, $loc['modelType']);
+					// 0-5-0 - Specify system
+					$eqLogic->setConfiguration(self::CONF_HNW_SYSTEM, self::SYSTEM_EVOHOME);
 					foreach (jeeObject::all() as $obj) {
 						if ( stripos($zName,$obj->getName()) !== false || stripos($obj->getName(),$zName) !== false ) {
 							$sql = "select count(*) as cnt from eqLogic where name = '" . $zName . "' and object_id = " . $obj->getId();
@@ -411,6 +419,7 @@ class evohome extends honeywell {
 							}
 						}
 					}
+					$eqLogic->setConfiguration(self::CONF_TYPE_EQU, $zone["typeEqu"]);
 					if ( $zone["typeEqu"] == self::TYPE_EQU_CONSOLE ) {
 						$eqLogic->setDisplay("height", "162px");
 						$eqLogic->setDisplay("width", "176px");
@@ -420,20 +429,12 @@ class evohome extends honeywell {
 						$eqLogic->setDisplay("width", "210px");
 					}
 					$eqLogic->save();
-					// 0.4.1 - useless now (see general configuration)
-					/* if ( $zone["typeEqu"] != self::TYPE_EQU_CONSOLE ) {
-						// 0.4.0 - 2019-06-29 - new : alert settings
-						$temp = $eqLogic->getCmd(null,self::CMD_TEMPERATURE_ID);
-						$temp->setAlert("warningif", "#value# >= 25");
-						$temp->setAlert("dangerif", "#value# >= 28");
-						$eqLogic->save();
-					} */
 					$nbAdded += 1;
 					honeyutils::logDebug("-- done !");
 				}
 			}
 		}
-		return array(self::SUCCESS=>true, "added"=>$nbAdded);
+		return array(self::SUCCESS=>true, "added"=>$nbAdded, "modified"=>$nbModified);
 	}
 
 
@@ -523,21 +524,21 @@ class evohome extends honeywell {
 					 );
 	}
 
-	function __iSetHtmlConsole(&$replace,$aEtat,$currentMode) {
+	function __iSetHtmlConsole(&$replace,$state,$currentMode) {
 		// $aEtat : "Auto";1 / "AutoWithEco";1/0;H / Away;1/0;D / DayOff;1/0;D / Custom;1/0;D / HeatingOff;1
 		// with 1=True ; 0=False ; is the permanentMonde flag
 		// if False, until part is added : Xxx;False;2018-01-29T20:34:00Z, with H for hours, D for days
 		# permanent
-		if ( $aEtat[1] == self::MODE_PERMANENT_ON && $currentMode != self::CODE_MODE_AUTO ) {
+		if ( $state->permanent == State::MODE_PERMANENT_ON && $currentMode != self::CODE_MODE_AUTO ) {
 			$replace['#etatUntilImg#'] = 'override-active.png';
 			$replace['#etatUntilDisplay#'] = 'none';
 		}
 		# delay
-		else if ( $aEtat[1] == self::MODE_PERMANENT_OFF ) {
+		else if ( $state->permanent == State::MODE_PERMANENT_OFF ) {
 			$replace['#etatUntilImg#'] = 'temp-override-black.svg';
-			// example : $aEtat[2] = "2018-01-28T23:00:00Z"
-			$replace['#etatUntil#'] = $currentMode == self::CODE_MODE_ECO ? honeyutils::gmtToLocalHM($aEtat[2]) : honeyutils::gmtToLocalDate($aEtat[2]);
-			$replace['#etatUntilFull#'] = $aEtat[2];
+			// example : $state->until = "2018-01-28T23:00:00Z"
+			$replace['#etatUntil#'] = $currentMode == self::CODE_MODE_ECO ? honeyutils::gmtToLocalHM($state->until) : honeyutils::gmtToLocalDate($state->until);
+			$replace['#etatUntilFull#'] = $state->until;
 			$replace['#etatUntilDisplay#'] = 'inline';
 		}
 		else {
@@ -554,9 +555,9 @@ class evohome extends honeywell {
 			"isDayOff" => $currentMode == self::CODE_MODE_DAYOFF,
 			"isCustom" => $currentMode == self::CODE_MODE_CUSTOM,
 			
-			"follow" => $consigneInfos == null ? false : $consigneInfos[0] == self::FollowSchedule,
-			"temporary" => $consigneInfos == null ? false : $consigneInfos[0] == self::TemporaryOverride,
-			"permanent" => $consigneInfos == null ? false : $consigneInfos[0] == self::PermanentOverride,
+		    "follow" => $consigneInfos == null ? false : $consigneInfos->status == self::FollowSchedule,
+		    "temporary" => $consigneInfos == null ? false : $consigneInfos->status == self::TemporaryOverride,
+		    "permanent" => $consigneInfos == null ? false : $consigneInfos->status == self::PermanentOverride,
 			
 			"scheduling" => true,
 			

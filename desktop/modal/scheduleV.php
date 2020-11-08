@@ -2,7 +2,6 @@
 require_once dirname(__FILE__) . '/../../core/class/honeywell.class.php';
 
 class inner {
-    const CDays = ["Lundi","Mardi","Mercredi","Jeudi","Vendredi","Samedi","Dimanche"];
     static function i18n($txt, $args=null) {
 		return honeyutils::i18n($txt, "plugins/".honeywell::PLUGIN_NAME."/desktop/modal/schedule", $args);
 	}
@@ -79,7 +78,7 @@ foreach ( $scheduleToShow['zones'] as $mydata ) {
 			echo "<table border=1 style=\"font-family:'Open Sans', sans-serif;\">";
 			echo "<tr><td align=center colspan=2 class=ui-widget-header";
 			if ( $d == $currentDay ) echo " style='color:black!important;background-color:lightgreen!important;'";
-			echo ">" . inner::i18n(inner::CDays[$d]) . "</td></tr>";
+			echo ">" . honeyutils::getDayName($d) . "</td></tr>";
 			echo "<tr><td align=center width=7.15%";
 			if ( $d == $currentDay ) echo " style='color:black;background-color:lightgreen;'";
 			echo ">00:00</td>";
@@ -96,7 +95,7 @@ foreach ( $scheduleToShow['zones'] as $mydata ) {
 			echo "<table border=1 style=\"font-family:'Open Sans', sans-serif;\">";
 			echo "<tr><td align=center colspan=2 class=ui-widget-header";
 			if ( $ds['DayOfWeek'] == $currentDay ) echo " style='color:black!important;background-color:lightgreen!important;'";
-			echo ">" . inner::i18n(inner::CDays[$ds['DayOfWeek']]) . "</td></tr>";
+			echo ">" . honeyutils::getDayName($ds['DayOfWeek']) . "</td></tr>";
 			$mark = 0;
 			$midnightAdded = $ds['Switchpoints'][0]['TimeOfDay'] != '00:00:00';
 			if ( $midnightAdded ) {

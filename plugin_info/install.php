@@ -22,6 +22,12 @@ function evohome_install() {
 }
 
 function evohome_update() {
+    foreach (self::getEquipments() as $eqLogic) {
+        if ( $eqLogic->getConfiguration(honeywell::CONF_HNW_SYSTEM,'unset') == 'unset') {
+            $eqLogic->setConfiguration(honeywell::CONF_HNW_SYSTEM, honeywell::SYSTEM_EVOHOME);
+            $eqLogic->save();
+        }
+    }
     message::add(honeywell::PLUGIN_NAME, "System Honeywell updated", null, null);
 	honeywell::hnw_update();
 }

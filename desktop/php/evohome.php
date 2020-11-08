@@ -6,10 +6,9 @@ $plugin = plugin::byId(honeywell::PLUGIN_NAME);
 sendVarToJS('eqType', $plugin->getId());
 $eqLogics = eqLogic::byType($plugin->getId());
 ?>
-
 <div class="row row-overflow">
 	<div class="col-xs-12 eqLogicThumbnailDisplay">
-		<legend><i class="fas fa-cog"></i>  {{Gestion}}</legend>
+		<legend><i class="fas fa-cog"></i> {{Gestion}}</legend>
 		<div class="eqLogicThumbnailContainer">
 			<div class="cursor eqLogicAction" style="background-color:var(--bg-modal-color) !important;" data-action="gotoPluginConf">
 				<i class="fas fa-wrench"></i>
@@ -18,9 +17,8 @@ $eqLogics = eqLogic::byType($plugin->getId());
 			</div>
 		</div>
 		<br/>
-		<legend><i class="fas fa-table"></i>  {{Composants}}</legend>
+		<legend><i class="fas fa-table"></i> {{Composants}}</legend>
 		<input class="form-control" placeholder="{{Rechercher}}" id="in_searchEqlogic" />
-
 		<div class="eqLogicThumbnailContainer">
 			<?php
 			foreach ($eqLogics as $eqLogic) {
@@ -62,13 +60,11 @@ $eqLogics = eqLogic::byType($plugin->getId());
 				<a class="btn btn-danger btn-sm eqLogicAction roundedRight" data-action="remove"><i class="fas fa-minus-circle"></i> {{Supprimer}}</a>
 			</span>
 		</div>
-
 		<ul class="nav nav-tabs" role="tablist">
 			<li role="presentation"><a href="#" class="eqLogicAction" aria-controls="home" role="tab" data-toggle="tab" data-action="returnToThumbnailDisplay"><i class="fa fa-arrow-circle-left"></i></a></li>
 			<li role="presentation" class="active"><a href="#eqlogictab" aria-controls="home" role="tab" data-toggle="tab"><i class="fas fa-tachometer-alt"></i> {{Equipement}}</a></li>
 			<li role="presentation"><a href="#commandtab" aria-controls="profile" role="tab" data-toggle="tab"><i class="fa fa-list-alt"></i> {{Commandes}}</a></li>
 		</ul>
-
 		<div class="tab-content" style="height:calc(100% - 50px);overflow:auto;overflow-x:hidden;">
 			<div role="tabpanel" class="tab-pane active" id="eqlogictab">
 				<div class="row">
@@ -123,7 +119,7 @@ $eqLogics = eqLogic::byType($plugin->getId());
 						<form class="form-horizontal">
 							<fieldset>
 								<legend>
-									<i class="fa fa-info-circle"></i>  {{Informations}}
+									<i class="fa fa-info-circle"></i> {{Informations}}
 								</legend>
 								<div class="form-group">
 									<label class="col-sm-3 control-label">{{Localisation}}</label>
@@ -172,184 +168,8 @@ var PluginPath = 'plugins/<?php echo honeywell::PLUGIN_NAME?>';
 var SystemEvohome = '<?php echo honeywell::SYSTEM_EVOHOME?>';
 var SystemLyric = '<?php echo honeywell::SYSTEM_LYRIC?>';
 var ModelTypeRound = '<?php echo evohome::MODEL_TYPE_ROUND_WIRELESS?>';
-var modelType = null;
-var settingLocationId = false;
-var settingZoneId = false;
-$('.hnwSystem').on('change', function() {
-	log('hnwSystem.onChange('+$('.hnwSystem').value()+')');
-	if ( $('#equId').value() == '' ) return;
-	changeSystem($('.hnwSystem').value());
-});
-function changeSystem(hnwSystem) {
-	log('changeSystem C='+hnwSystem);
-	var locationIdList = $('.locationIdList')[0];
-	locationIdList.options.length = 0;
-	locationIdList.options[0] = new Option('{{lecture...}}', -2);
-	locationIdList.options[0].selected = true;
-	$.ajax({
-		type:'POST',
-		url:PluginPath+'/core/ajax/honeywell.ajax.php',
-		data:{action:'ajaxListLocations', system:hnwSystem},
-		dataType:'json',
-		error:function(request, status, error) {
-			handleAjaxError(request, status, error);
-		},
-		success:function(data) {
-			if (data.state != 'ok') {
-				$('#div_alert').showAlert({message:data.result, level:'danger'});
-			} else if ( is_array(data.result.loc) ) {
-				modelType = null;
-				var idSelect = 0;
-				var locationId = $('.locationId').value();
-				if ( data.result.loc.length == 0 ) {
-					locationIdList.options[1] = new Option('{{Défaut}}', -1);
-				} else {
-					data.result.loc.forEach(function(loc,idx) {
-						modelType = loc.modelType;
-						if ( loc.locationId == locationId ) {
-							idSelect = locationIdList.options.length;
-						}
-						locationIdList.options[locationIdList.options.length] = new Option(loc.name, loc.locationId);
-					});
-				}
-				locationIdList.options[idSelect].selected = true;
-				$('.locationIdList').change();
-				locationIdList.options[0].text = '{{Aucun}}';
-			}
-		}
-	});
-}
-function cantEnterLocation(id) {
-	var ret = $('.hnwSystem').value() == null ||  $('.hnwSystem').value() == '' || id == null || id == '' || id == -2 || settingLocationId;
-	log('cantEnterLocation='+ret);
-	return ret;
-}
-$('.locationId').on('change', function() {
-	var id = $(this).value();
-	log('locationId.change('+id+')');
-	if ( cantEnterLocation(id) ) return ;
-	changeLocation();
-
-	settingLocationId = true;
-	$('.locationIdList').value(id);
-	settingLocationId = false;
-});
-$('.locationIdList').on('change', function() {
-	var id = $(this).value();
-	log('locationIdList.change('+id+')');
-	if ( cantEnterLocation(id) ) return ;
-	changeLocation();
-
-	settingLocationId = true;
-	$('.locationId').value(id);
-	settingLocationId = false;
-});
-function changeLocation() {
-	var locId = $('.locationId').value();
-	//log('a '+locId);
-	if ( locId == null || locId == -2 ) return;
-	var zoneIdList = $('.zoneIdList')[0];
-	var hnwSystem = $('.hnwSystem').value();
-	//log('b '+hnwSystem);
-	zoneIdList.options.length = 0;
-	zoneIdList.options[0] = new Option('{{lecture...}}', -100);
-	zoneIdList.options[0].selected = true;
-	$.ajax({
-		type:'POST',
-		url:PluginPath+'/core/ajax/honeywell.ajax.php',
-		data:{action:'ajaxListLocations', system:hnwSystem},
-		dataType:'json',
-		error:function(request, status, error) {
-			handleAjaxError(request, status, error);
-		},
-		success:function(data) {
-			if (data.state != 'ok') {
-				$('#div_alert').showAlert({message:data.result, level:'danger'});
-			} else if ( is_array(data.result.loc) ) {
-				var idSelect = 0;
-				var zoneId = $('.zoneId').value();
-				modelType = null;
-				data.result.loc.forEach(function(loc,idx) {
-					if ( loc.locationId == locId ) {
-						zoneIdList.options[1] = new Option('{{Console}}', locId);
-						if ( zoneId == locId ) {
-							idSelect = 1;
-						}
-						modelType = loc.modelType;
-						if ( hnwSystem != 'LYRIC' ) {
-							loc.zones.forEach(function(zone,idx) {
-								if ( zone.id == zoneId ) {
-									idSelect = zoneIdList.options.length;
-								}
-								zoneIdList.options[zoneIdList.options.length] = new Option(zone.name, zone.id);
-							});
-						} else {
-							loc.devices.forEach(function(zone,idx) {
-								zoneIdList.options[zoneIdList.options.length] = new Option(zone.name+' ('+zone.deviceModel+')', zone.deviceID);
-								if ( zone.deviceID == zoneId ) {
-									idSelect = zoneIdList.options.length - 1;
-								}
-							});
-						}
-					}
-				});
-				zoneIdList.options[idSelect].selected = true;
-				changeZone($('.zoneIdList').value());
-				zoneIdList.options[0] = new Option('{{Aucune}}', -2);
-			}
-		}
-	});
-}
-function cantEnterZone(id) {
-	var ret = $('.locationId').value() == null || $('.locationId').value() == -2 || settingZoneId || id == null || id == '' || id == -100;
-	log('cantEnterZone='+ret);
-	return ret;
-}
-$('.zoneId').on('change', function() {
-	var id = $(this).value();
-	log('zoneId.change('+id+')');
-	if ( cantEnterZone(id) ) return ;
-	changeZone(id);
-
-	settingZoneId = true;
-	$('.zoneIdList').value(id);
-	settingZoneId = false;
-});
-$('.zoneIdList').on('change', function() {
-	var id = $(this).value();
-	log('zoneIdList.change('+id+')');
-	if ( cantEnterZone(id) ) return ;
-	changeZone(id);
-
-	settingZoneId = true;
-	$('.zoneId').value(id);
-	settingZoneId = false;
-});
-function changeZone(idZone) {
-	var imgName = null;
-	if ( idZone != null && idZone != -2 ) {
-		var hnwSystem = $('.hnwSystem').value();
-		if ( idZone == $('.locationId').value() /*|| idZone == <?php echo evohome::OLD_ID_CONSOLE;?>*/ ) {
-			if ( hnwSystem == SystemEvohome ) {
-				imgName = modelType != ModelTypeRound ? 'console.png' : 'round-console.png';
-			} else if ( hnwSystem == SystemLyric ) {
-				imgName = 'tx-console.png';
-			}
-		} else {
-			if ( hnwSystem == SystemEvohome ) {
-				imgName = modelType != ModelTypeRound ? 'hr92.png' : 'round-th.png';
-			} else if ( hnwSystem == SystemLyric ) {
-				imgName = 't6-th.png';
-			}
-		}
-	}
-	if ( imgName != null ) $('.img_device').attr('src',PluginPath+'/img/'+imgName);
-}
-$('.fa-arrow-circle-left').on('click', function() { $('.img_device').attr('src','core/img/no_image.gif'); });
-function log(msg) {
-	//console.log("T"+new Date().getSeconds()+" - "+msg);
-}
 </script>
-<?php include_file('desktop', 'honeywell', 'js', honeywell::PLUGIN_NAME);
+<?php
+include_file('desktop', 'honeywell', 'js', honeywell::PLUGIN_NAME);
 include_file('core', 'plugin.template', 'js');
 ?>

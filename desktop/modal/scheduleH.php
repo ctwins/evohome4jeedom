@@ -1,9 +1,8 @@
-﻿<?php
+﻿﻿<?php
 require_once dirname(__FILE__) . '/../../core/class/honeywell.class.php';
 
 class inner {
 	static function i18n($txt, $args=null) {
-	    //honeyutils::logDebug("scheduleH.i18($txt,$args)");
 		return honeyutils::i18n($txt, "plugins/".honeywell::PLUGIN_NAME."/desktop/modal/schedule", $args);
 	}
 }
@@ -167,7 +166,8 @@ echo '<script type="text/javascript" src="plugins/'.honeywell::PLUGIN_NAME.'/des
 <script>
 $('.ui-widget-overlay.ui-front').hide();	// 0.4.3
 <?php
-echo "var _evs = new EvoSchedule('".honeywell::PLUGIN_NAME."', typeof hnwConsole =='undefined' || typeof hnwConsole.genConsoleId == 'undefined' ? 0 : hnwConsole.genConsoleId[$locId]);\n";
+$adjData = json_encode(honeywell::getAdjustData($locId));
+echo "var _evs = new EvoSchedule('".honeywell::PLUGIN_NAME."', $adjData, typeof hnwConsole == 'undefined' || typeof hnwConsole.genConsoleId == 'undefined' ? 0 : hnwConsole.genConsoleId[$locId]);\n";
 echo "var ts='$scheduleSource';\n";
 if ( $edit && $scheduleSource == 'S' ) echo "$('#saveName')[0].value = _evs.scheduleSelectedName;\n";
 $iZone = 0;
@@ -209,7 +209,7 @@ if ( is_array($scheduleToShow) ) {
 	}
 }
 for ( $i=0; $i<7 ;$i++ ) {
-    echo "_evs.days[$i] = '" . inner::i18n(["Lundi","Mardi","Mercredi","Jeudi","Vendredi","Samedi","Dimanche"][$i]) . "';";
+    echo "_evs.days[$i] = '" . honeyutils::getDayName($i) . "';";
 }
 echo "_evs.scheduleSource = '$scheduleSource';";
 echo "_evs.zoneId = '$zoneId';";
