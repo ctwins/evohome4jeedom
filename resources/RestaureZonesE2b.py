@@ -8,8 +8,11 @@ import logging
 logging.basicConfig()
 evohome_log = logging.getLogger("evohomeBridge-RestaureZones")
 
+#baseUrl = 'https://tccna.honeywell.com/WebAPI/emea/api/v1/'
+baseUrl = 'https://mytotalconnectcomfort.com/WebAPI/emea/api/v1/'
+
 def addTokenTags():
-	if CLIENT != None:
+	if CLIENT != None and CLIENT.access_token != None:
 		ret = ', "access_token":"' + CLIENT.access_token + '"'
 		ret = ret + ', "token_state":' + ('2' if SESSION_ID_V2 != CLIENT.access_token else '1')
 		ret = ret + ', "access_token_expires":' + str(CLIENT.access_token_expires)
@@ -18,9 +21,6 @@ def addTokenTags():
 		ret = ret + ', "token_state":0'
 		ret = ret + ', "access_token_expires":0'
 	return ret
-
-#baseUrl = 'https://tccna.honeywell.com/WebAPI/emea/api/v1/'
-baseUrl = 'https://mytotalconnectcomfort.com/WebAPI/emea/api/v1/'
 
 # Ser login details in the 2 fields below
 USERNAME = sys.argv[1]

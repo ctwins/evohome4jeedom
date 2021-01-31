@@ -18,9 +18,13 @@ class EvohomeClientSC(EvohomeBase):
 		self.password = password
 		self.debug = debug
 		self.request_timeout = 15
-		#self.domain = 'https://tccna.honeywell.com/'
-		self.domain = 'https://mytotalconnectcomfort.com/'
-		self.baseurl = self.domain + 'WebAPI/emea/api/v1'
+		#self.domain = 'https://tccna.honeywell.com'
+		self.domain = 'https://mytotalconnectcomfort.com'
+		self.loginurl = self.domain + '/Auth/OAuth/Token'
+		self.baseurl = self.domain + '/WebAPI/emea/api/v1'
+		self.basicAuth = 'NGEyMzEwODktZDJiNi00MWJkLWE1ZWItMTZhMGE0MjJiOTk5OjFhMTVjZGI4LTQyZGUtNDA3Yi1hZGQwLTA1OWY5MmM1MzBjYg=='
+		# de Vera et https://github.com/andremain/EvohomeSmartthingsNew/blob/main/Evohome%20Smartapp%20mod.txt
+		#self.basicAuth = 'YjAxM2FhMjYtOTcyNC00ZGJkLTg4OTctMDQ4YjlhYWRhMjQ5OnRlc3Q='
 
 		if pAccessToken == None or pAccessToken == '0' or pTokenTimeout == None or pTokenTimeout == 0:
 			if debug:
@@ -41,6 +45,7 @@ class EvohomeClientSC(EvohomeBase):
 			retry = False
 			try:
 				# TODO : prefear refresh_token ?
+				# see https://github.com/andremain/EvohomeSmartthingsNew/blob/main/Evohome%20Smartapp%20mod.txt / refreshAuthToken()
 				self.user_account()
 			except requests.HTTPError as eh:
 				if eh.response.status_code == 429:
@@ -97,9 +102,9 @@ class EvohomeClientSC(EvohomeBase):
 		self.access_token = None
 		self.access_token_expires = None
 
-		url = self.domain + 'Auth/OAuth/Token'
+		url = self.loginurl
 		headers = {
-			'Authorization': 'Basic NGEyMzEwODktZDJiNi00MWJkLWE1ZWItMTZhMGE0MjJiOTk5OjFhMTVjZGI4LTQyZGUtNDA3Yi1hZGQwLTA1OWY5MmM1MzBjYg==',
+			'Authorization': 'Basic ' + self.basicAuth,
 			'Accept': 'application/json, application/xml, text/json, text/x-json, text/javascript, text/xml'
 		}
 		data = {

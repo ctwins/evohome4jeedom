@@ -13,8 +13,11 @@ import logging
 logging.basicConfig()
 evohome_log = logging.getLogger("evohomeBridge-SetTempEE")
 
+#baseUrl = 'https://tccna.honeywell.com/WebAPI/emea/api/v1/'
+baseUrl = 'https://mytotalconnectcomfort.com/WebAPI/emea/api/v1/'
+
 def addTokenTags():
-	if CLIENT != None:
+	if CLIENT != None and CLIENT.access_token != None:
 		ret = ',"access_token":"' + CLIENT.access_token + '"'
 		ret = ret + ',"token_state":' + ('2' if SESSION_ID_V2 != CLIENT.access_token else '1')
 		ret = ret + ',"access_token_expires":' + str(CLIENT.access_token_expires)
@@ -41,9 +44,6 @@ def callSetting(zones,txtData):
 	if DEBUG:
 		evohome_log.warning("ret = %s" % r.text.replace('\r\n',''))
 	return r
-
-#baseUrl = 'https://tccna.honeywell.com/WebAPI/emea/api/v1/'
-baseUrl = 'https://mytotalconnectcomfort.com/WebAPI/emea/api/v1/'
 
 USERNAME = sys.argv[1]
 PASSWORD = sys.argv[2]

@@ -11,6 +11,7 @@ evohome_logV1 = logging.getLogger("evohomeBridge-InfosZones(APIV1)")
 
 #baseurl = 'https://tccna.honeywell.com/WebAPI/api/'
 baseurl = 'https://mytotalconnectcomfort.com/WebAPI/api/'
+appId = '91db1612-73fd-4500-91b2-e63b069b185c'
 
 SESSION_ID_V1 = None
 USER_ID_V1 = None
@@ -27,7 +28,7 @@ def loginV1():
 	# Each call with previously obtained Session ID resets timeout interval.
 	# For explicit timeout reset use PUT api/Session API call (without response)
 	lHeaders = {'content-type':'application/json'}
-	jsonData = json.dumps({'Username':USERNAME, 'Password':PASSWORD, 'ApplicationId':'91db1612-73fd-4500-91b2-e63b069b185c'})
+	jsonData = json.dumps({'Username':USERNAME, 'Password':PASSWORD, 'ApplicationId':appId})
 	response = requests.post(baseurl + 'Session', data=jsonData, headers=lHeaders)
 	lastResponseAllDataV1 = response.content
 	if response.status_code != requests.codes.ok:
@@ -75,7 +76,7 @@ def addTokenTags():
 	ret = ', "session_id_v1":"' + SESSION_ID_V1 + '"'
 	ret = ret + ',"user_id_v1":"' + USER_ID_V1 + '"'
 	ret = ret + ',"session_state_v1":' + str(v1State)
-	if CLIENT != None:
+	if CLIENT != None and CLIENT.access_token != None:
 		ret = ret + ',"access_token":"' + CLIENT.access_token + '"'
 		ret = ret + ',"token_state":' + ('2' if SESSION_ID_V2 != CLIENT.access_token else '1')
 		ret = ret + ',"access_token_expires":' + str(CLIENT.access_token_expires)

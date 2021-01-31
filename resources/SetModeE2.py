@@ -8,8 +8,11 @@ import logging
 logging.basicConfig()
 evohome_log = logging.getLogger("evohomeBridge-SetMode")
 
+#baseUrl = 'https://tccna.honeywell.com/WebAPI/emea/api/v1/'
+baseUrl = 'https://mytotalconnectcomfort.com/WebAPI/emea/api/v1/'
+
 def addTokenTags():
-	if CLIENT != None:
+	if CLIENT != None and CLIENT.access_token != None:
 		ret = ', "access_token":"' + CLIENT.access_token + '"'
 		ret = ret + ', "token_state":' + ('2' if SESSION_ID_V2 != CLIENT.access_token else '1')
 		ret = ret + ', "access_token_expires":' + str(CLIENT.access_token_expires)
@@ -38,9 +41,6 @@ CODE_MODE = sys.argv[9]
 UNTIL = None
 
 CLIENT = None
-
-#baseUrl = 'https://tccna.honeywell.com/WebAPI/emea/api/v1/'
-baseUrl = 'https://mytotalconnectcomfort.com/WebAPI/emea/api/v1/'
 
 lastResponse = None
 

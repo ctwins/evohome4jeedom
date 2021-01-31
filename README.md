@@ -2,7 +2,7 @@
 
 <img align="left" src="plugin_info/evohome_icon.png" width="120" style="padding-right:16px;">
 This is a plugin for Jeedom 3.x and 4.x platform, regarding the Honeywell Evohome system.<br/>
-State is : v0.5.1 - Lyric fixes & TH min/max usage
+State is : v0.5.2 - Jeedom 4.1 compatibility
 
 Written in php, the Jeedom main langage, a bit of javascript, of course some html, and, at this time (from 0.3.0), a forked Python bridge (from the excellent python library "evohome" of watchforstock).<br/>
 Great thanks to him. His implementation can be ***[found here](https://github.com/watchforstock/evohome-client)*** <br/>
@@ -42,7 +42,7 @@ To change setting mode, restore schedule from file or change heatpoint of zone, 
 Time limit is not settable for setting mode and changing heatpoint, as you have the possibility to plan as you want with the scenarios ;)<br/>
 Please note as a schedule file is set in at least one scenario, it could not be deleted from the Console panel.
 
-**Warning : some operations take times**, could be some minutes for the schedule restoring, just be patient when you see the rolling picture, and/or, take an eye on the information which appears on the top of screen ;)
+**Warning : some operations take time**, could be some minutes for the schedule restoring, just be patient when you see the rolling picture, and/or, take an eye on the information which appears on the top of screen ;)
 
 Last but not least, a **[Jeedom forum is dedicated to this Evohome plugin](https://community.jeedom.com/t/plugin-evohome)** (***[previous forum](https://forum.jeedom.com/viewtopic.php?f=143&t=31647&sid=41c4acd4ffe5ecc1c4f120ecf7ce7569&start=200)***)<br/>
 Don't hesitate to contact me in this blog for any question or problem you could encounter.

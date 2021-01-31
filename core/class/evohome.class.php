@@ -148,7 +148,8 @@ class evohome extends honeywell {
 			set_time_limit(60);	// 0.4.0 - prevent losing control ; any value (0 could be a bad idea)
 			sleep(5);
 		}
-		$password = str_replace('"','\"',str_replace('\\','\\\\',honeyutils::getParam(self::CFG_PASSWORD,'')));
+		// 0.5.2 - can now use $ in password
+		$password = str_replace('$','\$',str_replace('"','\"',str_replace('\\','\\\\',honeyutils::getParam(self::CFG_PASSWORD,''))));
 		$credentials = honeyutils::getParam(self::CFG_USER_NAME,'') . ' "' . $password . '"';
 		if ( $credentials === ' ""' ) {
 			honeyutils::logDebug("runPython too early : account is not set yet");
@@ -245,10 +246,10 @@ class evohome extends honeywell {
 			$td = time();
 			$locations = self::runPython("LocationsInfosE2.py","LocationsInfosE2_$td");
 			if ( !is_array($locations)  ) {
-				honeyutils::logError('Erreur while LocationsInfosE2 : response was empty or malformed', $locations);
+				honeyutils::logError('Error while LocationsInfosE2 : response was empty or malformed', $locations);
 				$locations = null;
 			} else if ( !$locations[self::SUCCESS] ) {
-				honeyutils::logError('Erreur while LocationsInfosE2', $locations);
+				honeyutils::logError('Error while LocationsInfosE2', $locations);
 				$locations = null;
 			} else {
 				$locations = $locations['locations'];

@@ -1,4 +1,37 @@
-# Changelog - Evohome for Jeedom V3/V4
+# Changelog - Evohome for Jeedom V3.3/V4.0/V4.1
+
+## [version 0.5.2] - 2021-01-31 - Jeedom 4.1 compatibility
+
+#### Fixes
+
+1. [thanks to titinh] Widget were malformed when rendered under Jeedom 4.1
+2. [thanks ElDje] The character '$' can now be used in the password
+
+#### Under the hood (technical parts)
+
+1. minor - Evohome cloud access (Python parts) : better check of current token
+
+
+## [version 0.5.1] - 2020-11-08 - Lyric fixes & TH min/max usage
+
+#### Changes
+
+1. Lyric & geofencing schedule : manage now the triggers data seen on the sleep section (used when displaying the schedule, and save/restore actions).
+2. TH : each of min/max settings now used in the editor
+3. General configuration : added "'x' equ. added, 'y' equ. modified" on the status message, after Synchronization action (all devices)
+
+#### Fixes
+
+1. [thanks to jcapelle] Lyric : the URL callback for authentication part could now have a port specified
+2. [thanks to jeedommaison59] Minor fixes in the General configuration
+
+#### Under the hood (technical parts)
+
+1. js part of evohome.php sent to honeywell.js, and minified
+2. core/HeatMode.php replaced by core/structures.php with more structures (classes) parts and their converters (better 'object' approach)
+3. Evohome users : auto-update a new field when updating plugin (avoid the previous request 'Do a Sync. after update')
+4. info.json structure a bit modified to better match the required
+
 
 ## [version 0.5.0] - 2020-08-30 - The Lyric (T6/T6R) edition
 *Thanks to jcapelle, aalizon and Touns as beta testers*
@@ -11,7 +44,7 @@ Technically, the token received is refreshed every 20mn by a cron created in Jee
 By this approach, the token has an infinite live duration, as your network and internet connection is stable.
 
 #### Changes
-1. Plugin image was changed to be no more 'evohome' specialized ;)
+1. The plugin image has been changed to no longer be specialized 'evohome' ;)
 
 #### Fixes
 
@@ -27,6 +60,7 @@ By this approach, the token has an infinite live duration, as your network and i
 3. removing useless files and folders
 4. preparation to change the name of the plugin (evohome>honeywell) (delayed for a future version)
 5. the zoneId are now managed as String against Integer (previous schedules files remain compatibles)
+
 
 ## [version 0.4.3] - 2020-01-03 - Opened window & Day view on horizontal Schedule & Full Jeedom V4 compatibility
 
@@ -105,6 +139,7 @@ You can now set :
 6. Set Consigne : corrections regarding the Unit chosen (+ values adjusted in selectable list for scenario)
 FUTURE - taking into account the Unit chosen for Schedule displaying & editing
 
+
 ## [version 0.4.0] - 2019-07-17 - the "multi-locations & Round-Thermostat Edition"
 
 #### Added
@@ -137,6 +172,7 @@ Please note that, in this case, the reading could run, as the API return again a
 4. Trying opening the Schedule panel in Horizontal view when no Console is currently displayed caused a JS error (and freezing the screen)
 5. [thanks to ecc] Small batt KO icon (on the top left of the TH widget) did'nt appear when the fault is not received from the API<br/>
 although no TH value is received (API says isAvailable=false).
+
 
 ## [version 0.3.2] - 2019-02-18 - fix #7 - the verbose edition
 
@@ -273,6 +309,7 @@ This could be have to effect to show additional errors in the "Jeedom messages" 
 - adding the missing 'reverse' icon (needed since 0.2.1)
 - adding version info in the title of the conf. page (never visible elsewhere)
 
+
 ## [version 0.2.2] - 2018-12-16 - fix #5
 #### Improvements
 - Temperature tile<br/>
@@ -290,6 +327,7 @@ This could be have to effect to show additional errors in the "Jeedom messages" 
 	1. saving change on the current schedule should activate the loading button<br/>
 	consider the active schedule has not to be loaded
 
+
 ## [version 0.2.1] - 2018-12-11 - the 'schedule edition' 1.1
 
 #### Improvements
@@ -302,6 +340,7 @@ This could be have to effect to show additional errors in the "Jeedom messages" 
 
 #### Change
 - Category of the plugin becomes Energy
+
 
 ## [version 0.2.0] - 2018-11-10 - the 'schedule edition' 1.0
 #### Added
@@ -329,6 +368,7 @@ This could be have to effect to show additional errors in the "Jeedom messages" 
 - python part / adjust mode<br/>
 	3. was KO after the 0.1.2 (no more compliant with the update of evohomeclient)<br/>
 
+
 ## [version 0.1.2] - 2018-10-28 - the 'evohomeclient fix' (+ minors)
 #### Fixes
 - evohome-client-2.07/evohomeclient2 ; Zone and schedule data :<br/>
@@ -341,6 +381,7 @@ This could be have to effect to show additional errors in the "Jeedom messages" 
 - evohome.class.php / dependancy_info<br/>
 	1. no more check python-pip (fails now after some upgrade in my conf)
 
+
 ## [version 0.1.1] - 2018-03-11 - the 'INIT fix' (and some more)
 #### Fixes
 - general configuration panel :<br/>
@@ -350,6 +391,7 @@ This could be have to effect to show additional errors in the "Jeedom messages" 
 - a dummy value was stayed in the field version of the info.json (+ version number now in name field)
 - the two files temperature_content.html was saved with BOM marker
 - about the two schedule php file : add a check for a optional field in the scheduleToShow array to avoid http.error logs
+
 
 ## [version 0.1] - 2018-03-08 - dashboard version v1
 #### Added
@@ -398,6 +440,7 @@ This could be have to effect to show additional errors in the "Jeedom messages" 
 - better manipulation of json data, in case of null or KO content (more log, no more bad effects)
 - after restore, refresh only temp. & setPoint data, and merge restored schedule (speed up process)
 
+
 ## [beta 2] - 2018-02-25 - the 'ECC FIXES'
 
 #### Improvements
@@ -416,6 +459,7 @@ This could be have to effect to show additional errors in the "Jeedom messages" 
 - *php 5 vs 7*<br/>
 	1. split function replaced by explode<br/>
 	2. PHP7 restrictions on json : booleans built in python are now returned correctly formed<br/>
+
 
 ## [beta 1] - 2012-02-18
 first publication
