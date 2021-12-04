@@ -1,7 +1,8 @@
 <?php
 require_once dirname(__FILE__) . '/../../../../core/php/core.inc.php';
+
 /**
- * Before 0.5.0, this file was evohome.utils.php, this class was evoutils
+ * Before 0.5.0, this file was evohome.utils.php and this class was evoutils
  * @author ctwins95
  *
  */
@@ -87,7 +88,7 @@ class honeyutils {
 		$date = new DateTime();
 		$date->setTimestamp($ts);
 		$date->setTimezone(new DateTimeZone('UTC'));
-		return $date->format('H:i');
+		return str_replace(":","h",$date->format('H:i'));
 	}
 	static function tsToLocalMS($ts) {
 		$date = new DateTime();
@@ -194,6 +195,21 @@ class honeyutils {
 	}
 	static function getDayNameFromECDayName($ecDay) {
 		return self::getDayName(self::ECDayToNumDay[$ecDay]);
+	}
+
+	static function saveInfo($equ,$infoId,$data,$defaut=null) {
+		//self::logDebug("saveInfo $infoId new : " . json_encode($data));
+		$tmp = $equ->getCmd(null,$infoId);
+		if (is_object($tmp)) {
+			$ret = $tmp->execCmd();
+			//self::logDebug("saveInfo $infoId was : " . json_encode($ret));
+			$tmp->event($data);
+			//$ret2 = $tmp->execCmd();
+			//self::logDebug("saveInfo $infoId is now : " . json_encode($ret2));
+			return $ret;
+		}
+		self::logDebug("saveInfo $infoId can't save");
+		return $defaut;
 	}
 
 }

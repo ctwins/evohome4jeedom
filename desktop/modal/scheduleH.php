@@ -21,21 +21,22 @@ $eqLogic = honeywell::byId($id);
 if (!is_object($eqLogic)) {
 	throw new Exception(inner::i18n("L'équipement Evohome est introuvable sur l'ID {0}", $id));
 }
-if ($eqLogic->getEqType_name() != honeywell::PLUGIN_NAME) {
+$pluginName = honeywell::PLUGIN_NAME;
+if ($eqLogic->getEqType_name() != $pluginName) {
 	throw new Exception(inner::i18n("Cet équipement n'est pas du type attendu : {0}", $eqLogic->getEqType_name()));
 }
 $locId = $eqLogic->getLocationId();
 
-$scheduleToShow = honeywell::getSchedule($locId,$fileId);
+$scheduleToShow = Schedule::getSchedule($locId,$fileId);
 if ( !is_array($scheduleToShow) ) {
 	echo "Erreur de lecture<br/><br/>";
 	return;
 }
-$currentSchedule = honeywell::getSchedule($locId,honeywell::CURRENT_SCHEDULE_ID);
+$currentSchedule = Schedule::getSchedule($locId);
 $zoneId = init(honeywell::ARG_ZONE_ID);
 $edit = init('edit') === "1";
 $scheduleSource = init("scheduleSource");
-$subTitle = honeywell::getScheduleSubTitle($id,$locId,$fileId,'T',$currentSchedule,$scheduleToShow,honeywell::CFG_SCH_MODE_VERTICAL,$zoneId,$scheduleSource,$edit);
+$subTitle = Schedule::getScheduleSubTitle($id,$locId,$fileId,'T',$currentSchedule,$scheduleToShow,honeywell::CFG_SCH_MODE_VERTICAL,$zoneId,$scheduleSource,$edit);
 $editAvailable = honeyutils::isAdmin() == 'true' && honeyutils::getParam(honeywell::CFG_SCH_EDIT_AVAILABLE,0) == 1;
 if ( !$edit && array_key_exists('comment', $scheduleToShow) && $scheduleToShow['comment'] != '') {
 	echo "<table width=100% style='background-color:white;color:black;'><tr>";
@@ -73,50 +74,50 @@ echo "<div id='scheduleTable'></div>";
 <?php } ?>
 </style>
 <?php if ( $edit ) { ?>
-<table width="100%" class="tableCmd">
+<table class="tableCmd" style="width:100%;">
 	<tr style="height:80px">
 		<td class="_vtop" style="width:100px;"></td>
 		<td style="text-align:-webkit-center;vertical-align:middle !important">
 			<table><tr>
 				<td>
-					<a id="prevSlice" class="btn btn-primary fas fa-chevron-left myButton" onclick="_evs.goSlice(-1);" />
+					<a id="prevSlice" class="btn btn-primary fas fa-chevron-left myButton" onclick="_evs.goSlice(-1);"></a>
 				</td>
 				<td style="width:20px;"/>
 				<td>
-					<a class="btn btn-primary fas fa-minus myButton" onclick="_evs.adjustHours(-1);" />
+					<a class="btn btn-primary fas fa-minus myButton" onclick="_evs.adjustHours(-1);"></a>
 				</td>
 				<td class="_vtop" >
 					<input id="hours" type="text" onchange="_evs.checkAppendAndValid();" class="form-control text-center myInput" value="01">
 				</td>
 				<td>
-					<a class="btn btn-primary fas fa-plus myButton" onclick="_evs.adjustHours(1);" />
+					<a class="btn btn-primary fas fa-plus myButton" onclick="_evs.adjustHours(1);"></a>
 				</td>
 				<td style="width:16px;text-align:center;font-size:8px !important;padding-top:4px;">
 					<div class="fa fa-circle"></div>
 					<div class="fa fa-circle"></div>
 				</td>
 				<td>
-					<a class="btn btn-primary fas fa-minus myButton" onclick="_evs.adjustMinutes(-1);" />
+					<a class="btn btn-primary fas fa-minus myButton" onclick="_evs.adjustMinutes(-1);"></a>
 				</td>
 				<td class="_vtop">
 					<input id="minutes" type="text" onchange="_evs.checkAppendAndValid();" class="form-control text-center myInput" value="10">
 				</td>
 				<td>
-					<a class="btn btn-primary fas fa-plus myButton" onclick="_evs.adjustMinutes(1);" />
+					<a class="btn btn-primary fas fa-plus myButton" onclick="_evs.adjustMinutes(1);"></a>
 				</td>
 				<td style="width:20px;"/>
 				<td>
-					<a class="btn btn-primary fas fa-minus myButton" onclick="_evs.adjustSetpoint(-1);" />
+					<a class="btn btn-primary fas fa-minus myButton" onclick="_evs.adjustSetpoint(-1);"></a>
 				</td>
 				<td class="_vtop">
 					<input id="setpoint" type="text" onchange="_evs.checkAppendAndValid();" class="form-control text-center myInput" value="18.5">
 				</td>
 				<td>
-					<a class="btn btn-primary fas fa-plus myButton" onclick="_evs.adjustSetpoint(1);" />
+					<a class="btn btn-primary fas fa-plus myButton" onclick="_evs.adjustSetpoint(1);"></a>
 				</td>
 				<td style="width:20px;"/>
 				<td>
-					<a id="nextSlice" class="btn btn-primary fas fa-chevron-right myButton" onclick="_evs.goSlice(1);" />
+					<a id="nextSlice" class="btn btn-primary fas fa-chevron-right myButton" onclick="_evs.goSlice(1);"></a>
 				</td>
 				<td style="width:50px;"/>
 				<td>
@@ -130,7 +131,7 @@ echo "<div id='scheduleTable'></div>";
 	</tr>
 	<tr>
 		<td width=100% colspan=2>
-			<table width=100% class="tableCmd" style="padding-left:8px;padding-right:8px;">
+			<table class="tableCmd" style="width:100%;padding-left:8px;padding-right:8px;">
 				<tr style="height:38px;">
 					<td style="width:160px;padding-left:4px;"><?php echo inner::i18n("Nom du fichier")?></td>
 					<td><input type="text" id="saveName" /></td>
@@ -161,13 +162,19 @@ echo "<div id='scheduleTable'></div>";
 	</tr>
 </table>
 <?php }
-echo '<script type="text/javascript" src="plugins/'.honeywell::PLUGIN_NAME.'/desktop/js/scheduleH-min.js?' . filemtime('plugins/'.honeywell::PLUGIN_NAME.'/desktop/js/scheduleH-min.js') . '"></script>';
- ?>
+echo "<script type='text/javascript' src='plugins/$pluginName/desktop/js/scheduleH-min.js?" . filemtime("plugins/$pluginName/desktop/js/scheduleH-min.js") . "'></script>";
+?>
 <script>
 $('.ui-widget-overlay.ui-front').hide();	// 0.4.3
 <?php
-$adjData = json_encode(honeywell::getAdjustData($locId));
-echo "var _evs = new EvoSchedule('".honeywell::PLUGIN_NAME."', $adjData, typeof hnwConsole == 'undefined' || typeof hnwConsole.genConsoleId == 'undefined' ? 0 : hnwConsole.genConsoleId[$locId]);\n";
+$adjData = TH::getAdjustData($locId);
+echo "var _evs = new EvoSchedule('$pluginName', $adjData, typeof hnwConsole == 'undefined' || typeof hnwConsole.genConsoleId == 'undefined' ? 0 : hnwConsole.genConsoleId[$locId]);\n";
+echo "_evs.saveId = " . Console::getActionSaveId($locId) . ";";
+echo "_evs.argFileId = '" . honeywell::ARG_FILE_ID . "';";
+echo "_evs.argFileName = '" . honeywell::ARG_FILE_NAME . "';";
+echo "_evs.argFileRem = '" . honeywell::ARG_FILE_REM . "';";
+echo "_evs.argFileNewSchedule = '" . honeywell::ARG_FILE_NEW_SCHEDULE . "';";
+echo "_evs.argZoneId = '" . honeywell::ARG_ZONE_ID . "';";
 echo "var ts='$scheduleSource';\n";
 if ( $edit && $scheduleSource == 'S' ) echo "$('#saveName')[0].value = _evs.scheduleSelectedName;\n";
 $iZone = 0;
@@ -178,7 +185,7 @@ if ( is_array($scheduleToShow) ) {
 		if ( !$edit && $zoneId != '0' && $zoneId != $myZoneId ) continue;
 		if ( $equNamesById[$myZoneId] == null ) continue;
 		echo '_evs.zones[' . $iZone++ . '] = new _evs.Zone("' . $myZoneId . '","' . $mydata['name'] . '","' . $equNamesById[$myZoneId];
-		if ( !$edit && $fileId != honeywell::CURRENT_SCHEDULE_ID && json_encode($mydata) != json_encode(honeyutils::extractZone($currentSchedule,$myZoneId)) ) {
+		if ( !$edit && $fileId != Schedule::CURRENT_SCHEDULE_ID && json_encode($mydata) != json_encode(honeyutils::extractZone($currentSchedule,$myZoneId)) ) {
 			echo ' *';
 		}
 		echo "\",[\n";
@@ -214,64 +221,69 @@ for ( $i=0; $i<7 ;$i++ ) {
 echo "_evs.scheduleSource = '$scheduleSource';";
 echo "_evs.zoneId = '$zoneId';";
 echo "_evs.editAvailable = " . ($editAvailable /*&& $fileId != 0*/ ? "true" : "false") . ";";
-echo "_evs.edit = " . ($edit ? "true" : "false") . ";\n";
-$lblEdit = inner::i18n("Editer");
-echo "var subTitle = \"$subTitle\";\n";
+echo "_evs.edit = " . ($edit ? "true" : "false") . ";";
+echo "_evs.lblEdit = \"" . inner::i18n("Editer") . "\";";
+echo "var subTitle = \"$subTitle\";";
 $displayMode = init("displayMode");	// empty ('') by default
 $nDay = init("nDay");
+$modeH = honeywell::CFG_SCH_MODE_HORIZONTAL;
 if ( $zoneId == '0' && ($nDay == '' || $nDay == -1) ) {
-	$lblNewDisplayMode = inner::i18n($displayMode == 'D' ? "Zone" : "Jour");
 	echo "subTitle += \"<div style='position:absolute;top:0px;right:40px;padding:5px;'><a id='btnDisplayMode' class='btn btn-success btn-sm'";
-	$modeH = honeywell::CFG_SCH_MODE_HORIZONTAL;
 	echo " onclick='showScheduleCO($id,\\\"T\\\",\\\"$scheduleSource\\\",$fileId,\\\"$modeH\\\",\\\"$displayMode\\\" === _evs.DM_BY_DAY ? _evs.DM_BY_ZONE : _evs.DM_BY_DAY);'";
-	echo ">/$lblNewDisplayMode</a></div>\";\n";
+	echo ">/" . inner::i18n($displayMode == 'D' ? "Zone" : "Jour") . "</a></div>\";";
 } else {
-	echo "if ( _evs.isEditAvailable() ) subTitle += \"<div style='position:absolute;top:0px;right:40px;;padding:5px;'><a id='btnEdit' class='btn btn-success btn-sm' onclick='_evs.openEdit(\\\"$zoneId\\\",-1,1,_evs.DM_BY_ZONE);'>$lblEdit</a></div>\";\n";
+	?>
+	if ( _evs.isEditAvailable() ) {
+		subTitle += "<div style='position:absolute;top:0px;right:40px;padding:5px;'>"
+				  + "<a id='btnEdit' class='btn btn-success btn-sm' onclick='_evs.openEdit(_evs.zoneId,-1,1,_evs.DM_BY_ZONE);'>" + _evs.lblEdit + "</a></div>";
+	}
+	<?php
 }
-echo "$('#md_modal')[0].previousSibling.firstChild.innerHTML = subTitle;\n";
-echo "$('#md_modal').dialog('option', 'width', Math.min(1000,jQuery(window).width()-16));\n";
-echo "$('#md_modal').dialog('option', 'height', jQuery(window).height() - 60);\n";
-echo "$('#md_modal').dialog('option', 'position', {my:'center top', at:'center top+40', of:window});\n";
-echo "_evs.lblEdit = \"$lblEdit\";\n";
-echo "_evs.lblValidate = \"" . inner::i18n("Valider") . "\";\n";
-echo "_evs.lblCopyTo = \"" . inner::i18n("Copie") . "...\";\n";
-echo "_evs.lblCopyToTitle = \"" . inner::i18n("Copie de '{0}' vers") . "\";\n";
-echo "_evs.lblOpenAfterCopy = \"" . inner::i18n("Ouvrir la zone cible après la copie ?") . "\";\n";
-echo "_evs.lblCopyNoTarget = \"" . inner::i18n("Vous n'avez pas spécifié de cible") . "\";\n";
-echo "_evs.lblCopyNoTargetDay = \"" . inner::i18n("Vous n'avez pas spécifié de jour cible") . "\";\n";
-echo "_evs.lblCopyTargetDays = \"" . inner::i18n("Jours") . "\";\n";
-echo "_evs.lblCopyTargetZones = \"" . inner::i18n("Zones") . "\";\n";
-echo "_evs.lblInheritTitle = \"" . inner::i18n("La consigne appliquée est la dernière de la veille") . "\";\n";
-echo "_evs.lblCantRemoveLastPoint = \"" . inner::i18n("Vous ne pouvez pas supprimer la dernière tranche horaire") . "\";\n";
-echo "_evs.lblFileNameEmpty = \"" . inner::i18n("Vous devez spécifier un nom pour le fichier de sauvegarde") . "\";\n";
-echo "_evs.lblRemovePoint = \"" . inner::i18n("Supprimer la consigne {0}° de {1} à {2} ?") . "\";\n";
-echo "_evs.lblRemovePoint2 = \"" . inner::i18n("Supprimer la consigne {0}° à {1} ?") . "\";\n";
-echo "_evs.lblCopyConfirm = \"" . inner::i18n("Recopier {0} sur {1} ?") . "\";\n";
-echo "_evs.lblCreate = \"" . inner::i18n("Confirmez-vous la création de '{0}' ?") . "\";\n";
-echo "_evs.lblReplaceSave = \"" . inner::i18n("Confirmez-vous le remplacement de la sauvegarde '{0}' ?") . "\";\n";
-echo "_evs.lblConfirmSave = \"" . inner::i18n("Confirmez-vous la sauvegarde vers '{0}' ?") . "\";\n";
+echo "$('#md_modal')[0].previousSibling.firstChild.innerHTML = subTitle;";
+echo "$('#md_modal').dialog('option', 'width', Math.min(1000,jQuery(window).width()-16));";
+echo "$('#md_modal').dialog('option', 'height', jQuery(window).height() - 60);";
+echo "$('#md_modal').dialog('option', 'position', {my:'center top', at:'center top+40', of:window});";
+echo "_evs.lblValidate = \"" . inner::i18n("Valider") . "\";";
+echo "_evs.lblCopyTo = \"" . inner::i18n("Copie") . "...\";";
+echo "_evs.lblCopyToTitle = \"" . inner::i18n("Copie de '{0}' vers") . "\";";
+echo "_evs.lblOpenAfterCopy = \"" . inner::i18n("Ouvrir la zone cible après la copie ?") . "\";";
+echo "_evs.lblCopyNoTarget = \"" . inner::i18n("Vous n'avez pas spécifié de cible") . "\";";
+echo "_evs.lblCopyNoTargetDay = \"" . inner::i18n("Vous n'avez pas spécifié de jour cible") . "\";";
+echo "_evs.lblCopyTargetDays = \"" . inner::i18n("Jours") . "\";";
+echo "_evs.lblCopyTargetZones = \"" . inner::i18n("Zones") . "\";";
+echo "_evs.lblInheritTitle = \"" . inner::i18n("La consigne appliquée est la dernière de la veille") . "\";";
+echo "_evs.lblCantRemoveLastPoint = \"" . inner::i18n("Vous ne pouvez pas supprimer la dernière tranche horaire") . "\";";
+echo "_evs.lblFileNameEmpty = \"" . inner::i18n("Vous devez spécifier un nom pour le fichier de sauvegarde") . "\";";
+echo "_evs.lblRemovePoint = \"" . inner::i18n("Supprimer la consigne {0}° de {1} à {2} ?") . "\";";
+echo "_evs.lblRemovePoint2 = \"" . inner::i18n("Supprimer la consigne {0}° à {1} ?") . "\";";
+echo "_evs.lblCopyConfirm = \"" . inner::i18n("Recopier {0} sur {1} ?") . "\";";
+echo "_evs.lblCreate = \"" . inner::i18n("Confirmez-vous la création de '{0}' ?") . "\";";
+echo "_evs.lblReplaceSave = \"" . inner::i18n("Confirmez-vous le remplacement de la sauvegarde '{0}' ?") . "\";";
+echo "_evs.lblConfirmSave = \"" . inner::i18n("Confirmez-vous la sauvegarde vers '{0}' ?") . "\";";
 echo "_evs.scheduleOpenCmd = 'index.php?v=d" .
-    "&plugin=" . honeywell::PLUGIN_NAME .
-	"&modal=schedule" . honeywell::CFG_SCH_MODE_HORIZONTAL .
+    "&plugin=$pluginName" .
+	"&modal=schedule$modeH" .
 	"&id=$id" .
-	"&" . honeywell::ARG_ZONE_ID . "=_zoneId_" .
-	"&" . honeywell::ARG_FILE_ID . "=$fileId" .
+	"&' + _evs.argZoneId + '=_zoneId_" .
+	"&' + _evs.argFileId + '=$fileId" .
 	"&displayMode=_displayMode_" .
 	"&nDay=_nDay_" .
-	"&mode=" . honeywell::CFG_SCH_MODE_HORIZONTAL .
+	"&mode=$modeH" .
 	"&edit=_edit_" .
-	"&scheduleSource=$scheduleSource'\n";
-echo "lblSaveTo = \"" . inner::i18n("Enregistre la programmation vers '{0}'...") . "\";\n";
+	"&scheduleSource=$scheduleSource';";
+echo "lblSaveTo = \"" . inner::i18n("Enregistre la programmation vers '{0}'...") . "\";";
 // 0.4.3 - displayMode and nDay choices :
 echo "_evs.displayMode = '$displayMode' == '' ? _evs.DM_BY_ZONE : '$displayMode';";
 echo "_evs.nDay = '$nDay' == '' ? -1 : parseInt('$nDay');";
 ?>
 _evs.displayHTable();
 function evohomeSave(fileId, fileName, eComm, scheduleToSave) {
-	jeedom.cmd.execute({id:"<?php echo honeywell::getActionSaveId($locId);?>", notify:false,
-		value:{<?php echo honeywell::ARG_FILE_ID?>:fileId, <?php echo honeywell::ARG_FILE_NAME?>:fileName,
-			   <?php echo honeywell::ARG_FILE_REM?>:eComm, <?php echo honeywell::ARG_FILE_NEW_SCHEDULE?>:scheduleToSave}
-		});
+	var values = {};
+	values[_evs.argFileId] = fileId;
+	values[_evs.argFileName] = fileName;
+	values[_evs.argFileRem] = eComm;
+	values[_evs.argFileNewSchedule] = scheduleToSave;
+	jeedom.cmd.execute({id:_evs.saveId, notify:false, value:values});
 	waitingMessage(getMsg(lblSaveTo,[fileName]));
 }
 </script>

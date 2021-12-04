@@ -1,12 +1,36 @@
-<div data-cmd_id="#etatId#" style="margin-left:0px;margin-right:0px;text-align:center;xbackground-color:lightgray;display: #etatDisplay#;">
-	<img id="setMode#id#" style="cursor:pointer;height:30px;width:30px;" src="plugins/#pluginName#/img/#etatImg#" />
-	<span style="display: #etatUntilDisplay#;">&nbsp;&nbsp;&nbsp;&nbsp;</span>
-	<img style="display: #etatUntilDisplay#;height:15px;width:15px;" src="plugins/#pluginName#/img/#etatUntilImg#" />
-	<span style="display: #etatUntilDisplay#;color:black;" title="#etatUntilFull#">&nbsp;#etatUntil#</span>
-	<br/>
-	<span style="font-size:12px;color:black;">#scheduleTitle#</span>
-	<select id="scheduleList#id#" style="width:146px;font-size:12px;color:black;">#options#</select>
-	<br/>
-	<br/>
+			<a href="#eqLink#" style="font-size:1.1em;color:var(--sc-lightTxt-color) !important;"><strong>#name_display#</strong></a>
+		</div>
+	</div>
+<div data-cmd_id="#etatId#" style="margin-left:0px;margin-right:0px;text-align:center;">
+	<div>
+		<span class="cmdName">#mLblPresence#</span><br/>
+		<a class="setMode#id#" href="#popupConsole#id#" data-rel="popup" data-position-to="window" data-transition="none"
+			style="display:#displaySetModePopup#;background-color:#F6F6FF;cursor:pointer;height:30px;width:30px;">
+			<img style="background-color:#F6F6FF;cursor:pointer;height:24px;width:24px;" src="plugins/#pluginName#/img/#etatImg#" />
+		</a>
+	  <div data-role="popup" id="popupConsole#id#">
+		<div data-role="header">
+		  <h1 class='nd-title'>#title.setMode#</h1>
+		<a href="#" data-rel="back" style="display:none;" class="modeClose#id# ui-btn ui-corner-all ui-shadow ui-btn-a ui-icon-delete ui-btn-icon-notext ui-btn-right"></a>
+		</div>
+		<div data-role="content" style="padding-left:20px;padding-right:20px;">
+			<div class="popupSetMode#id#"></div>
+			<div class="modeButtons#id#" style="text-align:center;padding-bottom:8px;">
+				<span class="cmd cmd-widget"><a class="modeValid#id# action ui-btn ui-btn-inline" style="color: var(--sc-form-color) !important;">#mLblValidate#</a></span>
+			</div>
+		</div>
+	  </div>
+		<div style="display:#etatModeImgDisplay#;vertical-align:middle;">
+			&nbsp;&nbsp;&nbsp;&nbsp;<img style="height:15px;width:15px;background-color:rgb(82,82,82);" src="plugins/#pluginName#/img/#etatModeImg#" />
+			<span style="display:#etatUntilDisplay#;" title="#etatUntilFull#">&nbsp;#etatUntil#</span>
+		</div>
+	</div>
+	<span class="cmdName">#mScheduleTitle#</span><br/>
+	<strong class="state">#currentScheduleName#</strong>
 </div>
-
+<script type="text/javascript" src="plugins/#pluginName#/core/template/mobile/mobile_min.js?ts=#dashboard_min_js_size#"></script>
+<script type="text/javascript" src="plugins/#pluginName#/core/template/mobile/console_min.js?ts=#console_min_js_size#"></script>
+<script>
+initVarsCommon('#pluginName#',#id#,'#evoBackgroundColor#','#evoCmdBackgroundColor#',#apiAvailable#,'#msgApiUnavailable#','#evoDefaultShowingScheduleMode#','#showHorizontal#','#argZoneId#','#argFileId#',#dashboard_css_size#,'#evoMsgInfo#');
+initVarsConsole('#locId#','#argLocId#',#id#,#isAdmin#,"#scheduleFileId#",'#scheduleType#','#canRestoreCurrent#',#taskIsRunning#,"#title.setMode#",#codesAllowed#,#modesArray#,#schedulesList#,'#etatCode#',"#displaySetModeConsole#","#cmd_setmode_id#",'#argCodeMode#',"#setModeConfirm#","#setModeInfoList#","#cmd_save_id#","#saveAs#","#saveInfoList#","#saveReplace#","#saveName#","#saveRemark#","#argFileName#","#argFileRem#","#cmd_restore_id#","#restoreConfirm#","#restoreInfoList#","#cmd_delete_id#","#deleteConfirm#","#deleteInfoList#","#lblSelectedProgram#");
+</script>

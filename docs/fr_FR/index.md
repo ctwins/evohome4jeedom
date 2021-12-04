@@ -51,8 +51,6 @@ NB2 : les TH sont rattachés aux objets parents comportant le même nom ou simil
 
 ### Console
   - (sauf Lyric) choix de l'affichage des choix des modes de présence : intégré à la Console ou déporté en popup
-  - possibilité de forcer la lecture du système avant sauvegarde de la programmation<br/>
-    *(était surtout utile avant la présence de l'éditeur intégré, afin de prendre en compte les modifications effectuées sur la console Evohome physique)*
 
 ### Thermostats
   - style de la barre de titre

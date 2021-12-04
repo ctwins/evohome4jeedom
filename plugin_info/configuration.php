@@ -24,8 +24,8 @@ if (!isConnect('admin')) {
 <form class="form-horizontal">
 	<fieldset>
 		<div class="form-group">
-			<label class="col-lg-3 control-label" style="font-size:15px;"><u>{{Système}}</u></label>
-			<input type="hidden" class="configKey hnwSystem" data-l1key="hnwSystem" />
+			<label class="col-lg-3 control-label" style="font-size:15px;text-decoration:underline;">{{Système}}</label>
+			<input type="hidden" class="configKey hnwSystem" data-l1key="<?php echo lyric::CONF_HNW_SYSTEM;?>" />
 			<div class="col-lg-2" style="width:auto;">
 				<label><input type="radio" id="sysChoice<?php echo honeywell::SYSTEM_EVOHOME;?>" name="sysChoice" value="<?php echo honeywell::SYSTEM_EVOHOME;?>" style="width:24px;vertical-align:middle;">&nbsp;&nbsp;Evohome</label>
 			</div>
@@ -33,7 +33,7 @@ if (!isConnect('admin')) {
 				<label><input type="radio" id="sysChoice<?php echo honeywell::SYSTEM_LYRIC;?>" name="sysChoice" value="<?php echo honeywell::SYSTEM_LYRIC;?>" style="width:24px;vertical-align:middle;">&nbsp;&nbsp;Lyric T6/T6R</label>
 			</div>
 		</div>
-		<div class="system<?php echo honeywell::SYSTEM_LYRIC;?> systems" style="display:none;">
+		<div class="systems system<?php echo honeywell::SYSTEM_LYRIC;?>" style="display:none;">
 			<div class="form-group">
 				<div class="col-lg-3"></div>
 				<div class="col-lg-2">
@@ -52,23 +52,23 @@ if (!isConnect('admin')) {
 					<input type="password" class="configKey lyricSecretKey" data-l1key="<?php echo lyric::CFG_SECRET_KEY;?>" />
 				</div>
 				<div class="col-lg-4" style="padding-top:22px;">
-					<a style="display:none;" target="_blank" id="callHnwlOAuth2" />
+					<a style="display:none;" target="_blank" id="callHnwlOAuth2"></a>
 					<a class="btn btn-warning lyricToken" style="margin-left:32px;">{{Initialisation}}</a>
 				</div>
 			</div>
 		</div>
-		<div class="system<?php echo honeywell::SYSTEM_EVOHOME;?> systems" style="display:none;">
+		<div class="systems system<?php echo honeywell::SYSTEM_EVOHOME;?>" style="display:none;">
 			<div class="form-group">
 				<div class="col-lg-3"></div>
 				<div class="col-lg-2">
 					<label>{{Nom d'utilisateur}}</label>
 					<br/>
-					<?php echo '<input type="text" style="width:unset;" class="configKey form-control userName" data-l1key="' . evohome::CFG_USER_NAME . '" />'; ?>
+					<input type="text" style="width:unset;" class="configKey form-control userName" data-l1key="<?php echo evohome::CFG_USER_NAME;?>" />
 				</div>
 				<div class="col-lg-2">
 					<label>{{Mot de passe}}</label>
 					<br/>
-					<?php echo '<input type="password" style="width:unset;" class="configKey form-control password" data-l1key="' . evohome::CFG_PASSWORD . '" />'; ?>
+					<input type="password" style="width:unset;" class="configKey form-control password" data-l1key="<?php echo evohome::CFG_PASSWORD;?>" />
 				</div>
 			</div>
 		</div>
@@ -80,33 +80,31 @@ if (!isConnect('admin')) {
 				<input type="text" class="form-control thPrefix" style="width:80px;" value="TH" />
 			</div>
 			<div class="col-lg-3" style="margin-top:20px;margin-right:20px;">
-				<?php
-				if ( count(honeywell::getEquipments()) > 0 ) {
-					echo	'<input id="resizeWhenSynchronize" type="checkbox" style="width:24px;top: 4px!important;" class="resizeWhenSynchronize" />';
-					echo	'<label for="resizeWhenSynchronize" style="font-style:italic;">';
-					echo 	'{{Redimensionner les widgets existants}}';
-					echo	'</label>';
-				}
-				?>
+				<?php if ( count(honeywell::getEquipments()) > 0 ) { ?>
+					<input id="resizeWhenSynchronize" type="checkbox" style="width:24px;top: 4px!important;" class="resizeWhenSynchronize" />
+					<label for="resizeWhenSynchronize" style="font-style:italic;">
+					{{Redimensionner les widgets existants}}
+					</label>
+				<?php } ?>
 				<br/>
 				<a class="btn btn-warning btnSync">{{Synchroniser}}</a>
 			</div>
 		</div>
 
-		<div class="form-group">
-			<label class="col-lg-3 control-label" style="font-size:15px;"><u>{{Console}}</u></label>
+		<div class="form-group systems system<?php echo honeywell::SYSTEM_EVOHOME;?>">
+			<label class="col-lg-3 control-label" style="font-size:15px;text-decoration:underline;">{{Console}}</label>
 		</div>
-		<div class="form-group system<?php echo honeywell::SYSTEM_EVOHOME;?> systems" style="display:none;">
+		<div class="form-group systems system<?php echo honeywell::SYSTEM_EVOHOME;?>" style="display:none;">
 			<label class="col-lg-4 control-label" style="vertical-aglin:middle;">{{Modes de présence}}</label>
-			<input type="hidden" class="configKey evoShowingModes" data-l1key="evoShowingModes" />
-			<div class="col-lg-2" style="width:auto;">
+			<input type="hidden" class="configKey evoShowingModes" data-l1key="<?php echo honeywell::CFG_SHOWING_MODES;?>" />
+			<div class="col-lg-1" style="width:auto;">
 				<label>
 					<?php echo '<input type="radio" id="esm' . honeywell::CFG_SHOWING_MODE_CONSOLE . '" name="esm"
 							value="' . honeywell::CFG_SHOWING_MODE_CONSOLE . '" style="width:24px;
     vertical-align:middle">'; ?>&nbsp;&nbsp;{{Intégré à la console}}
 				</label>
 			</div>
-			<div class="col-lg-2" style="width:auto;">
+			<div class="col-lg-1" style="width:auto;">
 				<label>
 					<?php echo '<input type="radio" id="esm' . honeywell::CFG_SHOWING_MODE_POPUP . '" name="esm"
 						value="' . honeywell::CFG_SHOWING_MODE_POPUP . '" style="width:24px;
@@ -114,24 +112,15 @@ if (!isConnect('admin')) {
 				</label>
 			</div>
 		</div>
-		<div class="form-group">
-			<div class="col-lg-4">&nbsp;</div>
-			<div class="col-lg-5">
-				<label>
-					<input class="configKey" type="checkbox" style="width:24px;" data-l1key="evoRefreshBeforeSave" />
-					{{Forcer la lecture des données avant de sauvegarder la programmation}}
-				</label>
-			</div>
-		</div>
 
 		<div class="form-group">
-			<label class="col-lg-3 control-label" style="font-size:15px;"><u>{{Thermostats}}</u></label>
+			<label class="col-lg-3 control-label" style="font-size:15px;text-decoration:underline;">{{Thermostats}}</label>
 		</div>
 		<div class="form-group">
 			<label class="col-lg-4 control-label" style="vertical-aglin:middle;">{{Couleur barres de titre}}</label>
 			<!-- <input type="hidden" class="configKey evoBackColorTitleModes" data-l1key="evoBackColorTitleModes" /> -->
 			<div class="col-lg-3">
-				<select class="bctMode configKey form-control configuration" data-l1key="evoBackColorTitleModes">
+				<select class="bctMode configKey form-control configuration" data-l1key="<?php echo honeywell::CFG_BACKCOLOR_TITLE_MODES;?>">
 					<option value="0">{{Inactif}}</option>
 					<option value="1">{{Système (selon catégorie)}}</option>
 					<option value="2">{{Système + 2 seuils :}} </option>
@@ -140,24 +129,23 @@ if (!isConnect('admin')) {
 			</div>
 			<div class="col-lg-3">
 				{{orange si}} >=&nbsp;
-				<?php echo '<input type="text" style="width:40px;text-align:center;" maxlength=4 class="bct2NA configKey form-control" data-l1key="' . honeywell::CFG_BCT_2N_A . '" />'; ?>
+				<input type="text" style="width:40px;text-align:center;" maxlength=4 class="bct2NA configKey form-control" data-l1key="<?php echo honeywell::CFG_BCT_2N_A;?>" />
 				&nbsp;&nbsp;
 				{{rouge si}} >=&nbsp;
-				<?php echo '<input type="text" style="width:40px;text-align:center;" maxlength=4 class="bct2NB configKey form-control" data-l1key="' . honeywell::CFG_BCT_2N_B . '" />'; ?>
+				<input type="text" style="width:40px;text-align:center;" maxlength=4 class="bct2NB configKey form-control" data-l1key="<?php echo honeywell::CFG_BCT_2N_B;?>" />
 			</div>
 		</div>
 		<div class="form-group">
 			<label class="col-lg-4 control-label">{{Unité de température}}</label>
-			<input type="hidden" class="configKey evoTempUnit" data-l1key="evoTempUnit" />
+			<input type="hidden" class="configKey evoTempUnit" data-l1key="<?php echo honeywell::CFG_TEMP_UNIT;?>" />
 			<div class="col-lg-1" style="width:auto;">
 				<label>
 					<?php echo '<input type="radio" id="etu' . honeywell::CFG_UNIT_CELSIUS . '" name="etu"
 							value="' . honeywell::CFG_UNIT_CELSIUS . '" style="width:24px;
     vertical-align:middle">'; ?>&nbsp;&nbsp;°C&nbsp;(Celsius)
 				</label>
-				<br/>
 			</div>
-			<div class="col-lg-2">
+			<div class="col-lg-1" style="width:auto;">
 				<label>
 					<?php echo '<input type="radio" id="etu' . honeywell::CFG_UNIT_FAHRENHEIT . '" name="etu"
 							value="' . honeywell::CFG_UNIT_FAHRENHEIT . '" style="width:24px;
@@ -166,23 +154,23 @@ if (!isConnect('admin')) {
 			</div>
 		</div>
 		<div class="form-group">
-			<label class="col-lg-4" />
+			<div class="col-lg-4"></div>
 			<label class="col-lg-4" style="text-align:left;"><i>{{Attention : concerne l'affichage et le stockage historique}}</i></label>
 		</div>
-		<div class="form-group system<?php echo honeywell::SYSTEM_EVOHOME;?> systems" style="display:none;">
+		<div class="systems form-group system<?php echo honeywell::SYSTEM_EVOHOME;?>" style="display:none;">
 			<label class="col-lg-4 control-label">{{Précision}}</label>
 			<div class="col-lg-3">
-				<select class="configKey form-control configuration" data-l1key="evoDecimalsNumber">
-					<option value="1">{{0.5 par défaut (X.82 > X.5) = Défaut Honeywell}}</option>
-					<option value="2">{{0.5 arrondi (X.82 > X+1, X.44 > X.5)}}</option>
-					<option value="3">{{0.05 arrondi (X.82 > X.80, X.44 > X.45)}}</option>
-					<option value="4">{{0.01 = valeur native}}</option>
+				<select class="configKey form-control configuration" data-l1key="<?php echo honeywell::CFG_ACCURACY;?>">
+					<option value="<?php echo honeywell::CFG_ACC_HNW;?>">{{Défaut Honeywell}}</option>
+					<option value="<?php echo honeywell::CFG_ACC_05;?>">{{Arrondi à 0.5}}</option>
+					<option value="<?php echo honeywell::CFG_ACC_005;?>">{{Arrondi à 0.05}}</option>
+					<option value="<?php echo honeywell::CFG_ACC_NATIVE;?>">{{Valeur native}}</option>
 				</select>
 			</div>
 		</div>
 		<div class="form-group">
 			<label class="col-lg-4 control-label" style="vertical-aglin:middle;">{{Réglage des consignes}}</label>
-			<input type="hidden" class="configKey evoHeatPointSettingModes" data-l1key="evoHeatPointSettingModes" />
+			<input type="hidden" class="configKey evoHeatPointSettingModes" data-l1key="<?php echo honeywell::CFG_HP_SETTING_MODES;?>" />
 			<div class="col-lg-2" style="width:auto;">
 				<label>
 					<?php echo '<input type="radio" id="hpsm' . honeywell::CFG_HP_SETTING_MODE_INTEGRATED . '" name="hpsm"
@@ -200,11 +188,11 @@ if (!isConnect('admin')) {
 		</div>
 
 		<div class="form-group">
-			<label class="col-lg-3 control-label" style="font-size:15px;"><u>{{Programmes}}</u></label>
+			<label class="col-lg-3 control-label" style="font-size:15px;text-decoration:underline;">{{Programmes}}</label>
 		</div>
 		<div class="form-group">
 			<label class="col-lg-4 control-label">{{Type d'affichage par défaut}}</label>
-			<input type="hidden" class="configKey evoDefaultShowingScheduleMode" data-l1key="evoDefaultShowingScheduleMode" />
+			<input type="hidden" class="configKey evoDefaultShowingScheduleMode" data-l1key="<?php echo honeywell::CFG_DEF_SHOW_SCHEDULE_MODE;?>" />
 			<div class="col-lg-2" style="width:auto;">
 				<label>
 					<?php echo '<input type="radio" id="eshm' . honeywell::CFG_SCH_MODE_HORIZONTAL . '" name="eshm"
@@ -214,9 +202,8 @@ if (!isConnect('admin')) {
 			</div>
 			<div class="col-lg-2" style="width:auto;">
 				<label>
-					<?php echo '<input type="radio" id="eshm' . honeywell::CFG_SCH_MODE_VERTICAL . '" name="eshm"
-							value="' . honeywell::CFG_SCH_MODE_VERTICAL . '" style="width:24px;
-    vertical-align:middle">'; ?>&nbsp;&nbsp;{{Vertical}}
+					<input class="configKey" type="checkbox" style="width:24px;" data-l1key="<?php echo honeywell::CFG_SCH_EDIT_AVAILABLE;?>" />
+					{{Mode édition disponible}}
 				</label>
 			</div>
 		</div>
@@ -224,37 +211,54 @@ if (!isConnect('admin')) {
 			<div class="col-lg-4">&nbsp;</div>
 			<div class="col-lg-5">
 				<label>
-					<input class="configKey" type="checkbox" style="width:24px;" data-l1key="evoEditAvailable" />
-					{{Mode édition disponible}}
+					<?php echo '<input type="radio" id="eshm' . honeywell::CFG_SCH_MODE_VERTICAL . '" name="eshm"
+							value="' . honeywell::CFG_SCH_MODE_VERTICAL . '" style="width:24px;
+    vertical-align:middle">'; ?>&nbsp;&nbsp;{{Vertical}}
 				</label>
 			</div>
 		</div>
 
 		<div class="form-group">
-			<label class="col-lg-3 control-label" style="font-size:15px;"><u>{{Historique}}</u></label>
+			<label class="col-lg-3 control-label" style="font-size:15px;text-decoration:underline;">{{Mesures}}</label>
 		</div>
 		<div class="form-group">
-			<label class="col-lg-4 control-label">{{Intervalle de mesure}}</label>
+			<label class="col-lg-4 control-label">{{Intervalle}}</label>
 			<div class="col-lg-2">
-				<select class="configKey form-control configuration" data-l1key="evoLoadingInterval">
+				<select class="configKey form-control configuration" data-l1key="<?php echo honeywell::CFG_LOADING_INTERVAL;?>">
 					<option value="10">10mn</option>
 					<option value="15">15mn</option>
 					<option value="20">20mn</option>
 					<option value="30">30mn</option>
 				</select>
-				<span><i>{{Ajuste la finesse et la charge mémoire de l'historique}}</i></span>
-			</div>
-			<span class="col-lg-4 control-label" style="text-align:left;">
 				<label>
-					<input class="configKey" type="checkbox" style="width:24px;" data-l1key="evoLoadingSync" />
+					<input class="configKey" type="checkbox" style="width:24px;" data-l1key="<?php echo honeywell::CFG_LOADING_SYNC;?>" />
 					{{Synchronisation horloge (HH:MM, avec MM=intervalle*n)}}
 				</label>
-			</span>
+			</div>
+			<span class="col-lg-4" style="text-align:left;"><i>{{Ajuste la finesse et la charge mémoire de l'historique}}</i></span>
+		</div>
+		<div class="form-group">
+			<label class="col-lg-4 control-label">{{Scénario}}</label>
+			<div class="col-lg-2">
+				<select class="configKey form-control configuration" data-l1key="<?php echo honeywell::CFG_SCENARIO;?>">
+					<option value="0">{{Aucun}}</option>
+					<?php
+					foreach (honeywell::getAllScenarios() as $scenario) {
+						echo '<option value="' . $scenario['id'] . '">' . $scenario['name'] . '</option>';
+					}
+					?>
+				</select>
+			</div>
+			<span class="col-lg-4 control-label" style="text-align:left;font-weight:400;"><i>{{Scénario à lancer post mesure}}</i></span>
+		</div>
+
+		<div class="form-group">
+			<label class="col-lg-3 control-label" style="font-size:15px;text-decoration:underline;">{{Historique}}</label>
 		</div>
 		<div class="form-group">
 			<label class="col-lg-4 control-label">{{Durée de rétention}}</label>
 			<div class="col-lg-2">
-				<select class="configKey form-control configuration" data-l1key="evoHistoryRetention">
+				<select class="configKey form-control configuration" data-l1key="<?php echo honeywell::CFG_HISTORY_RETENTION;?>">
 					<option value="">{{Jamais}}</option>
 					<option value="-1 day">1 {{jour}}</option>
 					<option value="-7 days">7 {{jours}}</option>
@@ -264,7 +268,7 @@ if (!isConnect('admin')) {
 					<option value="-1 year">1 {{an}}</option>
 				</select>
 			</div>
-			<span class="col-lg-4 control-label" style="text-align:left;"><i>{{Ajuste tous les équipements}}</i></span>
+			<span class="col-lg-4 control-label" style="text-align:left;font-weight:400;"><i>{{Ajuste tous les équipements}}</i></span>
 		</div>
 	</fieldset>
 </form>

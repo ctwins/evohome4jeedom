@@ -1,8 +1,9 @@
 <?php
 require_once 'honeywell.class.php';
+
 /**
  * This class is the original of the plugin ; from version 0.5.0, is now splitted as a child of honeywell.class.php.
- * It will remain the entry point from Jeedom, as long as the plugin is named 'evohome'
+ * It will remain the entry point for Jeedom, as long as the plugin is named 'evohome'
  * @author ctwins95
  *
  */
@@ -20,9 +21,7 @@ class evohome extends honeywell {
 	const FollowSchedule = 'FollowSchedule';
 	const PermanentOverride = 'PermanentOverride';
 	const TemporaryOverride = 'TemporaryOverride';
-	//const CMD_SET_CONSIGNE_ID = 'setConsigne';
 	const OLD_ID_CONSOLE = -1;
-	//const CURRENT_SCHEDULE_ID = 0;
 	const LOG_INFO_ZONES = false;
 	# -- infosAPI :
 	const IZ_SESSION_ID_V1 = 'session_id_v1';
@@ -292,29 +291,6 @@ class evohome extends honeywell {
 		return $loc;
 	}
 
-	static function adaptSavedSchedules($locations) {
-		$schedulePath = self::getSchedulePath();
-		$files = ls($schedulePath, '*');
-		if ( count($files) > 0 ) {
-			$zonesLoc = array();
-			foreach ($locations as $loc) {
-				foreach ($loc['zones'] as $zone ) {
-					$zonesLoc[$zone['id']] = $loc['locationId'];
-				}
-			}
-			foreach ($files as $file) {
-				$parts = explode('_', $file);
-				if ( count($parts) == 2 ) {
-					$fileContent = file_get_contents($schedulePath . $file);
-					$fileContentDecoded = json_decode($fileContent, true);
-					$locAssociated = $zonesLoc[$fileContentDecoded['zones'][0]['zoneId']];
-					if ( honeyutils::isDebug() ) honeyutils::logDebug("adaptSavedSchedules $file associated with loc=$locAssociated");
-					rename($schedulePath . $file, $schedulePath . $locAssociated . "_" . $file);
-				}
-			}
-		}
-	}
-
 	static function syncTH($prefix,$resizeWhenSynchronize) {
 		$locations = self::evohomeReloadLocations();
 		if ( $locations == null ) {
@@ -363,7 +339,7 @@ class evohome extends honeywell {
 						if ( $zone["typeEqu"] == self::TYPE_EQU_CONSOLE ) {
 							if ( $prevZoneId == self::OLD_ID_CONSOLE ) {
 								// 0.4.0 - migrate saved schedules
-								self::adaptSavedSchedules($locations);
+								Schedule::adaptSavedSchedules($locations);
 							}
 							// 0.4.0 - update zoneId (== locId for Console)
 							//$eqLogic->setConfiguration(self::CONF_ZONE_ID, $locId);	// here, 'zoneId' == $locId
@@ -380,7 +356,7 @@ class evohome extends honeywell {
 						else {
 							// 0.4.0 - 2019-06-29 - new : alert settings
 							honeyutils::logDebug("-- alert settings..");
-							$temp = $eqLogic->getCmd(null,self::CMD_TEMPERATURE_ID);
+							$temp = $eqLogic->getCmd(null,TH::CMD_TEMPERATURE_ID);
 							// $temp->setAlert("warningif", "#value# >= 26");
 							// $temp->setAlert("dangerif", "#value# >= 28");
 							// 0.4.1 - 2019-07-22 - restore empty settings
@@ -441,10 +417,10 @@ class evohome extends honeywell {
 
 	/*********************** Méthodes re-routées **************************/
 
-	function __iGetInformations($locId, $forceRefresh=false, $readSchedule=true, $msgInfo='', $taskIsRunning=false) {
+	function iGetInformations($locId, $forceRefresh=false, $readSchedule=true, $msgInfo='', $taskIsRunning=false) {
 		try {
 			$execUnitId = rand(0,10000);
-			if ( honeyutils::isDebug() ) honeyutils::logDebug("IN>> - __iGetInformations[$execUnitId,$locId]");
+			if ( honeyutils::isDebug() ) honeyutils::logDebug("IN>> - iGetInformations[$execUnitId,$locId]");
 			$infosZones = honeyutils::getCacheData(self::CACHE_IAZ,$locId);
 			$useCachedData = true;
 			$infosZonesBefore = null;
@@ -478,7 +454,7 @@ class evohome extends honeywell {
 					$infosZones = self::runPython('InfosZonesE2.py', "InfosZonesE2_$execUnitId", null, $locId . " " . ($readSchedule ? "1" : "0"));
 					self::deactivateIAZReentrance($locId);
 					if ( !is_array($infosZones) ) {
-						honeyutils::logError('Error while __iGetInformations : response was empty of malformed', $infosZones);
+						honeyutils::logError('Error while iGetInformations : response was empty of malformed', $infosZones);
 						if ( $infosZonesBefore != null ) {
 							if ( $taskIsRunning ) {
 								self::refreshAllForLoc($locId,$infosZonesBefore);
@@ -487,7 +463,7 @@ class evohome extends honeywell {
 							}
 						}
 					} else if ( !$infosZones[self::SUCCESS] ) {
-						honeyutils::logError('Error while __iGetInformations', $infosZones);
+						honeyutils::logError('Error while iGetInformations', $infosZones);
 						if ( $infosZonesBefore != null ) {
 							if ( $taskIsRunning ) {
 								self::refreshAllForLoc($locId,$infosZonesBefore);
@@ -504,18 +480,26 @@ class evohome extends honeywell {
 				}
 			}
 			if ( $useCachedData ) {
-				if ( honeyutils::isDebug() ) honeyutils::logDebug('got __iGetInformations[' . $execUnitId . '] from cache (rest to live=' . honeyutils::getCacheRemaining(self::CACHE_IAZ,$locId) . ')');
+				if ( honeyutils::isDebug() ) honeyutils::logDebug('got iGetInformations[' . $execUnitId . '] from cache (rest to live=' . honeyutils::getCacheRemaining(self::CACHE_IAZ,$locId) . ')');
 				if ( $infosZonesBefore != null ) $infosZones = $infosZonesBefore;
 			}
-			if ( honeyutils::isDebug() ) honeyutils::logDebug('<<OUT __iGetInformations[' . $execUnitId . ']');
+			if ( honeyutils::isDebug() ) honeyutils::logDebug('<<OUT iGetInformations[' . $execUnitId . ']');
 			return $infosZones;
 		} catch (Exception $e) {
-			honeyutils::logError("Exception while __iGetInformations");
+			honeyutils::logError("Exception while iGetInformations");
 			return null;
 		}
 	}
 
-	function __iGetModesArray() {
+	/*const EVO_MODES_ARRAY = array(self::CODE_MODE_AUTO=>new HeatMode('Auto','Planning','i_calendar',true,null,HeatMode::SMD_NONE,true),
+					 self::CODE_MODE_ECO=>new HeatMode('AutoWithEco','Economie','i_economy',true,null,HeatMode::SMD_PERM_DURING,true),
+					 self::CODE_MODE_AWAY=>new HeatMode('Away','Innocupé','i_away',false,null,HeatMode::SMD_PERM_UNTIL,true),
+					 self::CODE_MODE_DAYOFF=>new HeatMode('DayOff','Congé','i_dayoff',true,null,HeatMode::SMD_PERM_UNTIL,true),
+					 self::CODE_MODE_CUSTOM=>new HeatMode('Custom','Personnalisé','i_custom',true,null,HeatMode::SMD_PERM_UNTIL,true),
+					 self::CODE_MODE_OFF=>new HeatMode('HeatingOff','Arrêt','i_off',false,null,HeatMode::SMD_NONE,true)
+					 );
+	*/
+	function iGetModesArray() {
 		return array(self::CODE_MODE_AUTO=>new HeatMode('Auto','Planning','i_calendar',true,null,HeatMode::SMD_NONE,true),
 					 self::CODE_MODE_ECO=>new HeatMode('AutoWithEco','Economie','i_economy',true,null,HeatMode::SMD_PERM_DURING,true),
 					 self::CODE_MODE_AWAY=>new HeatMode('Away','Innocupé','i_away',false,null,HeatMode::SMD_PERM_UNTIL,true),
@@ -525,30 +509,33 @@ class evohome extends honeywell {
 					 );
 	}
 
-	function __iSetHtmlConsole(&$replace,$state,$currentMode) {
+	function iSetHtmlConsole(&$replace,$state,$currentMode) {
 		// $aEtat : "Auto";1 / "AutoWithEco";1/0;H / Away;1/0;D / DayOff;1/0;D / Custom;1/0;D / HeatingOff;1
-		// with 1=True ; 0=False ; is the permanentMonde flag
+		// with 1=True ; 0=False ; is the permanentMode flag
 		// if False, until part is added : Xxx;False;2018-01-29T20:34:00Z, with H for hours, D for days
+		honeyutils::logDebug("state = " . json_encode($state) . " ; currentMode = $currentMode");
+		$replace['#etatModeImgDisplay#'] = 'none';
+		$replace['#etatUntilDisplay#'] = 'none';
 		# permanent
-		if ( $state->permanent == State::MODE_PERMANENT_ON && $currentMode != self::CODE_MODE_AUTO ) {
-			$replace['#etatUntilImg#'] = 'override-active.png';
-			$replace['#etatUntilDisplay#'] = 'none';
+		/*if ( $state->permanent == State::MODE_PERMANENT_ON && $currentMode != self::CODE_MODE_AUTO ) {
+			$replace['#etatModeImg#'] = 'override-active.png';
+			$replace['#etatModeImgDisplay#'] = 'inline';
 		}
 		# delay
-		else if ( $state->permanent == State::MODE_PERMANENT_OFF ) {
-			$replace['#etatUntilImg#'] = 'temp-override-black.svg';
+		else*/ if ( $state->permanent == State::MODE_PERMANENT_OFF ) {
+			$replace['#etatModeImg#'] = 'temp-override.svg';
+			$replace['#etatModeImgDisplay#'] = 'inline';
 			// example : $state->until = "2018-01-28T23:00:00Z"
 			$replace['#etatUntil#'] = $currentMode == self::CODE_MODE_ECO ? honeyutils::gmtToLocalHM($state->until) : honeyutils::gmtToLocalDate($state->until);
 			$replace['#etatUntilFull#'] = $state->until;
 			$replace['#etatUntilDisplay#'] = 'inline';
 		}
 		else {
-			$replace['#etatUntilImg#'] = 'empty.svg';
-			$replace['#etatUntilDisplay#'] = 'none';
+			$replace['#etatModeImg#'] = 'empty.svg';
 		}
 	}
 
-	function __iGetThModes($currentMode,$scheduleType_Unused,$consigneInfos) {
+	function iGetThModes($currentMode,$scheduleType_Unused,$consigneInfos) {
 		return array (
 			"isOff" => $currentMode == self::CODE_MODE_OFF,
 			"isEco" => $currentMode == self::CODE_MODE_ECO,
@@ -562,22 +549,13 @@ class evohome extends honeywell {
 			
 			"scheduling" => true,
 			
-			"setThModes" => array(self::SET_TH_MODE_PERMANENT => self::i18n("de façon permanente"),					// until = null
-								  self::SET_TH_MODE_UNTIL_CURRENT_SCH => self::i18n("jusqu'à la fin de la programmation courante, soit {0}"),
-								  self::SET_TH_MODE_UNTIL_HHMM => self::i18n("jusqu'à"),							// until = <input HH:MM>
-								  self::SET_TH_MODE_UNTIL_END_OF_DAY => self::i18n("jusqu'à la fin de la journée")),	// until=00:00
+			"setThModes" => array(TH::SET_TH_MODE_PERMANENT => self::i18n("de façon permanente"),					// until = null
+								  TH::SET_TH_MODE_UNTIL_CURRENT_SCH => self::i18n("jusqu'à la fin de la programmation courante, soit {0}"),
+								  TH::SET_TH_MODE_UNTIL_HHMM => self::i18n("jusqu'à"),								// until = <input HH:MM>
+								  TH::SET_TH_MODE_UNTIL_END_OF_DAY => self::i18n("jusqu'à la fin de la journée")),	// until=00:00
 
 			"lblSchedule" => self::i18n("Programmes hebdo.")
 			);
-	}
-
-	/*********************** Méthodes d'instance **************************/
-
-	public function _postSaveTH() {
-		honeyutils::logDebug(">>> evohome::_postSave");
-		$infosZones = $this->iGetInformations();
-		$this->injectInformationsFromZone($infosZones);
-		honeyutils::logDebug("<<< evohome::_postSave");
 	}
 
 
@@ -603,11 +581,12 @@ class evohome extends honeywell {
 		return $ret;
 	}
 
+
 	/************************ Actions ****************************/
 
-	function __iSetMode($execUnitId,$locId,$codeMode) {
+	function iSetMode($execUnitId,$locId,$codeMode) {
 		// ...appel python...
-		if ( honeyutils::isDebug() ) honeyutils::logDebug("__iSetMode($locId,$codeMode) : call python");
+		if ( honeyutils::isDebug() ) honeyutils::logDebug("iSetMode($locId,$codeMode) : call python");
 		$aRet = self::runPython("SetModeE2.py", "SetModeE2_$execUnitId",
 			array("task"=>self::i18n("Bascule vers le mode '{0}'", $this->getModeName($codeMode)),
 				  "zoneId"=>$locId,
@@ -617,7 +596,8 @@ class evohome extends honeywell {
 		return $aRet;
 	}
 
-	function __iRestoreSchedule($execUnitId,$locId,$data,$taskName) {
+	function iRestoreSchedule($execUnitId,$locId,$data,$taskName) {
+		honeyutils::logDebug("iRestoreSchedule...");
 		// ...appel python...
 		$aRet = self::runPython("RestaureZonesE2b.py", "RestaureZonesE2b_$execUnitId",
 								// zoneId=locId to retrieve the Console associated to this location :
@@ -629,17 +609,8 @@ class evohome extends honeywell {
 		$aRet["system"] = self::SYSTEM_EVOHOME;
 		return $aRet;
 	}
-	
-	function __iTransformUntil($hm) {
-		$hm = explode(":",$hm);
-		$date = new DateTime();
-		$date->setTime((int)$hm[0],(int)$hm[1],0);
-		$ret = honeyutils::localDateTimeToGmtZ($date);
-		if ( honeyutils::isDebug() ) honeyutils::logDebug("until set to = " . $ret);
-		return $ret;
-	}
 
-	function __iGetFPT() {
+	function iGetFPT() {
 		return array(
 			"follow"=>self::FollowSchedule,
 			"permanent"=>self::PermanentOverride,
@@ -647,9 +618,9 @@ class evohome extends honeywell {
 		);
 	}
 
-	function __iSetConsigne($execUnitId,$locId,$zoneId,$data,$consigne,$taskName) {
+	function iSetConsigne($execUnitId,$locId,$zoneId,$data,$consigne,$taskName) {
 		$cmdParam = str_replace('"', '\"', json_encode($data));
-		if ( honeyutils::isDebug() ) honeyutils::logDebug("__iSetConsigne with $cmdParam");
+		if ( honeyutils::isDebug() ) honeyutils::logDebug("iSetConsigne with $cmdParam");
 		// ...appel python...
 		return self::runPython("SetTempE2.py", "SetTempE2_$execUnitId",
 								array("task"=>$taskName,
@@ -661,33 +632,26 @@ class evohome extends honeywell {
 
 }
 
+
 class evohomeCmd extends cmd {
 
 	/*	* ************************* Attributs ****************************** */
 
 	public static $_widgetPossibility = array('custom' => false);
 
-	/*	* *********************** Methode static *************************** */
-
-	/*	* ********************* Methode d'instance ************************* */
-
 	/*
-	* Non obligatoire permet de demander de ne pas supprimer les commandes même si elles ne sont pas dans la nouvelle configuration de l'équipement envoyé en JS
+	 * Non obligatoire permet de demander de ne pas supprimer les commandes même si elles ne sont pas dans la nouvelle configuration de l'équipement envoyé en JS
+	 *
 	public function dontRemoveCmd() {
 		return true;
 	}
 	*/
 	
 	public function execute($parameters = null) {
-		$eqLogic = $this->getEqLogic();
-		$paramAction = $this->getLogicalId();
-
 		if ( $this->getType() == "action" ) {
-			$eqLogic->doCaseAction($paramAction, $parameters);
-		} else {
-			throw new Exception(self::i18n("Commande non implémentée"));
+			return $this->getEqLogic()->doCaseAction($this->getLogicalId(), $parameters);
 		}
-		return true;
+		throw new Exception(self::i18n("Commande non implémentée"));
 	}
 
 }

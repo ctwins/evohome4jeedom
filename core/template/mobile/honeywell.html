@@ -1,14 +1,15 @@
-<div id="plugin_container" class="eqLogic-widget eqLogic allowResize" style="width:#width#;height:#height#;border:#border#;border-radius:#border-radius#;background-color: #background-color#;color: #color#; #style#" data-category="" data-eqLogic_id="#id#" data-version="#version#" >
-
-	<center class="widget-name">
-		<a href="#eqLink#" style="color:black;font-size:1.1em;#hideEqLogicName#"><strong>#name_display#</strong></a>
-		<!-- <span style="font-size: 0.85em;position: relative;top:-2px;">#object_name#</span> -->
-	</center>
-
-	<!-- Mode console -->
-	<span>#consoleContent#</span>
-
-	<!-- Mode température -->
-	<span>#temperatureContent#</span>
-
+<div id="plugin_container" class="eqLogic-widget eqLogic allowResize allowReorderCmd" style="overflow:unset;width:#width#;color:var(--txt-color) !important;#style#;#new-background-color#" data-category="" data-eqtype="#pluginName#" data-eqLogic_id="#id#" data-eqLogic_uid="#uid#" data-version="#version#">
+	<div>
+		<div class="fas fa-sync" id="refresh#id#" style="display:#reloadDisplay#;font-size:12px;float:left;margin-top:4px;margin-left:4px;#new-background-color#"></div>
+		<div style="display:#batteryImgDisplay#;float:left;margin-top:7px;margin-left:6px;#new-background-color#">
+			<img class="hoverBattShowA#id#"style="padding:1px;" src="plugins/#pluginName#/img/#batteryImg#"/>
+			<div class="hoverBattShowB#id# hoverTLRShow"><span>&nbsp;#batteryImgTitle#&nbsp;</span></div>
+		</div>
+		<div style="float:right;margin-top:7px;margin-right:#iazMarginRight#px;">
+			<span class="hoverTLRShowA#id# #iazIcon#" style="cursor:pointer;font-size:#iazIconSize#px;vertical-align:top;color:#iazColorState#;"></span>
+			<div class="hoverTLRShowB#id# hoverTLRShow"><span>&nbsp;#iazLastRead#&nbsp;</span></div>
+		</div>
+		<div class="widget-name" style="colorX:unset !important;padding-top:2px;margin-right:24px;text-align:center;background-image:linear-gradient(to right,#background-color-B#,#background-color-A#);">
+	#consoleContent#
+	#temperatureContent#
 </div>

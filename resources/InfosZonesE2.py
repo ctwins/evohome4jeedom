@@ -9,14 +9,17 @@ logging.basicConfig()
 evohome_log = logging.getLogger("evohomeBridge-InfosZones")
 evohome_logV1 = logging.getLogger("evohomeBridge-InfosZones(APIV1)")
 
+# V1 data
+V1_ACTIVE = True
 #baseurl = 'https://tccna.honeywell.com/WebAPI/api/'
 baseurl = 'https://mytotalconnectcomfort.com/WebAPI/api/'
 appId = '91db1612-73fd-4500-91b2-e63b069b185c'
-
 SESSION_ID_V1 = None
 USER_ID_V1 = None
 V1_JUST_RENEWED = False
 lastResponseAllDataV1 = None
+
+# V2 data
 CLIENT = None
 SESSION_ID_V2 = None
 
@@ -112,14 +115,15 @@ try:
 
 	devicesV1 = None
 	# 0.3.0 - manage cached session V1
-	if USER_ID_V1 == '' or USER_ID_V1 == '0' or SESSION_ID_V1 == '' or SESSION_ID_V1 == '0':
-		logguedV1 = loginV1()			# requests new session
-		if DEBUG and logguedV1:
-			evohome_logV1.warning('new requested : %s' % SESSION_ID_V1)
-	else:
-		if DEBUG:
-			evohome_logV1.warning('input : %s' % SESSION_ID_V1)
-		logguedV1 = True
+	if V1_ACTIVE:
+		if USER_ID_V1 == '' or USER_ID_V1 == '0' or SESSION_ID_V1 == '' or SESSION_ID_V1 == '0':
+			logguedV1 = loginV1()			# requests new session
+			if DEBUG and logguedV1:
+				evohome_logV1.warning('new requested : %s' % SESSION_ID_V1)
+		else:
+			if DEBUG:
+				evohome_logV1.warning('input : %s' % SESSION_ID_V1)
+			logguedV1 = True
 
 	if logguedV1:
 		getAllDataDone = True

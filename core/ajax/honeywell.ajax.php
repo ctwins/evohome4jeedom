@@ -19,7 +19,7 @@ try {
 		    throw new Exception(honeyutils::i18n("Aucun identifiant de sauvegarde spécifié"));
 		}
 		if ( honeyutils::isDebug() ) honeyutils::logDebug("IN>> - ajax.getCommentary($fileId)");
-		$schedule = honeywell::getSchedule($locId,$fileId);
+		$schedule = Schedule::getSchedule($locId,$fileId);
 		if ( $schedule == null ) {
 		    throw new Exception(honeyutils::i18n("Impossible de lire la sauvegarde d'identifiant {0}", $fileId));
 		}

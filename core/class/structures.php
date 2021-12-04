@@ -1,6 +1,7 @@
 <?php
+
 /**
- * This class appears with version 0.5.0
+ * This class appears with version 0.5.0 and contains some data classes (or structures)
  * @author ctwins95
  *
  */
@@ -17,7 +18,7 @@ class HeatMode {
 	const SCHEDULE_TYPE_GEOFENCE = "G";
 	const SCHEDULE_TYPE_VACANCY = "V";
 	
-	// Set Mode Duration code (see iGetModesArray)
+	// Set Mode Duration code (see getModesArray)
 	const SMD_PERM_DURING = "PP";
 	const SMD_PERM_UNTIL = "PJ";
 	const SMD_NONE = null;
@@ -47,7 +48,6 @@ class ConsigneInfos {
 	public /*float*/ $adjustStep;		// step : 0.5 si °C ; 1 si °F	                  )
 	public /*int*/ $minHeat;			// 5 (min)  == self->getConfiguration('minHeat')  ) 0.4.1 - these 3 values are now "adjusted by unit"
 	public /*int*/ $maxHeat;			// 25 (max) == self->getConfiguration('maxHeat')  )
-	public /*float*/ $delta;			// delta previous measure (0/-1:+1)
 	public /*string*/ $timeBattLow;		// timeBattLow / <empty>
 	public /*string*/ $timeCnxLost;		// timeCnxLost / <empty>
 	// Lyric only :
@@ -61,17 +61,16 @@ class ConsigneInfos {
 		$this->adjustStep = floatVal($aConsigneInfos[3]);
 		$this->minHeat = intVal($aConsigneInfos[4]);
 		$this->maxHeat = intVal($aConsigneInfos[5]);
-		$this->delta = honeywell::applyRounding($aConsigneInfos[6]);
-		$this->timeBattLow = $aConsigneInfos[7];
-		$this->timeCnxLost = $aConsigneInfos[8];
+		$this->timeBattLow = $aConsigneInfos[6];
+		$this->timeCnxLost = $aConsigneInfos[7];
 		// Lyric parts
-		$this->endHeatSetpoint = count($aConsigneInfos) > 9 ? $aConsigneInfos[9] : null;
-		$this->heating = count($aConsigneInfos) > 10 ? $aConsigneInfos[10] == '1' : false;
+		$this->endHeatSetpoint = count($aConsigneInfos) > 8 ? $aConsigneInfos[8] : null;
+		$this->heating = (count($aConsigneInfos) > 9 && $aConsigneInfos[9] == '1') ? 1 : 0;
 	}
 	
 	public static function buildObjFromStr($str) {
 		$aConsigneInfos = explode(';', $str);
-		if ( count($aConsigneInfos) < 9 ) {
+		if ( count($aConsigneInfos) < 8 ) {
 			return null;
 		}
 		return new ConsigneInfos($aConsigneInfos);
@@ -81,21 +80,20 @@ class ConsigneInfos {
 		if ( $equ == null ) {
 			return null;
 		}
-		$cmdConsigneInfos = $equ->getCmd(null,honeywell::CMD_CONSIGNE_TYPE_ID);
-		if ( !is_object($cmdConsigneInfos) ) {
+		$cmd = $equ->getCmd(null,TH::CMD_CONSIGNE_TYPE_ID);
+		if ( !is_object($cmd) ) {
 			return null;
 		}
-		return self::buildObjFromStr($cmdConsigneInfos->execCmd());
+		return self::buildObjFromStr($cmd->execCmd());
 	}
 	
-	public static function buildStr($infosZone,$prev) {
+	public static function buildStr($infosZone) {
 		return $infosZone['status']
 		. ";" . $infosZone['until']
 		. ";" . $infosZone['units']
 		. ";" . honeywell::adjustByUnit($infosZone['setPointCapabilities']['resolution'],$infosZone['units'],true)
 		. ";" . honeywell::adjustByUnit($infosZone['setPointCapabilities']['minHeat'],$infosZone['units'])
 		. ";" . honeywell::adjustByUnit($infosZone['setPointCapabilities']['maxHeat'],$infosZone['units'])
-		. ";" . $prev
 		. ";" . (array_key_exists('battLow',$infosZone) ? $infosZone['battLow'] : '')
 		. ";" . (array_key_exists('cnxLost',$infosZone) ? $infosZone['cnxLost'] : '')
 		. ";" . (array_key_exists('endHeatSetpoint',$infosZone) ? $infosZone['endHeatSetpoint'] : '')
@@ -129,7 +127,6 @@ class State {
 		. ";" . ($infosZone['permanentMode'] ? self::MODE_PERMANENT_ON : self::MODE_PERMANENT_OFF)
 		. ";" . $infosZone['untilMode']
 		. ";" . (array_key_exists('inside',$infosZone) ? ($infosZone['inside'] ? self::PRESENCE_INSIDE : self::PRESENCE_OUTSIDE) : self::PRESENCE_UNDEFINED);
-		
 	}
 	
 	public static function buildObjFromStr($state) {
@@ -144,11 +141,11 @@ class State {
 		if ( $equ == null ) {
 			return null;
 		}
-		$cmdEtat = $equ->getCmd(null,honeywell::CMD_STATE);
-		if ( !is_object($cmdEtat) ) {
+		$cmd = $equ->getCmd(null,Console::CMD_STATE);
+		if ( !is_object($cmd) ) {
 			return null;
 		}
-		return self::buildObjFromStr($cmdEtat->execCmd());
+		return self::buildObjFromStr($cmd->execCmd());
 	}
 	
 }
@@ -192,4 +189,27 @@ class SetConsigneData {
 		return new SetConsigneData($aData[0],$aData[1],$aData[2],$aData[3],$aData[4]);
 	}
 	
+}
+
+class ReadStates {
+	const STATE_UNREAD = 'unread';
+	const STATE_CRON_ACTIVE = 'cronActive';
+	const STATE_IS_RUNNING = 'isRunning';
+	const STATE_LAST_READ = 'lastRead';
+	const STATE_IS_ACCURATE = 'isAccurate';
+	const STATE_CNX_LOST = 'cnxLost';
+
+	static function getStates($locId,$infosZones=null) {
+		$states = array();
+		$states[self::STATE_UNREAD] = (honeywell::CACHE_IAZ_DURATION - honeyutils::getCacheRemaining(honeywell::CACHE_IAZ,$locId)) > honeywell::getLoadingInterval()*60;
+		$states[self::STATE_CRON_ACTIVE] = honeywell::isCronActive();
+		$states[self::STATE_IS_RUNNING] = honeywell::isIAZrunning();
+		$states[self::STATE_LAST_READ] = !is_array($infosZones) || !array_key_exists(honeywell::IZ_TIMESTAMP,$infosZones) ? 0 : honeyutils::tsToLocalDateTime($infosZones[honeywell::IZ_TIMESTAMP]);
+		// apiV1 available == accurate values available
+		$states[self::STATE_IS_ACCURATE] = !is_array($infosZones) || !array_key_exists(honeywell::IZ_API_V1,$infosZones) ? false : $infosZones[honeywell::IZ_API_V1];
+		$states[self::STATE_CNX_LOST] = !is_array($infosZones) || !array_key_exists(honeywell::IZ_GATEWAY_CNX_LOST,$infosZones) ? '' : honeyutils::gmtToLocalDateHMS($infosZones[honeywell::IZ_GATEWAY_CNX_LOST]);
+		if ( honeyutils::isDebug() ) honeyutils::logDebug("getStates : " . json_encode($states));
+		return $states;
+	}
+
 }

@@ -384,24 +384,6 @@ class lyric extends honeywell {
 		return $ret;
 	}
 
-	static function ajaxSynchronizeTH($prefix,$resizeWhenSynchronize) {
-		$execUnitId = rand(0,10000);
-		if ( honeyutils::isDebug() ) honeyutils::logDebug("IN>> - Lyric::ajaxSynchronizeTH($prefix,$resizeWhenSynchronize,EUI=$execUnitId)");
-		// 0.4.1 - now, a single request is authorized in a delay of 1mn (cache auto-removed after 1 minute, and of course in this function ending)
-		$prevExecUnitId = honeyutils::getCacheData(self::CACHE_SYNCHRO_RUNNING);
-		if ( $prevExecUnitId != '' && $prevExecUnitId > 0 ) {
-			if ( honeyutils::isDebug() ) honeyutils::logDebug("OUT<< - Lyric::ajaxSynchronizeTH(EUI=$execUnitId) - request rejected due to potentially another one still running (EUI=$prevExecUnitId)");
-			return null;
-		}
-		honeyutils::setCacheData(self::CACHE_SYNCHRO_RUNNING, $execUnitId, 60);
-
-		$ret = lyric::syncTH($prefix,$resizeWhenSynchronize);
-		
-		if ( honeyutils::isDebug() ) honeyutils::logDebug("<<OUT - Lyric::ajaxSynchronizeTH(EUI=$execUnitId)");
-		honeyutils::doCacheRemove(self::CACHE_SYNCHRO_RUNNING);
-		return $ret;
-	}
-
 	static function syncTH($prefix,$resizeWhenSynchronize) {
 		self::deactivateIAZReentrance();
 		$locations = self::apiListLocations();
@@ -512,7 +494,7 @@ class lyric extends honeywell {
 				}
 			}
 			// 'postSave'
-			self::__iGetInformations($locId,true);
+			self::iGetInformations($locId,true);
 		}
 		return array(self::SUCCESS=>true, "added"=>$nbAdded, "modified"=>$nbModified);
 	}
@@ -526,7 +508,7 @@ class lyric extends honeywell {
 
 	/*********************** Méthodes re-routées **************************/
 
-	function __iGetModesArray() {
+	function iGetModesArray() {
 		return array(self::CODE_MODE_OFF=>new HeatMode(self::MODE_OFF,'Arrêt','i_off',false,null,HeatMode::SMD_NONE,true),
 					 self::CODE_MODE_HEAT=>new HeatMode('Heat','Planning','i_calendar',true,HeatMode::SCHEDULE_TYPE_TIME,HeatMode::SMD_NONE,true),
 					 self::CODE_VMODE_GEOFENCE=>new HeatMode(self::VMODE_GEOFENCE,'Détection','i_geofence',false,HeatMode::SCHEDULE_TYPE_GEOFENCE,HeatMode::SMD_NONE,true),
@@ -534,11 +516,11 @@ class lyric extends honeywell {
 					 );
 	}
 
-	static function __iGetInformations($locId, $forceRefresh=false, $readSchedule=true, $msgInfo='', $taskIsRunning=false) {
-		if ( honeyutils::isDebug() ) honeyutils::logDebug(">>> Lyric::__iGetInformations(locId=$locId,forceRefresh=$forceRefresh,readSchedule=$readSchedule,taskIsRunning=$taskIsRunning)");
+	static function iGetInformations($locId, $forceRefresh=false, $readSchedule=true, $msgInfo='', $taskIsRunning=false) {
+		if ( honeyutils::isDebug() ) honeyutils::logDebug(">>> Lyric::iGetInformations(locId=$locId,forceRefresh=$forceRefresh,readSchedule=$readSchedule,taskIsRunning=$taskIsRunning)");
 		try {
 			$execUnitId = rand(0,10000);
-			if ( honeyutils::isDebug() ) honeyutils::logDebug("IN>> - Lyric::__iGetInformations[$execUnitId,$locId]");
+			if ( honeyutils::isDebug() ) honeyutils::logDebug("IN>> - Lyric::iGetInformations[$execUnitId,$locId]");
 			$infosZones = honeyutils::getCacheData(self::CACHE_IAZ,$locId);
 			$useCachedData = true;
 			$infosZonesBefore = null;
@@ -568,7 +550,7 @@ class lyric extends honeywell {
 					// ************************************************************
 					self::deactivateIAZReentrance($locId);
 					if ( !is_array($infosZones) ) {
-						honeyutils::logError('Error while Lyric::__iGetInformations : response was empty of malformed', $infosZones);
+						honeyutils::logError('Error while Lyric::iGetInformations : response was empty of malformed', $infosZones);
 						if ( $infosZonesBefore != null ) {
 							if ( $taskIsRunning ) {
 								self::refreshAllForLoc($locId,$infosZonesBefore);
@@ -577,7 +559,7 @@ class lyric extends honeywell {
 							}
 						}
 					} else if ( !$infosZones[self::SUCCESS] ) {
-						honeyutils::logError('Error while Lyric::__iGetInformations', $infosZones);
+						honeyutils::logError('Error while Lyric::iGetInformations', $infosZones);
 						if ( $infosZonesBefore != null ) {
 							if ( $taskIsRunning ) {
 								self::refreshAllForLoc($locId,$infosZonesBefore);
@@ -594,58 +576,61 @@ class lyric extends honeywell {
 				}
 			}
 			if ( $useCachedData ) {
-				if ( honeyutils::isDebug() ) honeyutils::logDebug("got Lyric::__iGetInformations[$execUnitId] from cache (rest to live=" . honeyutils::getCacheRemaining(self::CACHE_IAZ,$locId) . ')');
+				if ( honeyutils::isDebug() ) honeyutils::logDebug("got Lyric::iGetInformations[$execUnitId] from cache (rest to live=" . honeyutils::getCacheRemaining(self::CACHE_IAZ,$locId) . ')');
 				if ( $infosZonesBefore != null ) $infosZones = $infosZonesBefore;
 			}
-			if ( honeyutils::isDebug() ) honeyutils::logDebug('<<OUT Lyric::__iGetInformations[' . $execUnitId . ']');
+			if ( honeyutils::isDebug() ) honeyutils::logDebug('<<OUT Lyric::iGetInformations[' . $execUnitId . ']');
 			return $infosZones;
 		} catch (Exception $e) {
-			honeyutils::logError("Exception while Lyric::__iGetInformations");
+			honeyutils::logError("Exception while Lyric::iGetInformations");
 			return null;
 		}
 
-		honeyutils::logDebug("<<< Lyric::__iGetInformations");
+		honeyutils::logDebug("<<< Lyric::iGetInformations");
 	}
 
-	function __iSetHtmlConsole(&$replace,$state,$currentMode) {
+	function iSetHtmlConsole(&$replace,$state,$currentMode) {
 		// Off;1 ; "Heat";1 / Geofence;?? ; DayOff;0;D
 		// with 1=True ; 0=False ; is the permanentMode flag
 		// if False, until part is added : Xxx;False;2018-01-29T20:34:00Z, with H for hours, D for days
-		# permanent
-		if ( $state->permanent == State::MODE_PERMANENT_ON && $currentMode != self::CODE_MODE_HEAT ) {
-			$replace['#etatUntilImg#'] = 'override-active.png';
-			$replace['#etatUntilDisplay#'] = 'none';
+		$replace['#etatModeImgDisplay#'] = 'none';
+		$replace['#etatUntilDisplay#'] = 'none';
+		honeyutils::logDebug("currentMode = $currentMode, state = " . json_encode($state));
+		# permanent$$
+		/*if ( $state->permanent == State::MODE_PERMANENT_ON && $currentMode != self::CODE_MODE_HEAT && $currentMode != self::CODE_VMODE_GEOFENCE ) {
+			$replace['#etatModeImg#'] = 'override-active.png';
+			$replace['#etatModeImgDisplay#'] = 'inline';
 		}
 		# delay
-		else if ( $state->permanent == State::MODE_PERMANENT_OFF ) {
-			$replace['#etatUntilImg#'] = 'temp-override-black.svg';
+		else*/ if ( $state->permanent == State::MODE_PERMANENT_OFF ) {
+			$replace['#etatModeImg#'] = 'temp-override.svg';
+			$replace['#etatModeImgDisplay#'] = 'inline';
 			// example : $aEtat[2] = "2018-01-28T23:00:00Z"
 			$replace['#etatUntil#'] = $currentMode == self::CODE_VMODE_DAYOFF ? honeyutils::gmtToLocalDate($state->until) : honeyutils::gmtToLocalHM($state->until);
-			$replace['#etatUntilFull#'] = $state->until;
+			$replace['#etatUntilFull#'] = honeyutils::gmtToLocalDateHMS($state->until);
 			$replace['#etatUntilDisplay#'] = 'inline';
 		}
 		else {
-			$replace['#etatUntilImg#'] = 'empty.svg';
-			$replace['#etatUntilDisplay#'] = 'none';
+			$replace['#etatModeImg#'] = 'empty.svg';
 		}
 	}
 
-	function __iGetThModes($currentMode,$scheduleType,$consigneInfos) {
+	function iGetThModes($currentMode,$scheduleType,$consigneInfos) {
 		return array(
 			"isOff" => $currentMode == self::CODE_MODE_OFF,
 			"isEco" => false,
 			"isAway" => false,
 			"isDayOff" => $currentMode == self::CODE_VMODE_DAYOFF,
 			"isCustom" => false,
-			
+
 		    "follow" => $consigneInfos == null ? false : $consigneInfos->status == self::NoHold,
 		    "temporary" => $consigneInfos == null ? false : ($consigneInfos->status == self::TemporaryHold || $consigneInfos->status == self::HoldUntil),
 		    "permanent" => $consigneInfos == null ? false : $consigneInfos->status == self::PermanentHold,
-			
+
 			"scheduling" => $currentMode == self::CODE_MODE_HEAT,
 
-			"setThModes" => array(self::SET_TH_MODE_PERMANENT => self::i18n("de façon permanente"),
-								  self::SET_TH_MODE_UNTIL_CURRENT_SCH => self::i18n("jusqu'à la fin de la programmation courante, soit {0}")
+			"setThModes" => array(TH::SET_TH_MODE_PERMANENT => self::i18n("de façon permanente"),
+								  TH::SET_TH_MODE_UNTIL_CURRENT_SCH => self::i18n("jusqu'à la fin de la programmation courante, soit {0}")
 								  //,self::SET_TH_MODE_UNTIL_END_OF_PERIOD => self::i18n("jusqu'à la fin de la période courante")
 								  ),
 
@@ -654,12 +639,36 @@ class lyric extends honeywell {
 			);
 	}
 
-	function __iSetMode($execUnitId,$locId,$codePair) {
+
+	/* ******************** AJAX calls ******************** */
+
+	static function ajaxSynchronizeTH($prefix,$resizeWhenSynchronize) {
+		$execUnitId = rand(0,10000);
+		if ( honeyutils::isDebug() ) honeyutils::logDebug("IN>> - Lyric::ajaxSynchronizeTH($prefix,$resizeWhenSynchronize,EUI=$execUnitId)");
+		// 0.4.1 - now, a single request is authorized in a delay of 1mn (cache auto-removed after 1 minute, and of course in this function ending)
+		$prevExecUnitId = honeyutils::getCacheData(self::CACHE_SYNCHRO_RUNNING);
+		if ( $prevExecUnitId != '' && $prevExecUnitId > 0 ) {
+			if ( honeyutils::isDebug() ) honeyutils::logDebug("OUT<< - Lyric::ajaxSynchronizeTH(EUI=$execUnitId) - request rejected due to potentially another one still running (EUI=$prevExecUnitId)");
+			return null;
+		}
+		honeyutils::setCacheData(self::CACHE_SYNCHRO_RUNNING, $execUnitId, 60);
+
+		$ret = lyric::syncTH($prefix,$resizeWhenSynchronize);
+		
+		if ( honeyutils::isDebug() ) honeyutils::logDebug("<<OUT - Lyric::ajaxSynchronizeTH(EUI=$execUnitId)");
+		honeyutils::doCacheRemove(self::CACHE_SYNCHRO_RUNNING);
+		return $ret;
+	}
+
+
+	/************************ Actions ****************************/
+
+	function iSetMode($execUnitId,$locId,$codePair) {
 		$codeParts = explode('§', $codePair);
 		$codeMode = $codeParts[0];
 		$fileId = $codeParts[1];
 		$deviceId = self::getFirstEqu($locId)->getLogicalId();
-		if ( honeyutils::isDebug() ) honeyutils::logDebug(">> Lyric->__iSetMode($locId,$deviceId,$codeMode)...");
+		if ( honeyutils::isDebug() ) honeyutils::logDebug(">> Lyric->iSetMode($locId,$deviceId,$codeMode)...");
 		// https://developer.honeywellhome.com/lyric/apis/post/devices/thermostats/%7BdeviceId%7D
 		// curl -X POST -H 'Authorization: Bearer XXXXX' -H 'Content-type: application/json' -d 'xxxxx' "https://api.honeywell.com/v2/devices/thermostats/{deviceId}?apikey={ApiKey}&locationId={locId}"
 		$authData = self::readAuthData();
@@ -674,16 +683,14 @@ class lyric extends honeywell {
 			$data = array("mode" => "Heat", "thermostatSetpointStatus"=>self::NoHold, "heatSetpoint"=>20, "coolSetpoint"=>20);
 			$ret = self::postRequest($uri, $header, $data);
 			if ( $ret[self::SUCCESS] ) {
-				// last parameter, $this, so the actionRestoreSchedule will call the method on the same instance, which is a poor Lyric object (not a COnsole equ, as waited normaly by the method)
-				$success = $this->actionRestoreSchedule($locId,array(self::ARG_FILE_ID=>$fileId),$this);
+				$success = Schedule::actionRestoreSchedule($this,$locId,array(self::ARG_FILE_ID=>$fileId),true);
 				$ret = array(self::SUCCESS=>$success);
 			}
 		} else if ( $codeMode == self::CODE_MODE_HEAT ) {
 			$data = array("mode" => "Heat", "thermostatSetpointStatus"=>self::NoHold, "heatSetpoint"=>20, "coolSetpoint"=>20);
 			$ret = self::postRequest($uri, $header, $data);
 			if ( $ret[self::SUCCESS] ) {
-				// last parameter, $this, so the actionRestoreSchedule will call the method on the same instance, which is a poor Lyric object (not a COnsole equ, as waited normaly by the method)
-				$success = $this->actionRestoreSchedule($locId,array(self::ARG_FILE_ID=>$fileId),$this);
+				$success = Schedule::actionRestoreSchedule($this,$locId,array(self::ARG_FILE_ID=>$fileId),true);
 				$ret = array(self::SUCCESS=>$success);
 			}
 		} else {
@@ -715,12 +722,12 @@ class lyric extends honeywell {
 		}
 		$ret["system"] = self::SYSTEM_LYRIC;
 		
-		honeyutils::logDebug("<< Lyric->__iSetMode");
+		honeyutils::logDebug("<< Lyric->iSetMode");
 		return $ret;
 	}
 
-	function __iRestoreSchedule($execUnitId,$locId,$scheduleToSend,$taskName) {
-		honeyutils::logDebug("Lyric->__iRestoreSchedule...");
+	function iRestoreSchedule($execUnitId,$locId,$scheduleToSend,$taskName) {
+		honeyutils::logDebug("Lyric->iRestoreSchedule...");
 		if ( count($scheduleToSend["zones"]) > 1 ) {
 			return array(self::SUCCESS=>false, "code"=>2, "message"=>"Error : only one zone settable for Lyric");
 		}
@@ -766,16 +773,7 @@ class lyric extends honeywell {
 		return $ret;
 	}
 
-	function __iTransformUntil($hm) {
-		if ( $hm == '99:99' ) $hm = '23:59';
-		$hm = explode(":",$hm);
-		$date = new DateTime();
-		$date->setTime((int)$hm[0],(int)$hm[1],0);
-		$ret = honeyutils::localDateTimeToGmtZ($date);
-		return $ret;
-	}
-
-	function __iGetFPT() {
+	function iGetFPT() {
 		return array(
 			"follow"=>self::NoHold,
 			"permanent"=>self::PermanentHold,
@@ -783,8 +781,8 @@ class lyric extends honeywell {
 		);
 	}
 
-	function __iSetConsigne($execUnitId,$locId,$zoneId,$parameters,$taskName) {
-		honeyutils::logDebug("Lyric->__iSetConsigne...");
+	function iSetConsigne($execUnitId,$locId,$zoneId,$parameters,$taskName) {
+		honeyutils::logDebug("Lyric->iSetConsigne...");
 		// https://developer.honeywellhome.com/lyric/apis/post/devices/thermostats/%7BdeviceId%7D
 		// curl -X POST -H 'Authorization: Bearer XXXXX' -H 'Content-type: application/json' -d 'xxxxx' "https://api.honeywell.com/v2/devices/thermostats/{deviceId}?apikey={ApiKey}&locationId={locId}"
 		$authData = self::readAuthData();
@@ -797,7 +795,7 @@ class lyric extends honeywell {
 		// $parameters['value'] = value to set ; beware of 0 as means : return to scheduled value
 		// $parameters['realValue'] = for display, or, if newValue=0 is not recognized, to replace this one
 		// $parameters['until'] = HH:MM:SS or null (NB not 'null') if PermanentOverride
-		// $parameters['status'] = NoHold, PermanentHold, TemporaryHold (__iGetFPT)
+		// $parameters['status'] = NoHold, PermanentHold, TemporaryHold (iGetFPT)
 		//$tss = 'NoHold';
 		//$parameters['value'] = 0;
 		$tss = $parameters['status'];

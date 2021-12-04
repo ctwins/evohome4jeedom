@@ -25,15 +25,15 @@ $locId = $eqLogic->getLocationId();
 if ($eqLogic->getEqType_name() != honeywell::PLUGIN_NAME) {
 	throw new Exception(inner::i18n("Cet équipement n'est pas du type attendu : {0}", $eqLogic->getEqType_name()));
 }
-$scheduleToShow = honeywell::getSchedule($locId,$fileId);
+$scheduleToShow = Schedule::getSchedule($locId,$fileId);
 if ( !is_array($scheduleToShow) ) {
 	echo "Erreur de lecture<br/><br/>";
 	return;
 }
-$currentSchedule = $fileId == honeywell::CURRENT_SCHEDULE_ID ? $scheduleToShow : honeywell::getSchedule($locId,honeywell::CURRENT_SCHEDULE_ID);
+$currentSchedule = $fileId == Schedule::CURRENT_SCHEDULE_ID ? $scheduleToShow : Schedule::getSchedule($locId);
 $zoneId = init(honeywell::ARG_ZONE_ID);
 $scheduleSource = init("scheduleSource");
-$subTitle = honeywell::getScheduleSubTitle($id,$locId,$fileId,'T',$currentSchedule,$scheduleToShow,honeywell::CFG_SCH_MODE_HORIZONTAL,$zoneId,$scheduleSource);
+$subTitle = Schedule::getScheduleSubTitle($id,$locId,$fileId,'T',$currentSchedule,$scheduleToShow,honeywell::CFG_SCH_MODE_HORIZONTAL,$zoneId,$scheduleSource);
 echo "<script>$('.ui-widget-overlay.ui-front').hide();";
 echo "$('#md_modal')[0].previousSibling.firstChild.innerHTML = \"$subTitle\";";
 // so the background is really white (and not transparent) when printing
@@ -65,7 +65,7 @@ foreach ( $scheduleToShow['zones'] as $mydata ) {
 	echo "<table border=0 width=100%>";
 	echo "<tr><td colspan=7 style='font-size:14px;font-weight:800;color:black;background-color:#C0C0C0;'>&nbsp;&nbsp;";
 	echo $equNamesById[$mydata['zoneId']];
-	if ( $fileId != honeywell::CURRENT_SCHEDULE_ID && json_encode($mydata) != json_encode(honeyutils::extractZone($currentSchedule,$mydata['zoneId'])) ) {
+	if ( $fileId != Schedule::CURRENT_SCHEDULE_ID && json_encode($mydata) != json_encode(honeyutils::extractZone($currentSchedule,$mydata['zoneId'])) ) {
 		echo "&nbsp;*";
 	}
 	/*if ( count($mydata['schedule']['DailySchedules']) == 0 ) {

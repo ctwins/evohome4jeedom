@@ -136,9 +136,9 @@ $eqLogics = eqLogic::byType($plugin->getId());
 										<select class="zoneIdList form-control"></select>
 									</div>
 								</div>
-								<center>
-									<img src="core/img/no_image.gif" data-original=".png" class="img_device img-responsive" style="margin-top:20px;max-height:200px;">
-								</center>
+								<div style="text-align:center;">
+									<img src="core/img/no_image.gif" data-original=".png" class="img_device img-responsive" style="display:unset;margin-top:20px;max-height:200px;">
+								</div>
 							</fieldset>
 						</form>
 					</div>

@@ -21,20 +21,21 @@ $eqLogic = honeywell::byId($id);
 if (!is_object($eqLogic)) {
 	throw new Exception(inner::i18n("L'équipement Honeywell est introuvable sur l'ID {0}", $id));
 }
-$locId = $eqLogic->getLocationId();
-if ($eqLogic->getEqType_name() != honeywell::PLUGIN_NAME) {
+$pluginName = honeywell::PLUGIN_NAME;
+if ($eqLogic->getEqType_name() != $pluginName) {
 	throw new Exception(inner::i18n("Cet équipement n'est pas du type attendu : {0}", $eqLogic->getEqType_name()));
 }
-$scheduleToShow = honeywell::getSchedule($locId,$fileId);
+$locId = $eqLogic->getLocationId();
+$scheduleToShow = Schedule::getSchedule($locId,$fileId);
 if ( !is_array($scheduleToShow) ) {
 	echo "Erreur de lecture<br/><br/>";
 	return;
 }
-$currentSchedule = $fileId == honeywell::CURRENT_SCHEDULE_ID ? $scheduleToShow : honeywell::getSchedule($locId,honeywell::CURRENT_SCHEDULE_ID);
+$currentSchedule = $fileId == Schedule::CURRENT_SCHEDULE_ID ? $scheduleToShow : Schedule::getSchedule($locId);
 $zoneId = init(honeywell::ARG_ZONE_ID);
 $scheduleType = init("scheduleType");
 $scheduleSource = init("scheduleSource");
-$subTitle = honeywell::getScheduleSubTitle($id,$locId,$fileId,$scheduleType,$currentSchedule,$scheduleToShow,honeywell::CFG_SCH_MODE_HORIZONTAL,$zoneId,$scheduleSource);
+$subTitle = Schedule::getScheduleSubTitle($id,$locId,$fileId,$scheduleType,$currentSchedule,$scheduleToShow,honeywell::CFG_SCH_MODE_HORIZONTAL,$zoneId,$scheduleSource);
 echo "<script>$('.ui-widget-overlay.ui-front').hide();";
 echo "$('#md_modal')[0].previousSibling.firstChild.innerHTML = \"$subTitle\";";
 // so the background is really white (and not transparent) when printing
@@ -76,7 +77,7 @@ if ( $scheduleType == 'G' ) {
 	echo "<tr><td class=_t0 colspan=2>" . inner::i18n('Programmation GeoFence') . "</td></tr>";
 
 	echo "<tr><td class=_t1>" . inner::i18n('QUAND JE SUIS A LA MAISON') . "</td>";
-	echo "<td class=_t1b><img src='plugins/".honeywell::PLUGIN_NAME."/img/inside.png'/></td></tr>";
+	echo "<td class=_t1b><img src='plugins/$pluginName/img/inside.png'/></td></tr>";
 
 	// Home
 	echo "<tr style='height:32px;'>";
@@ -101,7 +102,7 @@ if ( $scheduleType == 'G' ) {
 
 	// Away
 	echo "<tr><td class=_t1>" . inner::i18n('QUAND JE SUIS ABSENT') . "</td>";
-	echo "<td class=_t1b><img src='plugins/".honeywell::PLUGIN_NAME."/img/outside.png'/></td></tr>";
+	echo "<td class=_t1b><img src='plugins/$pluginName/img/outside.png'/></td></tr>";
 	echo "<tr>";
 	echo "<td class=_t2>" . inner::i18n('Utiliser les réglages du mode Absent') . "</td>";
 	echo "<td class=_t3>" . honeywell::adjustByUnit($data["awayPeriod"]["heatSetPoint"],honeywell::CFG_UNIT_FAHRENHEIT) . "°</td>";
@@ -128,6 +129,8 @@ if ( $scheduleType == 'G' ) {
 	echo "<td class=_t2c>" . inner::i18n('Consigne fixée') . "</td>";
 	echo "<td class=_t3b>" . honeywell::adjustByUnit($data["heatSetpoint"],honeywell::CFG_UNIT_FAHRENHEIT) . "°</td>";
 	echo "</tr>";
+
+	echo "</table>";
 
 } else {
 	echo json_encode($scheduleToShow);
