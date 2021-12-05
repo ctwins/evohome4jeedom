@@ -1,6 +1,6 @@
 # Changelog - Evohome (& Round & Lyric) for Jeedom V3.3/V4.0/V4.1
 
-## [version 0.5.3] - 2021-12-04 - Mobile relooking & Detailed informations
+## [version 0.5.3(.1)] - 2021-12-04/05 - Mobile relooking & Detailed informations
 
 #### Added
 

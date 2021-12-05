@@ -583,12 +583,12 @@ class TH {
 		// -----
 
 		if ( $data['mode'] == SetConsigneData::AUTO ) {	// triggered by scenario
-			if ( ReadStates::getStates($locId)[honeywell::STATE_UNREAD] ) {
+			if ( ReadStates::getStates($locId)[ReadStates::STATE_UNREAD] ) {
 				honeyutils::logError($prefixByScenario . honeywell::i18n("Set Consigne est indisponible : API off"));
 				honeyutils::logDebug("<<OUT - actionSetConsigne");
 				return;
 			}
-			if ( $equ->isConsigneUnsettable($locId) ) {
+			if ( self::isConsigneUnsettable($equ,$locId) ) {
 				honeyutils::logError($prefixByScenario . honeywell::i18n("Set Consigne est indisponible : mode de présence incompatible"));
 				honeyutils::logDebug("<<OUT - actionSetConsigne");
 				return;
