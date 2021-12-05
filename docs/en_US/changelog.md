@@ -1,4 +1,42 @@
-# Changelog - Evohome for Jeedom V3.3/V4.0/V4.1
+# Changelog - Evohome (& Round & Lyric) for Jeedom V3.3/V4.0/V4.1
+
+## [version 0.5.3(.1)] - 2021-12-04/05 - Mobile relooking & Detailed informations
+
+#### Added
+
+1. Some 'command informations' appear in Console and TH equipments (to get them, just Synchronize on general configuration or (re)Save equipment(s)<br/>
+     - Console (from "Etat")
+       - Current Mode and Previous Mode [thanks to Noobs94]
+       - Permanent mode (0=no, next field waited ; 1=yes), Mode until (NA if previous = 0)
+       - Current schedule name
+       - Lyric specific : Occupancy counter (0..n)<br/>
+     - TH (from "Type consigne")
+       - Status (string)
+       - (status active) Until (NA if not applicable)
+       - Previous temperature
+       - Delta from previous temperature (use this one to trigger Scenario)
+       - DateTime Battery low, DateTime Connection lost [thanks to Melchior]
+
+#### Changes
+
+1. Widgets for Mobile displaying were rewrited
+     - Console
+       - only mode change is kept (statistic mode & schedule info/actions removed), accordingly to general configuration (inside widget or by popup. NB : "inside" is not available for Lyric)
+     - TH
+       - height resizing
+       - no more schedule or setting buttons
+2. General configuration ; Console part
+      - remove 'reading before saving' (became useles since schedule editor exists)
+
+#### Fixes
+
+1. Console : "override" icon was displayed if mode was not "Follow Schedule"
+
+#### Under the hood (technical parts)
+
+1. Split code from honeywell.class.php to 3 files/classes under 'modules' folder + functions renaming and/or redispatched
+2. Remove obsolete HTML elements ; close all 'a' tags
+
 
 ## [version 0.5.2] - 2021-01-31 - Jeedom 4.1 compatibility
 
