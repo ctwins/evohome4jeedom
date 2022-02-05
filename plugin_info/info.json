@@ -1,23 +1,33 @@
 {
-	"id" : "evohome",
-	"name" : "Evohome",
-	"description" : {
-		"fr_FR": "Plugin Honeywell Evohome - compatible avec les Round T87RF et Lyric T6/T6R",
-		"en_US": "Honeywell Evohome Plugin - compatibility with Round T87RF and Lyric T6/T6R"
+	"id": "evohome",
+	"name": "Evohome",
+	"description": {
+		"fr_FR": "Plugin Honeywell Evohome. Egalement compatible avec les Round T87RF et Lyric T6/T6R. Compatible de Jeedom 3.3.x à 4.2.x",
+		"en_US": "Honeywell Evohome Plugin. Works also with Round T87RF and Lyric T6/T6R. Running from Jeedom 3.3.x to 4.2.x"
 	},
-	"usage" : "Suivre la documentation pour l'installation. A votre disposition dans le forum/blog",
-	"licence" : "AGPL",
-	"author" : "ctwins95",
-	"version" : "0.5.3",
-	"require" : "3.3",
-	"category" : "energy",
-	"hasDependency" : true,
-	"hasOwnDeamon" : false,
+	"usage": "Suivre la documentation pour l'installation. A votre disposition dans le forum/blog",
+	"licence": "AGPL",
+	"author": "ctwins95",
+	"version": "0.5.4",
+	"require": "3.3",
+	"category": "energy",
+	"hasDependency": true,
+	"hasOwnDeamon": false,
 	"documentation": "https://ctwins.github.io/evohome4jeedom/#language#",
 	"changelog": "https://ctwins.github.io/evohome4jeedom/#language#/changelog",
 	"link": {
 		"forum": "https://community.jeedom.com/t/plugin-evohome/12666"
 	},
-	"language" : ["fr_FR","en_US"],
-	"compatibility" : ["miniplus","smart","rpi","diy","docker","v4"]
+	"language": [
+		"fr_FR",
+		"en_US"
+	],
+	"compatibility": [
+		"miniplus",
+		"smart",
+		"rpi",
+		"diy",
+		"docker",
+		"v4"
+	]
 }

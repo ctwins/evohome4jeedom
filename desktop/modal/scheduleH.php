@@ -162,7 +162,7 @@ echo "<div id='scheduleTable'></div>";
 	</tr>
 </table>
 <?php }
-echo "<script type='text/javascript' src='plugins/$pluginName/desktop/js/scheduleH-min.js?" . filemtime("plugins/$pluginName/desktop/js/scheduleH-min.js") . "'></script>";
+include_file('desktop', 'scheduleH-min', 'js', honeywell::PLUGIN_NAME);
 ?>
 <script>
 $('.ui-widget-overlay.ui-front').hide();	// 0.4.3

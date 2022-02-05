@@ -1,6 +1,13 @@
-# Changelog - Evohome (& Round & Lyric) for Jeedom V3.3/V4.0/V4.1
+# Changelog - Evohome (& Round & Lyric) for Jeedom V3.3 to V4.2
 
-## [version 0.5.3(.1)] - 2021-12-04/05 - Mobile relooking & Detailed informations
+## [version 0.5.4] - 2022-02-05 - Jeedom 4.2.x compatibility
+
+#### Fixes
+
+1. Horizontal Schedule & editing : did not work with Jeedom 4.2.x.
+
+
+## [version 0.5.3(.1)] - 2021-12-04(05) - Mobile relooking & Detailed informations
 
 #### Added
 
