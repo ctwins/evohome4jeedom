@@ -21,6 +21,9 @@ Depuis 0.4.0 : gère la multi-localisations et le Round-Thermostat T87RF (2025=N
 
 Depuis 0.5.0 : gère désormais les thermostats **Lyric T6/T6R**<br/><br/>
 
+Depuis 0.5.4/5 : Compatibilité **Jeedom 4.2.x**<br/><br/>
+
+
 
 # Page configuration
 ## Initialisation
@@ -30,14 +33,15 @@ Saisir login et mot de passe, tels que vous les avez définis sur le site offici
 ### Lyric T6/T6R
 Un peu plus compliqué, vu que l'authentificaiton s'effectue sous protocole OAuth2 :
 - Créer un compte sur le [site développeurs d'Honeywell](https://developer.honeywellhome.com) ("SIGN UP")
-- Cliquer sur 'Create New App', mettre le nom 'Jeedom' (par exemple), et 'Callback URL' avec l'URL de Jeedom, terminée par "/plugins/evohome/core/class/lyric.callback.php".<br/>
+- Cliquer sur 'Create New App', mettre le nom 'Jeedom' (par exemple), et 'Callback URL' avec l'URL de Jeedom, terminée par "/plugins/evohome/core/php/lyric.callback.php".<br/>
 Ce qui donne quelque chose du genre :<br/>
-http://[ip-de-votre-jeedom]/plugins/evohome/core/class/lyric.callback.php<br/>
-Peu d'intérêt à utiliser votre URL publique, puisque vous ne ferez cette opération qu'une fois *(et supposément depuis votre réseau local)*.
+http://<ip-de-votre-jeedom>[:port_specifique]/plugins/evohome/php/class/lyric.callback.php<br/>
+Peu d'intérêt à utiliser votre URL publique, puisque vous ne ferez cette opération qu'une fois *(et supposément depuis votre réseau local)*.<br/>
+NB : depuis 0.5.5, "php" remplace "class" dans cette URL.
 - Cliquer sur le nom de l'application pour accéder aux clefs 'consumer key' et 'consumer secret'
 - Recopier alors ces informations dans la page de configuration *(après avoir sélectionné le Système Lyric, évidemment)*
 - Cliquer sur Initialisation.<br/>
-Cela ouvre une page d'authentification sur le site d'Honeywell, qui vous invite à saisir login et mot de passe de votre compte Lyric (qui n'est donc pas celui créé ci-dessus), puis finaliser la procédure en suivant les instructions
+Cela ouvre une page d'authentification sur le site d'Honeywell, qui vous invite à saisir login et mot de passe de votre compte Lyric (qui est celui que vous utilisez pour l'application mobile 'Honeywell Home', et n'est donc pas celui créé ci-dessus), puis finaliser la procédure en suivant les instructions
 - Après cela, la page doit se fermer et un token est initialisé dans le plugin (puis automatiquement rafraîchi toutes les 20mn *(via une tâche cron créée dans le moteur de tâches : class=evohome, function=main_refresh)*<br/>
 
 ### Cliquer ensuite sur le bouton Synchroniser

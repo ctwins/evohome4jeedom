@@ -10,6 +10,7 @@
         "Affiche la programmation courante": "Display the current schedule",
         "Affiche la programmation indiquée dans la liste": "Display the schedule selected in the list above",
         "Annulation (retour à la valeur programmée)": "Cancel (go back to the scheduled value)",
+		"Après 2mn, le programme dans le système ne correspond pas au programme envoyé.": "The program in the system still does not match the program sent after 2mn of retries",
         "Arrêt": "Heating off",
         "Aucun changement envoyé (tous les programmes identiques)": "No change was sent (all schedule are identical)",
         "Bascule vers le mode '{0}'": "Load the mode '{0}'",
@@ -158,6 +159,7 @@
         "Horizontal": "Horizontal",
         "Inactif": "Deactivated",
         "Init token": "Init token",
+		"Initialisation" : "Initialization",
         "Intervalle de mesure": "Reading interval",
         "Intégré au widget": "Inside the widget",
         "Intégré à la console": "Inside the console",
@@ -175,7 +177,7 @@
         "Selon couleurs officielles (dégradés)": "from official colors (with gradients)",
         "Synchronisation effectuée : {0} equ. ajouté(s), {1} equ. modifié(s)": "Synchronization done : {0} equ. added, {1} equ. modified",
         "Synchronisation horloge (HH:MM, avec MM=intervalle*n)": "Clock synchronization (HH:MM, with MM=interval*n)",
-        "Synchroniser": "Synchroniser",
+        "Synchroniser": "Synchronize",
         "Système (selon catégorie)": "System (from category)",
         "Système + 2 seuils :": "System + 2 thresholds :",
         "Système": "System",
@@ -267,6 +269,7 @@
 		"pour": "pour"
     },
     "plugins\/evohome\/core\/class\/lyric.php": {
+ 		"Appel non autorisé ou délai ({0}sec) dépassé": "Unauthorized call or timeout ({0}sec) exceeded",
         "Arrêt": "Off",
         "Chauffe": "Heating",
         "Congés": "Days-Off",
@@ -275,12 +278,12 @@
         "Erreur en lecture des localisations": "Error while reading locations",
         "Erreur en récupération du code ou du token : code='{0}', message='{1}'": "Error while negociating token : code='{0}', message='{1}'",
         "Planning": "Schedule",
-        "de façon permanente": "permanent way",
-        "jusqu'à la fin de la programmation courante, soit {0}__": "until the end of the current schedule, so {0}",
         "Programmes congés": "Days-Off Schedule",
-        "Programmes présence": "Home Schedule",
         "Programmes geofence": "Geofence Schedules",
+        "Programmes présence": "Home Schedule",
+        "Programmes hebdo.": "Week Schedules",
+        "de façon permanente": "permanent way",
         "indisponible": "unavailable",
-        "Programmes hebdo.": "Week Schedules"
+        "jusqu'à la fin de la programmation courante, soit {0}__": "until the end of the current schedule, so {0}"
     }
 }

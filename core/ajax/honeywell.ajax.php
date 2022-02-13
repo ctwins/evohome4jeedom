@@ -78,6 +78,7 @@ try {
 		honeyutils::setParam(lyric::CFG_CALLBACK_URL,init('callbackUrl'));
 		honeyutils::setParam(lyric::CFG_CONS_KEY,init('consumerKey'));
 		honeyutils::setParam(lyric::CFG_SECRET_KEY,init('secretKey'));
+		honeyutils::setCacheData(lyric::CALLBACK_STATE, init('state'), lyric::CALLBACK_LIMIT_TIME);
 		honeyutils::logDebug("<<OUT ajaxInitCallback");
 		ajax::success();
 	}

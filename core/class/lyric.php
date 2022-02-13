@@ -12,6 +12,8 @@ class lyric extends honeywell {
 	const CFG_CONS_KEY = "lyricConsKey";
 	const CFG_SECRET_KEY = "lyricSecretKey";
 	const CFG_CALLBACK_URL = "lyricCallbackURL";
+	const CALLBACK_LIMIT_TIME = 120;
+	const CALLBACK_STATE = "lyricCallbackState";
 	const HNW_DT_Thermostat = "Thermostat";
 	const AUTH_DATA = "authData";
 
@@ -129,9 +131,15 @@ class lyric extends honeywell {
 
 	static function callBack() {
 		// Step 2
-		$code = $_GET["code"];		// code (new), scope (empty), state (as sent)
+		honeyutils::logDebug(">>> Lyric : callBack");
+		if ( $_GET["state"] != honeyutils::getCacheData(lyric::CALLBACK_STATE) ) {
+			honeyutils::logDebug("Error : state value is incorrect : '" . $_GET["state"] . "'");
+			return array(self::SUCCESS=>false, "code"=>403, "message"=>self::i18n("Appel non autorisé ou délai ({0}sec) dépassé", lyric::CALLBACK_LIMIT_TIME));
+		}
 
 		// Step 3
+		$code = $_GET["code"];		// code (new), scope (empty), state (as sent)
+
 		// POST request : https://weichie.com/blog/curl-api-calls-with-php/
 		$uri = "oauth2/token";
 		$header = array(
@@ -146,6 +154,7 @@ class lyric extends honeywell {
 		if ( $ret[self::SUCCESS] ) {
 			self::saveAuthData($ret["data"]);
 		}
+		honeyutils::logDebug("<<< Lyric : callBack");
 		return $ret;
 	}
 

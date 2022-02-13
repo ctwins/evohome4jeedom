@@ -1,4 +1,16 @@
-# Changelog - Evohome (& Round & Lyric) for Jeedom V3.3 to V4.2
+# Changelog - Evohome (& Round T87RF & Lyric T6/T6R) for Jeedom V3.3 to V4.2
+
+## [version 0.5.5] - 2022-02-13 - Jeedom 4.2.x compatibility (Lyric part)
+
+#### Fixes
+
+1. Specific Lyric : procedure of Initialization with Honeywell failed with the new Jeedom 4.2 security approach.<br/>
+/!\ You have to change the callback URL as described in the README.md or French documentation.
+
+#### Under the hood (technical parts)
+
+1. Check part is now limited to 2mn, after restoring a week Schedule. Under certain condition (a segment set at 00:00), the schedule received after the refresh is not eaxctly the same as this send by the plugin (observed with a Lyric system, but only sometimes). 
+
 
 ## [version 0.5.4] - 2022-02-05 - Jeedom 4.2.x compatibility
 

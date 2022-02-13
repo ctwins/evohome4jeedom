@@ -374,36 +374,39 @@ class Schedule {
 			Console::refreshConsole($locId,honeywell::i18n("Erreur pendant l'envoi de la programmation : {0} : {1}", [$aRet["code"], $aRet["message"]]));
 			$retValue = false;
 		} else {
-			/*$fp = fopen($fileInfos['fullPath'], 'r');
-			$fileContent = fread($fp,filesize($fileInfos['fullPath']));
-			$schedule = honeyutils::jsonDecode($fileContent, 'restoreSchedule2');
-			fclose($fp);*/
-			// will read immediately the data, which are not necessary uptodate just now :(
-			/*$rdarTask = new RefreshDataAfterRestore($fileId, "1".honeyutils::i18n("L'envoi de la programmation s'est correctement effectué"), $schedule);
-			$rdarTask->start();*/
 			$delay = $aRet["system"] == honeywell::SYSTEM_EVOHOME ? 30 : 5;
 			$nb = 1;
-			while ( true ) {
-				sleep(2);
+			$startTime = time();
+			$error = false;
+			sleep(2);
+			while ( !$error ) {
 				set_time_limit(60);	// reset the time_limit (?)
 				$msgInfo = "1".honeywell::i18n("Rafraichissement des données, essai {0}...", $nb);
-				//self::updateScheduleFileId($schedule, $msgInfo, true);
-				/*$allInfos =*/ $obj->iGetInformations($locId,true,true,$msgInfo,true);
-				while ( true ) {	// waiting for refresh event triggers the toHtmlConsole..
-					$sd = honeyutils::getCacheData(honeywell::CACHE_SCHEDULE_DELTA);
+				honeyutils::doCacheRemove(honeywell::CACHE_SCHEDULE_DELTA,$locId);
+				$obj->iGetInformations($locId,true,true,$msgInfo,true);
+				// waiting for refresh event triggers the toHtmlConsole..				
+				while ( true ) {
+					$sd = honeyutils::getCacheData(honeywell::CACHE_SCHEDULE_DELTA,$locId);
 					if ( $sd !== '' ) break;
 					usleep(250000);
 				}
-				if ( $sd == "1" ) {
-					$nb += 1;
-					Console::refreshConsole($locId,"1".honeywell::i18n("Rafraichissement des données : attente {0} sec avant essai {1}", [$delay, $nb]), true);
-					sleep($delay-2);
+				if ( $sd == honeywell::SCHEDULE_DELTA_ON ) {
+					if ( time() - $startTime > 120 ) {
+						Console::refreshConsole($locId,honeywell::i18n("Après 2mn, le programme dans le système ne correspond pas au programme envoyé."));
+						$error = true;
+					} else {
+						$nb += 1;
+						Console::refreshConsole($locId,"1".honeywell::i18n("Rafraichissement des données : attente {0} sec avant essai {1}", [$delay, $nb]), true);
+						sleep($delay);
+					}
 				} else {
 					break;
 				}
 			}
-			honeyutils::saveInfo($equ,Console::CMD_CURRENT_SCHEDULE, $fileInfos['name']);
-			Console::refreshConsole($locId,"1".honeywell::i18n("L'envoi de la programmation s'est correctement effectué"));
+			if ( !$error ) {
+				honeyutils::saveInfo($equ,Console::CMD_CURRENT_SCHEDULE, $fileInfos['name']);
+				Console::refreshConsole($locId,"1".honeywell::i18n("L'envoi de la programmation s'est correctement effectué"));
+			}
 		}
 		honeyutils::unlockCron();
 		return $retValue;

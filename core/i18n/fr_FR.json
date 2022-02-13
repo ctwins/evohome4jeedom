@@ -10,6 +10,7 @@
         "Affiche la programmation courante": "Affiche la programmation courante",
         "Affiche la programmation indiquée dans la liste": "Affiche la programmation indiquée dans la liste",
         "Annulation (retour à la valeur programmée)": "Annulation (retour à la valeur programmée)",
+		"Après 2mn, le programme dans le système ne correspond pas au programme envoyé.": "Après 2 minutes, le programme dans le système ne correspond pas au programme envoyé.",
         "Arrêt": "Arrêt",
         "Aucun changement envoyé (tous les programmes identiques)": "Aucun changement envoyé (tous les programmes identiques)",
         "Bascule vers le mode '{0}'": "Bascule vers le mode '{0}'",
@@ -267,20 +268,21 @@
 		"pour": "pour"
     },
     "plugins\/evohome\/core\/class\/lyric.php": {
+		"Appel non autorisé ou délai ({0}sec) dépassé": "Appel non autorisé ou délai ({0}sec) dépassé",
         "Arrêt": "Arrêt",
         "Chauffe": "Chauffe",
         "Congés": "Congés",
         "Console": "Console",
         "Détection": "Détection",
         "Erreur en lecture des localisations": "Erreur en lecture des localisations",
-        "Erreur en récupération du code ou du token : code='{0}', message='{1}'": "Erreur en récupération du code ou du token : code='{0}', message='{1}'",
+        "Erreur en récupération du token : code='{0}', message='{1}'": "Erreur en récupération du token : code='{0}', message='{1}'",
         "Planning": "Planning",
-        "de façon permanente": "de façon permanente",
-        "jusqu'à la fin de la programmation courante, soit {0}__": "jusqu'à la fin de la programmation courante, soit {0}",
         "Programmes congés": "Programmes congés",
-        "Programmes présence": "Programmes présence",
         "Programmes geofence": "Programmes geofence",
+        "Programmes hebdo.": "Programmes hebdo.",
+        "Programmes présence": "Programmes présence",
+        "de façon permanente": "de façon permanente",
         "indisponible": "indisponible",
-        "Programmes hebdo.": "Programmes hebdo."
+        "jusqu'à la fin de la programmation courante, soit {0}__": "jusqu'à la fin de la programmation courante, soit {0}"
     }
 }

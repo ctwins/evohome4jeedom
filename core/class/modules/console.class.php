@@ -241,7 +241,7 @@ class Console {
 		$saveColor = 'white';
 		$canRestoreCurrent = 0;
 		$saveTitle = honeywell::i18n("Sauvegarde la programmation courante");
-		$scheduleDelta = "0";
+		$scheduleDelta = honeywell::SCHEDULE_DELTA_OFF;
 		if ( !$empty && $scheduleFileId != null ) {
 			$scheduleSaved = Schedule::getSchedule($locId,$scheduleFileId);
 			if ( $scheduleSaved != null && $scheduleCurrent != null ) {
@@ -250,12 +250,12 @@ class Console {
 				if ( $_scheduleSaved != $_scheduleCurrent ) {
 					$saveColor = 'orange';
 					$canRestoreCurrent = 1;
-					$scheduleDelta = "1";
+					$scheduleDelta = honeywell::SCHEDULE_DELTA_ON;
 					$saveTitle .= ' (' . honeywell::i18n("différente de la dernière programmation restaurée ou éditée") . ')';
 				}
 			}
 		}
-		honeyutils::setCacheData(honeywell::CACHE_SCHEDULE_DELTA, $scheduleDelta, 2);
+		honeyutils::setCacheData(honeywell::CACHE_SCHEDULE_DELTA, $scheduleDelta, null, $locId);
 		$replace_console['#title.save#'] = $saveTitle;
 		$replace_console['#canRestoreCurrent#'] = $canRestoreCurrent;
 		$replace_console['#isAdmin#'] = honeyutils::isAdmin();
