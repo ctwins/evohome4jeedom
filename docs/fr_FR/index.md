@@ -35,9 +35,9 @@ Un peu plus compliqué, vu que l'authentificaiton s'effectue sous protocole OAut
 - Créer un compte sur le [site développeurs d'Honeywell](https://developer.honeywellhome.com) ("SIGN UP")
 - Cliquer sur 'Create New App', mettre le nom 'Jeedom' (par exemple), et 'Callback URL' avec l'URL de Jeedom, terminée par "/plugins/evohome/core/php/lyric.callback.php".<br/>
 Ce qui donne quelque chose du genre :<br/>
-http://<ip-de-votre-jeedom>[:port_specifique]/plugins/evohome/php/class/lyric.callback.php<br/>
+http://<ip-de-votre-jeedom>[:port_specifique]/plugins/evohome/core/php/lyric.callback.php<br/>
 Peu d'intérêt à utiliser votre URL publique, puisque vous ne ferez cette opération qu'une fois *(et supposément depuis votre réseau local)*.<br/>
-NB : depuis 0.5.5, "php" remplace "class" dans cette URL.
+NB : depuis 0.5.5, "core/php" remplace "core/class" dans cette URL.
 - Cliquer sur le nom de l'application pour accéder aux clefs 'consumer key' et 'consumer secret'
 - Recopier alors ces informations dans la page de configuration *(après avoir sélectionné le Système Lyric, évidemment)*
 - Cliquer sur Initialisation.<br/>
