@@ -29,7 +29,11 @@ class TH {
 	// ---- Lyric only
 	//const CMD_CT_END_HEAT_SP = 'thEndHeatSetPoint';
 	const CMD_CT_HEATING = 'thHeating';
-
+	// Additional scheduling infos :
+	const CMD_SCH_MIN_PER_DAY = 'schMinPerDay';
+	const CMD_SCH_MAX_PER_DAY = 'schMaxPerDay';
+	const CMD_SCH_RESOLUTION = 'schResolution';
+	
 	// Common
 	const SET_TH_MODE_PERMANENT = 'STM_1';
 	const SET_TH_MODE_UNTIL_CURRENT_SCH = 'STM_2';
@@ -61,8 +65,12 @@ class TH {
 			$equ->createOrUpdateCmd($i, self::CMD_CT_CNXLOST,  'Date/Heure Cnx.perdue', 'info', 'string', 0, 0);
 		} else {
 			//$equ->createOrUpdateCmd($i++, self::CMD_CT_END_HEAT_SP, 'endHeatSpValue', 'info', 'numeric', 0, 1);
-			$equ->createOrUpdateCmd($i, self::CMD_CT_HEATING, 'Chauffe en cours', 'info', 'numeric', 0, 1);
+			$equ->createOrUpdateCmd($i++, self::CMD_CT_HEATING, 'Chauffe en cours', 'info', 'numeric', 0, 1);
 		}
+		// Additional scheduling infos :
+		$equ->createOrUpdateCmd($i++, self::CMD_SCH_MIN_PER_DAY, 'Périodes min / jour', 'info', 'numeric', 0, 0);
+		$equ->createOrUpdateCmd($i++, self::CMD_SCH_MAX_PER_DAY, 'Périodes max / jour', 'info', 'numeric', 0, 0);
+		$equ->createOrUpdateCmd($i, self::CMD_SCH_RESOLUTION, 'Intervalle temps', 'info', 'string', 0, 0);
 	}
 	
 	static function fillSetConsigneData($cmd,$zoneId,$minHeat,$maxHeat,$doSave=false) {
@@ -125,6 +133,10 @@ class TH {
 			//honeyutils::saveInfo($equ, self::CMD_CT_END_HEAT_SP, $oCI->endHeatSetpoint);	// if TemporaryHold or HoldUntil, the endHeatSetpoint value
 			honeyutils::saveInfo($equ, self::CMD_CT_HEATING, $oCI->heating);
 		}
+		// Additional scheduling infos :
+		honeyutils::saveInfo($equ, self::CMD_SCH_MIN_PER_DAY, $oCI->minPerDay);
+		honeyutils::saveInfo($equ, self::CMD_SCH_MAX_PER_DAY, $oCI->maxPerDay);
+		honeyutils::saveInfo($equ, self::CMD_SCH_RESOLUTION, $oCI->timeInterval);
 
 		if ( honeyutils::isDebug() ) {
 			honeyutils::logDebug("zone$zoneId=" . $infosZone['name'] . " : temp = " . $infosZone['temperature'] . ", consigne = " . $infosZone['setPoint'] . ", consigneInfos = $consigneInfos");
@@ -486,11 +498,17 @@ class TH {
 		foreach ( honeywell::getEquipmentsForLoc($locId) as $equ) {
 			if ( $equ->getLogicalId() != $locId ) {
 				$consigneInfos = ConsigneInfos::buildObj($equ);
-				$adjData[$equ->getLogicalId()] = array("min"=>$consigneInfos->minHeat,"max"=>$consigneInfos->maxHeat,"step"=>$consigneInfos->adjustStep);
+				$adjData[$equ->getLogicalId()] = array(
+					'minHeat'=>$consigneInfos->minHeat,
+					'maxHeat'=>$consigneInfos->maxHeat,
+					'step'=>$consigneInfos->adjustStep,
+					'minPerDay'=>$consigneInfos->minPerDay,
+					'maxPerDay'=>$consigneInfos->maxPerDay,
+					'timeInterval'=>$consigneInfos->timeInterval);
 			}
 		}
 		$ret = json_encode($adjData);
-		honeyutils::logDebug("getAdjustData - a : " . $ret);
+		honeyutils::logDebug("getAdjustData : " . $ret);
 	    return $ret;
 	}
 
@@ -524,10 +542,9 @@ class TH {
 			honeyutils::logDebug("<<OUT - actionSetConsigne");
 			return;
 		}
-		$cmdConsigne = $equ->getCmd(null,TH::CMD_CONSIGNE_ID);
+		$oldConsigne = honeyutils::readInfo($equ,TH::CMD_CONSIGNE_ID);	// btw, equ value is against unit chosen
 		$oldConsigneInfos = ConsigneInfos::buildObj($equ);
-		if ( is_object($cmdConsigne) && is_object($oldConsigneInfos) ) {
-			$oldConsigne = $cmdConsigne->execCmd();	// btw, equ value is against unit chosen
+		if ( $oldConsigne != null && is_object($oldConsigneInfos) ) {
 			$oldStatus = $oldConsigneInfos->status;
 			$oldUntil = $oldConsigneInfos->until;
 			$deviceUnit = $oldConsigneInfos->unit;
@@ -545,8 +562,7 @@ class TH {
 
 		$newValue = $params->t1 == 0 ? 0 : honeywell::revertAdjustByUnit($params->t1,$deviceUnit);	// 0.4.1 - convert if needed
 		if ( $params->t2 == 0 ) {
-			$tmp = $equ->getCmd(null,TH::CMD_SCH_CONSIGNE_ID);
-			$params->t2 = $tmp->execCmd();	// btw, equ value is against unit chosen
+			$params->t2 = honeyutils::readInfo($equ,TH::CMD_SCH_CONSIGNE_ID);	// btw, equ value is against unit chosen
 		}
 		$realValue = honeywell::revertAdjustByUnit($params->t2,$deviceUnit);
 

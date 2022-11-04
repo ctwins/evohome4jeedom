@@ -212,4 +212,12 @@ class honeyutils {
 		return $defaut;
 	}
 
+	static function readInfo($equ,$infoId) {
+		$tmp = $equ->getCmd(null,$infoId);
+		if (is_object($tmp)) {
+			return $tmp->execCmd();
+		}
+		return null;
+	}
+
 }

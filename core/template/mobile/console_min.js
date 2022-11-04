@@ -15,5 +15,5 @@ buttons+='</div>';return buttons;}
 function changeSchedulesList(id,mode,name,sList){window.hnwConsole.setMode_Mode=mode;window.hnwConsole.setMode_Name=name;window.hnwConsole.setMode_NoFile=sList==null;if(sList==null){$('#showSchList'+id).hide();}else{var options='';sList=JSON.parse(decodeURI(sList));for(var i=0;i<sList.length;i++){options+='<option value="'+sList[i][0]+'"';options+=' style="background-color:#efefef !important;color:black !important;"';options+='>'+sList[i][1]+'</option>';}
 $('#schList'+id)[0].innerHTML=options;$('#showSchList'+id).show();}}
 function setMode(id,showType,mode,name,schId){if(!checkApiAvailable())return;if(!hnwCommon.apiAvailable){myAlert("Fonction indisponible");return;}
-if(confirm(getMsg(hnwConsole.setModeConfirm,name))){if(showType==2){$('.modeClose'+id).click();}
-waitingMessage(getMsg(hnwConsole.setModeInfoList,name));var _value={};_value[hnwConsole.argCodeMode]=mode+(schId?'§'+schId:'');jeedom.cmd.execute({id:hnwConsole.cmdSetModeId[id],notify:true,value:_value});}}
+if(myConfirm(hnwConsole.setModeConfirm,name)){if(showType==2){$('.modeClose'+id).click();}
+waitingMessage(hnwConsole.setModeInfoList,name);var _value={};_value[hnwConsole.argCodeMode]=mode+(schId?'§'+schId:'');jeedom.cmd.execute({id:hnwConsole.cmdSetModeId[id],notify:true,value:_value});}}

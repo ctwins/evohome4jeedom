@@ -218,6 +218,7 @@ try:
 				# can be : modelType=Unknown, zoneType=Unknown
 				evohome_log.warning("- setpointCapabilities="+json.dumps(zone.setpointCapabilities))
 				evohome_log.warning("- scheduleCapabilities="+json.dumps(zone.scheduleCapabilities))
+				# > scheduleCapabilities={"timingResolution": "00:10:00", "minSwitchpointsPerDay": 1, "maxSwitchpointsPerDay": 6, "setpointValueResolution": 0.5}
 				evohome_log.warning("- temperatureStatus="+json.dumps(zone.temperatureStatus))
 			# zone.name.strip : specific case (from jaktens-2018-11), but was before the check of the modelType (who knows..)
 			if (zone.modelType == 'HeatingZone' or zone.modelType == 'RoundWireless') and zone.name.strip():
@@ -264,17 +265,17 @@ try:
 				# 0.3.0 - additional infos
 				jZones = jZones + ',"setPointCapabilities":{'
 				#jZones = jZones + '"canControl":' + ('true' if zone.setpointCapabilities['canControlHeat'] else 'false')
-				jZones = jZones + '"resolution":' + str(zone.setpointCapabilities['valueResolution'])
-				jZones = jZones + ',"minHeat":' + str(zone.setpointCapabilities['minHeatSetpoint'])
-				jZones = jZones + ',"maxHeat":' + str(zone.setpointCapabilities['maxHeatSetpoint'])
+				jZones = jZones + '"resolution":' + str(zone.setpointCapabilities['valueResolution'])	# 0.5
+				jZones = jZones + ',"minHeat":' + str(zone.setpointCapabilities['minHeatSetpoint'])		# 5.0
+				jZones = jZones + ',"maxHeat":' + str(zone.setpointCapabilities['maxHeatSetpoint'])		# 25.0
 				# examples : ["PermanentOverride", "FollowSchedule", "TemporaryOverride"]
 				#jZones = jZones + ',"allowedModes":' + json.dumps(zone.setpointCapabilities['allowedSetpointModes'])
 				jZones = jZones + '}'
-				"""jZones = jZones + ',"scheduleCapabilities":{'
-				jZones = jZones + '"minPerDay":' + str(zone.scheduleCapabilities['minSwitchpointsPerDay'])
-				jZones = jZones + ',"maxPerDay":' + str(zone.scheduleCapabilities['maxSwitchpointsPerDay'])
-				jZones = jZones + ',"timingResolution":"' + str(zone.scheduleCapabilities['timingResolution']) + '"'
-				jZones = jZones + '}'"""
+				jZones = jZones + ',"scheduleCapabilities":{'
+				jZones = jZones + '"minPerDay":' + str(zone.scheduleCapabilities['minSwitchpointsPerDay'])			# 1
+				jZones = jZones + ',"maxPerDay":' + str(zone.scheduleCapabilities['maxSwitchpointsPerDay'])			# 6
+				jZones = jZones + ',"timeInterval":"' + str(zone.scheduleCapabilities['timingResolution']) + '"'	# 00:10:00
+				jZones = jZones + '}'
 				# 0.1.2 - evohome-client-2.07/evohomeclient2 :
 				# - heatSetpointStatus becomes setpointStatus
 				# - targetTemperature becomes targetHeatTemperature

@@ -1,7 +1,7 @@
 <img align="left" src="../img/evohome_icon.png" width="120" style="padding-right:16px;">
 Plugin permettant l'intégration des systèmes Honeywell **Evohome, Round T87RF, Lyric T6/T6R**
 
-*Pour la partie Evohome/Round, basé sur l'excellente **[librairie de watchforstock](https://github.com/watchforstock/evohome-client)**&nbsp;(fork embarqué depuis 0.3.0)*<br/><br/><br/><br/><br/>
+*Pour la partie Evohome/Round, basé sur l'excellente  **[librairie de watchforstock](https://github.com/watchforstock/evohome-client)**&nbsp;(fork embarqué depuis 0.3.0)*<br/><br/><br/><br/><br/>
 
 
 
@@ -84,7 +84,7 @@ Tout est fait pour être intuitif, faites-moi savoir si vous avez besoin d'expli
 Si la batterie est 100% HS (le thermostat ne répond plus), la température elle-même est remplacée par un icone indicatif.
 - si un mode statistique est activé, des flèches animées verte (vers le haut) et rouge (vers le bas) peuvent apparaitre à droite des températures. Signifient respectivement : température en hausse ou en baisse par rapport à la mesure précédente.
 - l'édition des programmes hebdomadaires n'est disponible que sur l'affichage horizontal
-- les valeurs min/max des consignes réglables sur chaque thermostat sont dynamiques (données Honeywell). Ces valeurs sont réglables sur la console physique (par défaut 5/25).
+- les valeurs min/max des consignes réglables sur chaque thermostat sont dynamiques (données Honeywell). Ces valeurs sont réglables sur la console physique (du moins sur Evohome ; défaut : 5/25).
 
 ## Spécificités Lyric
 
@@ -106,6 +106,7 @@ Le pilotage par Scénario est très simple : il vous suffit d'ajouter une comman
 Soit :
 - Réglage mode<br/>
 /!\ Lyric : accompagné du programme à restaurer
+    - le second choix permet de revenir au dernier programme actif avant celui en cours
 - Set consigne<br/>
     - le premier choix permet de revenir à la température programmée<br/>
     - le résultat est un changement permanent (aucun intérêt à prévoir une durée, justement par le fait que ces changements sont pilotés par Scénario)

@@ -10,10 +10,10 @@ function evoHideHover(_id,part){$('.hover'+part+'ShowB'+_id).hide();clearTimeout
 function checkApiAvailable(){if(!hnwCommon.apiAvailable){myAlert(hnwDashboard.msgApiUnavailable);return false;}
 return true;}
 $('#md_modal').on('dialogclose',function(){restoreCmdBgdColor();});function restoreCmdBgdColor(){setBgColor('.showCS',hnwCommon.evoCmdBackgroundColor);}
-function waitingMessage(text){$('#jqueryLoadingDiv').show();}
-function myAlert(text){alert(text);}
-function myConfirm(text){return confirm(text);}
-function getMsg(txt,args){if(!is_array(args))return txt.replace("{0}",args);for(var i=0;i<args.length;i++)txt=txt.replace("{"+i+"}",args[i]);return txt;}
+function waitingMessage(msg){$('#jqueryLoadingDiv').show();}
+function myAlert(msg,params){alert(params==null?msg:getMsg(msg,params));}
+function myConfirm(msg,params){return confirm(params==null?msg:getMsg(msg,params));}
+function getMsg(msg,args){if(!is_array(args))return msg.replace("{0}",args);for(var i=0;i<args.length;i++)msg=msg.replace("{"+i+"}",args[i]);return msg;}
 function setColor(objName,color){$(objName).each(function(){this.style.removeProperty('color');this.style.setProperty('color',color,hnwCommon.imp);});}
 function getBgColor(objName){var color=$(objName).css('background-color');return color;}
 function setBgColor(objName,color){$(objName).each(function(){this.style.removeProperty('background-color');this.style.setProperty('background-color',color,hnwCommon.imp);});}

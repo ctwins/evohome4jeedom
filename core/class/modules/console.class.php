@@ -22,6 +22,8 @@ class Console {
 	const CMD_CURRENT_SCHEDULE = 'coCurrentSchedule';
 	// ---- Lyric only
 	const CMD_STATE_PRESENCE = 'coPresence';
+	
+	const SM_PREVIOUS_MODE_CODE = 'PR';
 
 	static function preUpdate($equ) {
 		$cmd = $equ->getCmd('info', self::CMD_STATISTICS_ID);
@@ -73,7 +75,7 @@ class Console {
 
 		// -- Presence modes
 		$asmCodes = $equ->getConfiguration(honeywell::CONF_ALLOWED_SYSTEM_MODE);
-		$listValue = '';
+		$listValue = self::SM_PREVIOUS_MODE_CODE . '|' . honeywell::i18n('Mode précédent');
 		if ( $asmCodes ) {
 			$modesArray = $equ->getModesArray();
 			foreach ($asmCodes as $code) {
@@ -327,12 +329,27 @@ class Console {
 	}
 
 	function actionSetMode($equ,$locId,$parameters) {
-		$codeMode = $parameters[honeywell::ARG_CODE_MODE];
-		if ( $codeMode === null || $codeMode === '' ) {
-			honeyutils::logDebug('actionSetMode called without code');
+		$inCodeMode = $parameters[honeywell::ARG_CODE_MODE];
+		if ( $inCodeMode === null || $inCodeMode === '' ) {
+			honeyutils::logDebug("actionSetMode called without code");
 			return;
 		}
-		if ( honeyutils::isDebug() ) honeyutils::logDebug("IN>> - actionSetMode with code=$codeMode");
+		if ( $inCodeMode == self::SM_PREVIOUS_MODE_CODE ) {
+			$lblCodeMode = honeyutils::readInfo($equ, self::CMD_STATE_PREVIOUS);
+			if ( $lblCodeMode == null ) {
+				honeyutils::logDebug("actionSetMode : can't request previous mode as it does not exist yet");
+				return;
+			}
+			$codeMode = $equ->getModeFromHName($lblCodeMode);
+		} else {
+			$codeMode = $inCodeMode;
+		}
+		$currentMode = $equ->getModeFromHName(honeyutils::readInfo($equ, self::CMD_STATE_CURRENT));
+		if ( $currentMode == $codeMode ) {
+			honeyutils::logDebug("actionSetMode : requested mode same as current : no action");	
+			return;
+		}
+		if ( honeyutils::isDebug() ) honeyutils::logDebug("IN>> - actionSetMode with inCode=$inCodeMode, code=$codeMode");
 		$execUnitId = rand(0,10000);
 		honeywell::waitingIAZReentrance("SetMode-$execUnitId");
 		honeyutils::lockCron();
@@ -360,7 +377,7 @@ class Console {
 		if ( $success ) $equ->getInformations(true,true,"1".honeywell::i18n('Rechargement des données en cours...'),true);
 		self::refreshConsole($locId,$msgInfo);
 
-		honeyutils::logDebug('<<OUT - actionSetMode');
+		honeyutils::logDebug("<<OUT - actionSetMode");
 		honeyutils::unlockCron();
 	}
 

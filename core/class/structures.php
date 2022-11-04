@@ -53,7 +53,11 @@ class ConsigneInfos {
 	// Lyric only :
 	public /*float*/ $endHeatSetpoint;	// if TemporaryHold or HoldUntil, the endHeatSetpoint value
 	public /*boolean*/ $heating;		// false=undefined or heating off ; true=heating on
-	
+	// Additional scheduling infos :
+	public /*int*/ $minPerDay;			// 1 (evohome/round)
+	public /*int*/ $maxPerDay;			// 6 (evohome/round)
+	public /*string*/ $timeInterval;	// '10' (from 00:10:00 for evohome/round, '10' from Lyric)
+
 	private function __construct($aConsigneInfos) {
 		$this->status = $aConsigneInfos[0];
 		$this->until = $aConsigneInfos[1];
@@ -66,6 +70,10 @@ class ConsigneInfos {
 		// Lyric parts
 		$this->endHeatSetpoint = count($aConsigneInfos) > 8 ? $aConsigneInfos[8] : null;
 		$this->heating = (count($aConsigneInfos) > 9 && $aConsigneInfos[9] == '1') ? 1 : 0;
+		// Additional scheduling infos (defaults values from Evohome/Round)
+		$this->minPerDay = count($aConsigneInfos) > 10 ? intVal($aConsigneInfos[10]) : 1;		// default values
+		$this->maxPerDay = count($aConsigneInfos) > 10 ? intVal($aConsigneInfos[11]) : 6;		// from Evohome/ROund ; unknown for Lyric
+		$this->timeInterval = count($aConsigneInfos) > 10 ? intVal($aConsigneInfos[12]) : 10;	// default from Evohome/Round (00:10:00), and Lyric (10)
 	}
 	
 	public static function buildObjFromStr($str) {
@@ -88,6 +96,9 @@ class ConsigneInfos {
 	}
 	
 	public static function buildStr($infosZone) {
+		$timeInterval = array_key_exists('scheduleCapabilities',$infosZone) ?
+						str_replace(':00','',str_replace('00:','',$infosZone['scheduleCapabilities']['timeInterval'])) :
+						'10';
 		return $infosZone['status']
 		. ";" . $infosZone['until']
 		. ";" . $infosZone['units']
@@ -97,7 +108,10 @@ class ConsigneInfos {
 		. ";" . (array_key_exists('battLow',$infosZone) ? $infosZone['battLow'] : '')
 		. ";" . (array_key_exists('cnxLost',$infosZone) ? $infosZone['cnxLost'] : '')
 		. ";" . (array_key_exists('endHeatSetpoint',$infosZone) ? $infosZone['endHeatSetpoint'] : '')
-		. ";" . (array_key_exists('heating',$infosZone) ? $infosZone['heating'] : '0');
+		. ";" . (array_key_exists('heating',$infosZone) ? $infosZone['heating'] : '0')
+		. ";" . (array_key_exists('scheduleCapabilities',$infosZone) ? $infosZone['scheduleCapabilities']['minPerDay'] : '1')
+		. ";" . (array_key_exists('scheduleCapabilities',$infosZone) ? $infosZone['scheduleCapabilities']['maxPerDay'] : '6')
+		. ";" . $timeInterval;
 	}
 	
 }

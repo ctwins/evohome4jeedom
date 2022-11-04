@@ -129,6 +129,13 @@ abstract class honeywell extends eqLogic {
 		}
 	}
 	static function hnw_update() {
+	    foreach (self::getEquipments() as $eqLogic) {
+	        // When HNW_SYSTEM is unset, that means it's an old installation which concern Evohome system only
+	        if ( $eqLogic->getConfiguration(honeywell::CONF_HNW_SYSTEM,'unset') == 'unset') {
+	            $eqLogic->setConfiguration(honeywell::CONF_HNW_SYSTEM, honeywell::SYSTEM_EVOHOME);
+	            $eqLogic->save();
+	        }
+	    }
 	    $cron = cron::byClassAndFunction(self::PLUGIN_NAME, 'main_refresh');
 	    if (!is_object($cron)) {
 	        $cron = new cron();

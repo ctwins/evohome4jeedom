@@ -1,4 +1,34 @@
-# Changelog - Evohome (& Round T87RF & Lyric T6/T6R) for Jeedom V3.3 to V4.2
+# Changelog - Evohome (& Round T87RF & Lyric T6/T6R) for Jeedom V3.3 to V4.3.x
+
+## [version 0.5.6] - 2022-11-04 - Previous mode by Scenario & Auto schedules limits
+
+#### Added
+
+1. Scenario, Set Mode action : you can now select a Previous Mode option, which set the system on the previous mode if any (the ones was previously current when last change has occured).<br/>
+You have to **save** the Console equipment so the new option appears in the selectable values.<br/>
+Thanks to [bludomo](https://community.jeedom.com/t/comment-retourner-sur-le-dernier-mode-evohome-dans-un-scenario/81732).
+
+2. Schedule edition<br/>
+A) All the editable values can now be set only in the ranges specified by the system.<br/>
+This restricts keyboard inputs :
+    - heating : typically 5/25 for Evohome, 5/35 for Lyric.<br/>
+    These values can be set by the physical console for each area (at least for Evohome).<br/>
+    Evohome : each area setting is taken into account.<br/>
+    Lyric : setting values out of scope conducted the schedule restoration to fail in the check phase. At first answer, I limited to 2mn the time of checking.<br/>
+    Thanks to [sergedomotique](https://community.jeedom.com/t/boucle-infinie-en-restauration-de-programme/79155) for our tests.
+    - times : minutes can only be set by step of 10 (same for Evohome/Lyric).<br/>
+      This unmanageable limit is showed in a tip under the minutes field.
+B) General
+    - Buttons min/max added with values available (same as individual setting on a TH)<br/>
+    - periods (no user change) : the min and max number of periods are now get from the system data for Evohome, and fixed to 1/6 for Lyric.<br/>
+      This unmanageable limit is showed in a tip under the Append button.<br/>
+      To follow the rules, step time and periods limits are (also) stored in new info cmd for each TH (if you saved your TH again, or launch a synchronization ; each is not mandatory).
+
+
+#### Remarks
+1. Under Jeedom 4.3.9 (perhaps 4.3.x), the dynamic display while setting a TH is disturbed (but the command works properly).
+
+
 
 ## [version 0.5.5] - 2022-02-13 - Jeedom 4.2.x compatibility (Lyric part)
 
@@ -251,7 +281,7 @@ although no TH value is received (API says isAvailable=false).
 #### Improvements
 1. Configuration (of components)
    - if a component is not marked as Visible, its tile is now grayed (as for Activated)
-   - if a component has no zone affected (yet), it shows now a 'men at work' image (and no more a TH image), to avoid confusion
+   - if a component has no area affected (yet), it shows now a 'men at work' image (and no more a TH image), to avoid confusion
 
 2. /!\ for the actions which could take a "certain time" to finish (Setting heatpoint, Set Mode and especially Restore schedule), the progress of the action is now showed at top of screen. (this is why I call this update "the verbose edition")<br/>
    It appears also when the action is triggered by Scenario, and if the associated component is currently visible on screen :<br/>
@@ -333,12 +363,12 @@ This could be have to effect to show additional errors in the "Jeedom messages" 
   Please note that if a Schedule file is used in a Scenario, it could no more be deleted from the Console
 - A status bar appears now on the top of the window after sending command to the system<br/>
   like SetMode, Restore schedule, Adjust heatpoint
-- Schedule panels (all zones and individual views) : showing now a '*' on the right of the zone name which current content is different of the current (or last read) one<br/>
+- Schedule panels (all zones and individual views) : showing now a '*' on the right of the area name which current content is different of the current (or last read) one<br/>
   This is a more detailed state which completes the "different of the current schedule" ;)
 - The 'incoming' of the 0.2.2 is now available (Schedule edition : saving changes on the current - selected - schedule activates now the loading button)
 
 #### Fix
-- Python/reading informations : better check of the Heating zone (fix the reported error by "jaktens")
+- Python/reading informations : better check of the Heating area (fix the reported error by "jaktens")
 
 #### Changes
 - now, only the admin profile has the possibility to do these things regarding the schedules :
@@ -348,7 +378,7 @@ This could be have to effect to show additional errors in the "Jeedom messages" 
 - The extra module evohomeclient is now embedded inside the plugin itself ('forked' to introduce the token cache and custom logs)<br/>
   If you restart the dependency (not mandatory) under the General configuration, the module will be removed in the OS (by a pip command)
 - So, all the API requests use now cached session information (session for V1 API, token for V2 API)<br/>
-  This is this major improvement which made the heatpoint adjustment possible, and has also the effect to fight the "Too many requests" errors (by the way, few ones could persist)
+  This major improvement made the heatpoint adjustment possible, and has also the effect to fight the "Too many requests" errors (by the way, few ones could persist)
 - All the structural commands (SetMode, Restore schedule and now Adjust.) use know the waiting status of task<br/>
   Please note this is experimental cause sometimes, status will not terminate with the waited "Succedeed"<br/>
   In this case, the loop terminates by a timeout to avoid blocking the plugin (and status bar will show that)<br/>
@@ -389,7 +419,7 @@ This could be have to effect to show additional errors in the "Jeedom messages" 
 
 #### Improvements
 - Schedules edition mode<br/>
-	1. indicator '*' added after the zone name in the zones list, when schedule for it has changed<br/>
+	1. indicator '*' added after the area name in the zones list, when schedule for it has changed<br/>
 	2. you can now revert the changes on a day with the small button which appears on the right when changes has done<br/>
 
 #### Fix
@@ -403,13 +433,13 @@ This could be have to effect to show additional errors in the "Jeedom messages" 
 #### Added
 - Schedules edition mode (thanks to ecc for pre-testing)<br/>
 	1. the Edition mode has to be activated in the General configuration before to use it<br/>
-	2. first, use the Pc button (or Ps if you have already saved a full schedule) on console of any component, then Click on Edit button on the top right (or on the right on each zone name), and let's go !<br/>
+	2. first, use the Pc button (or Ps if you have already saved a full schedule) on console of any component, then Click on Edit button on the top right (or on the right on each area name), and let's go !<br/>
 	3. changes are lost if you close the edition popup ; you have to Save before quit to keep your changes<br/>
 
 #### Improvements
 - better cache around cron/get informations from zones
 - Schedule popup :<br/>
-	1. zone names are now those defined in your components<br/>
+	1. area names are now those defined in your components<br/>
 	2. showed zones are now only those affected in your components<br/>
 	3. labels days are now translated (french/english)<br/>
 - component :<br/>
@@ -428,7 +458,7 @@ This could be have to effect to show additional errors in the "Jeedom messages" 
 
 ## [version 0.1.2] - 2018-10-28 - the 'evohomeclient fix' (+ minors)
 #### Fixes
-- evohome-client-2.07/evohomeclient2 ; Zone and schedule data :<br/>
+- evohome-client-2.07/evohomeclient2 ; area and schedule data :<br/>
 	1. heatSetpointStatus becomes setpointStatus<br/>
 	2. targetTemperature becomes targetHeatTemperature<br/>
 #### More
@@ -468,7 +498,7 @@ This could be have to effect to show additional errors in the "Jeedom messages" 
 - Th component : new Info : about the scheduled setpoint, with history tracking ; usage : see differences between schedule and reality (by manual settings or automatic adjustments when Evotouch is set to optimization mode)
  
 - Th widget :<br/>
-	1. a P button appears so you can display the schedule of the zone<br/>
+	1. a P button appears so you can display the schedule of the area<br/>
 	2. in optimization mode, when setpoint is different as the scheduled one, a arrow appears :<br/>
 		- down-green if setpoint is lower<br/>
 		- up-red if setpoint if higher<br/>

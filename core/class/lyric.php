@@ -259,6 +259,12 @@ class lyric extends honeywell {
 					"resolution"=>($zoneInfos["units"] == self::CFG_UNIT_CELSIUS ? 0.5 : 1),	// fixed as no returned (or 0.5 for °C, 1 for °F ?)
 					"minHeat"=>$device["minHeatSetpoint"],	// 5
 					"maxHeat"=>$device["maxHeatSetpoint"]);	// 35
+				// 0.5.6 - schedule limits :	
+				$zoneInfos["scheduleCapabilities"] = array(
+					"minPerDay"=>1,
+					"maxPerDay"=>6,
+					"timeInterval"=>$device["allowedTimeIncrements"]);
+				
 				$zoneInfos["setPoint"] = $device["changeableValues"]["heatSetpoint"];	// 19
 				//$zoneInfos["status"] = $device["scheduleStatus"];	// current status of schedule : "Resume" ??
 				// current setpoint state : TemporaryHold(+nextPeriodTime), HoldUntil(??), PermanentHold(??), VacationHold(-), NoHold(-) :

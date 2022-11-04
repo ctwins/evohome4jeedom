@@ -10,10 +10,11 @@ evoRegisterHover(_id,'TLR');evoShowMsgInfo(pMsgInfo);}
 function checkApiAvailable(){if(!hnwCommon.apiAvailable){myAlert(hnwDashboard.msgApiUnavailable);return false;}
 return true;}
 $('#md_modal').on('dialogclose',function(){restoreCmdBgdColor();});function restoreCmdBgdColor(){setBgColor('.showCS',hnwCommon.evoCmdBackgroundColor);}
-function waitingMessage(text){bootbox.dialog({message:"<div class='text-center'>"+text+"...</div>",closeButton:false});$('#md_modal').dialog('close');$('#jqueryLoadingDiv').show();}
-function myAlert(text){bootbox.alert({message:text,closeButton:false});}
-function myConfirm(text){return confirm(text);}
-function getMsg(txt,args){if(!is_array(args))return txt.replace("{0}",args);for(var i=0;i<args.length;i++)txt=txt.replace("{"+i+"}",args[i]);return txt;}
+function waitingMessage(msg,params){bootbox.dialog({message:"<div class='text-center'>"+(params==null?msg:getMsg(msg,params))+"...</div>",closeButton:false});$('#md_modal').dialog('close');$('#jqueryLoadingDiv').show();}
+function myAlert(msg,params){bootbox.alert({message:params==null?msg:getMsg(msg,params),closeButton:false});}
+function myConfirm(msg,params){return confirm(params==null?msg:getMsg(msg,params));}
+function boxConfirm(msg,callback){bootbox.confirm(msg,function(result){if(result){callback();}});}
+function getMsg(msg,args){if(!is_array(args))return msg.replace("{0}",args);for(var i=0;i<args.length;i++)msg=msg.replace("{"+i+"}",args[i]);return msg;}
 function setColor(objName,color){$(objName).each(function(){this.style.removeProperty('color');this.style.setProperty('color',color,hnwCommon.imp);});}
 function getBgColor(objName){var color=$(objName).css('background-color');return color;}
 function setBgColor(objName,color){$(objName).each(function(){this.style.removeProperty('background-color');this.style.setProperty('background-color',color,hnwCommon.imp);});}
