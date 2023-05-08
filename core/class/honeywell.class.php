@@ -15,7 +15,7 @@ require_once 'modules/schedule.class.php';
  */
 abstract class honeywell extends eqLogic {
     const PLUGIN_NAME = "evohome";
-    const RELOAD = true;
+    const RELOAD = false;
 
 	const PYTHON = 'python3';
     const PYTHON_VERSION = 3;

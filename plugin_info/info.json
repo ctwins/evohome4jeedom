@@ -2,8 +2,8 @@
 	"id": "evohome",
 	"name": "Evohome",
 	"description": {
-		"fr_FR": "Plugin Honeywell Evohome. Egalement compatible avec les Round T87RF et Lyric T6/T6R. Compatible de Jeedom 3.3.x à 4.2.x",
-		"en_US": "Honeywell Evohome Plugin. Works also with Round T87RF and Lyric T6/T6R. Running from Jeedom 3.3.x to 4.2.x"
+		"fr_FR": "Plugin Honeywell Evohome. Egalement compatible avec les Round T87RF et Lyric T6/T6R. Compatible de Jeedom 3.3.x à 4.3.x",
+		"en_US": "Honeywell Evohome Plugin. Works also with Round T87RF and Lyric T6/T6R. Running from Jeedom 3.3.x to 4.3.x"
 	},
 	"usage": "Suivre la documentation pour l'installation. A votre disposition dans le forum/blog",
 	"licence": "AGPL",
