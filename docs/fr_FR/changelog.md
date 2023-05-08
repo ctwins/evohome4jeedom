@@ -5,10 +5,10 @@
 #### Added
 
 1. New settings added in the list of Setting point :<br/>
-Current setting point -1�
-Current setting point -0.5�
-Current setting point +0.5�
-Current setting point +1�
+Current setting point -1°
+Current setting point -0.5°
+Current setting point +0.5°
+Current setting point +1°
 Please note the new value is computed from the Current setting, not the Current scheduled<br/>
 
 #### Fixes
