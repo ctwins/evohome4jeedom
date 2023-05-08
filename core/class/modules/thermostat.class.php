@@ -34,6 +34,8 @@ class TH {
 	const CMD_SCH_MAX_PER_DAY = 'schMaxPerDay';
 	const CMD_SCH_RESOLUTION = 'schResolution';
 	
+	const SCD_SUB_ADD_MODE = -1;
+
 	// Common
 	const SET_TH_MODE_PERMANENT = 'STM_1';
 	const SET_TH_MODE_UNTIL_CURRENT_SCH = 'STM_2';
@@ -74,15 +76,22 @@ class TH {
 	}
 	
 	static function fillSetConsigneData($cmd,$zoneId,$minHeat,$maxHeat,$doSave=false) {
+		// auto means the callback function must check availability of service (presence mode / api available)
 		// 0.4.1 - 1st choice to go back to the scheduled value
 		$list = (new SetConsigneData(SetConsigneData::AUTO, $zoneId, 0, 0, null))->buildStrForSelect(honeywell::i18n("Annulation (retour à la valeur programmée)"));
 		// 0.9 is the supposed value for the °F... (0.5 * 9/5)
 		$unit = honeyutils::getParam(honeywell::CFG_TEMP_UNIT,honeywell::CFG_UNIT_CELSIUS);
 		$step = $unit == honeywell::CFG_UNIT_CELSIUS ? 0.5 : 0.9;
+		$sUnit = "°" . $unit;
+		$cc = honeywell::i18n("Consigne courante") . " ";
+		for ( $n=-$step*2 ; $n<=$step*2 ; $n += $step ) {
+			if ( $n <> 0 ) {
+				$list .= ";" . (new SetConsigneData(SetConsigneData::AUTO, $zoneId, -1, $n, null))->buildStrForSelect($cc . ($n < 0 ? "" : "+") . $n . $sUnit);
+			}
+		}
 		if ( honeyutils::isDebug() ) honeyutils::logDebug("adjust min=$minHeat/max=$maxHeat/step=$step of the SET_CONSIGNE command on zone=$zoneId");
 		for( $t=$minHeat ; $t<=$maxHeat ; $t+=$step ) {
-			// auto means the callback function must check availability of service (presence mode / api available)
-			$list .= ";" . (new SetConsigneData(SetConsigneData::AUTO, $zoneId, $t, $t, null))->buildStrForSelect($t."°".$unit);
+			$list .= ";" . (new SetConsigneData(SetConsigneData::AUTO, $zoneId, $t, $t, null))->buildStrForSelect($t.$sUnit);
 		}
 		$cmd->setConfiguration('listValue', $list);
 		$cmd->setConfiguration('minHeat', $minHeat);
@@ -519,7 +528,7 @@ class TH {
 	static function transformUntil($hm) {
 		if ( $hm == '99:99' ) $hm = '23:59';
 		$hm = explode(":",$hm);
-		$date = new DateTime();
+		$date = honeyutils::getDateTime();
 		$date->setTime((int)$hm[0],(int)$hm[1],0);
 		return honeyutils::localDateTimeToGmtZ($date);
 	}
@@ -559,10 +568,15 @@ class TH {
 				}
 			}
 		}
-
-		$newValue = $params->t1 == 0 ? 0 : honeywell::revertAdjustByUnit($params->t1,$deviceUnit);	// 0.4.1 - convert if needed
-		if ( $params->t2 == 0 ) {
-			$params->t2 = honeyutils::readInfo($equ,TH::CMD_SCH_CONSIGNE_ID);	// btw, equ value is against unit chosen
+		
+		if ( $params->t1 == TH::SCD_SUB_ADD_MODE ) {
+			$newValue = $oldConsigne + honeywell::revertAdjustByUnit($params->t2,$deviceUnit);
+			$params->t2 = $newValue;
+		} else {
+			$newValue = $params->t1 == 0 ? 0 : honeywell::revertAdjustByUnit($params->t1,$deviceUnit);	// 0.4.1 - convert if needed
+			if ( $params->t2 == 0 ) {
+				$params->t2 = honeyutils::readInfo($equ,TH::CMD_SCH_CONSIGNE_ID);	// btw, equ value is against unit chosen
+			}
 		}
 		$realValue = honeywell::revertAdjustByUnit($params->t2,$deviceUnit);
 

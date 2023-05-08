@@ -16,16 +16,17 @@ evohome_log = logging.getLogger("evohomeBridge-SetTempEE")
 #baseUrl = 'https://tccna.honeywell.com/WebAPI/emea/api/v1/'
 baseUrl = 'https://mytotalconnectcomfort.com/WebAPI/emea/api/v1/'
 
+def removeCR(text):
+	return text.replace('\r\n','')
+
 def addTokenTags():
 	if CLIENT != None and CLIENT.access_token != None:
 		ret = ',"access_token":"' + CLIENT.access_token + '"'
 		ret = ret + ',"token_state":' + ('2' if SESSION_ID_V2 != CLIENT.access_token else '1')
-		ret = ret + ',"access_token_expires":' + str(CLIENT.access_token_expires)
-	else:
-		ret = ',"access_token":"0"'
-		ret = ret + ',"token_state":0'
-		ret = ret + ',"access_token_expires":0'
-	return ret
+		return ret + ',"access_token_expires":' + str(CLIENT.access_token_expires)
+	ret = ',"access_token":"0"'
+	ret = ret + ',"token_state":0'
+	return ret + ',"access_token_expires":0'
 
 def callSetting(zones,txtData):
 	data = json.loads(txtData)
@@ -42,24 +43,26 @@ def callSetting(zones,txtData):
 		date = None if data['until'] == None else datetime.datetime.strptime(data['until'],'%Y-%m-%dT%H:%M:%SZ')
 		r = zones[data['zoneId']].set_temperature(value,date)
 	if DEBUG:
-		evohome_log.warning("ret = %s" % r.text.replace('\r\n',''))
+		evohome_log.warning("ret = %s" % removeCR(r.text))
 	return r
 
-USERNAME = sys.argv[1]
-PASSWORD = sys.argv[2]
+VERSION = sys.argv[1]
+
+USERNAME = sys.argv[2]
+PASSWORD = sys.argv[3]
 # payload A
 # -- a1
-#SESSION_ID_V1 = sys.argv[3]
-#USER_ID_V1 = sys.argv[4]
+#SESSION_ID_V1 = sys.argv[4]
+#USER_ID_V1 = sys.argv[5]
 # -- a2
-SESSION_ID_V2 = None if sys.argv[5] == '0' else sys.argv[5]
-SESSION_EXPIRES_V2 = sys.argv[6]
+SESSION_ID_V2 = None if sys.argv[6] == '0' else sys.argv[6]
+SESSION_EXPIRES_V2 = sys.argv[7]
 # -- a3
-DEBUG = sys.argv[7] == '1'
+DEBUG = sys.argv[8] == '1'
 # -- a4
-LOCATION_ID = sys.argv[8]
+LOCATION_ID = sys.argv[9]
 # payload B
-DATA = sys.argv[9]		# [{"zoneId":"z1","value":"v1","until":"u1"},{"zoneId":"z2","value":"v2","until":"u2"}[,..]]
+DATA = sys.argv[10]		# [{"zoneId":"z1","value":"v1","until":"u1"},{"zoneId":"z2","value":"v2","until":"u2"}[,..]]
 						# zn = ZONE ID
 						# vn = n.nn or ("0[.0]" or Scheduled == reset)
 						# un = can be null (means "Hold") ; if vn # O/Schedule, can be a date/time like "2016-01-16T22:00:00Z"
@@ -85,6 +88,7 @@ try:
 
 	if loc == None:
 		print ('{"success":false,"code":"UnknownLocation","message":"no location for ID %s" %s}' % (LOCATION_ID, addTokenTags()))
+	
 	else:
 		response = callSetting(loc._gateways[0]._control_systems[0].zones_by_id,DATA)
 		# Version 1 : single result
@@ -100,15 +104,15 @@ try:
 			print ('{"success":false,"code":"%s","message":"%s" %s}' % (ret[0]["code"], ret[0]["message"], addTokenTags()))
 
 		elif response.status_code != 201:
-			print ('{"success":false,"code":"Error","message":"%s" %s}' % (lastResponse.replace('\r\n',''), addTokenTags()))
+			print ('{"success":false,"code":"Error","message":"%s" %s}' % (removeCR(lastResponse), addTokenTags()))
 
 		else:
 			# task ID is created
 			ret = json.loads(lastResponse)
 			taskId = ret['id']
 
-			more = True
 			td = time.time()
+			more = True
 			while more:
 				r = requests.get(baseUrl+'commTasks?commTaskId=%s' % taskId, headers=CLIENT.headers())
 				lastResponse = r.text

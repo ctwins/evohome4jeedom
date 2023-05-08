@@ -2,6 +2,7 @@ import sys
 import requests
 import json
 import time
+import codecs
 from evohomeClientSC import EvohomeClientSC
 import logging
 
@@ -23,6 +24,21 @@ lastResponseAllDataV1 = None
 CLIENT = None
 SESSION_ID_V2 = None
 
+def removeCR(text):
+	if VERSION == '2':
+		return text.replace('\r','').replace('\n','')
+	return text.replace(b'\r',b'').replace(b'\n',b'')
+
+def check(data,info):
+	if VERSION == '2':
+		ret = (data.startswith('[') and 'code' in info[0]) or (not data.startswith('[') and 'code' in info)
+	else:
+		ret = (data.startswith(b'[') and 'code' in info[0]) or (not data.startswith(b'[') and 'code' in info)
+	if ret:
+		evohome_logV1.error('got 200 but error = <%s>' % removeCR(data))
+	#evohome_logV1.error('check with = <%s>' % data)
+	return not ret
+	
 def loginV1():
 	global SESSION_ID_V1
 	global USER_ID_V1
@@ -35,12 +51,10 @@ def loginV1():
 	response = requests.post(baseurl + 'Session', data=jsonData, headers=lHeaders)
 	lastResponseAllDataV1 = response.content
 	if response.status_code != requests.codes.ok:
-		evohome_logV1.error('open session = %s : %s' % (str(response.status_code), lastResponseAllDataV1.replace('\r\n','')))
+		evohome_logV1.error('open session = %s : %s' % (str(response.status_code), removeCR(lastResponseAllDataV1)))
 	else:
 		userInfos = json.loads(lastResponseAllDataV1)
-		if (lastResponseAllDataV1.startswith('[') and userInfos[0].has_key('code')) or (not lastResponseAllDataV1.startswith('[') and userInfos.has_key('code')):
-			evohome_logV1.error('got 200 but error = <%s>' % lastResponseAllDataV1)
-		else:
+		if check(lastResponseAllDataV1,userInfos):
 			SESSION_ID_V1 = userInfos['sessionId']
 			USER_ID_V1 = str(userInfos['userInfo']['userID'])
 			V1_JUST_RENEWED = True
@@ -82,30 +96,30 @@ def addTokenTags():
 	if CLIENT != None and CLIENT.access_token != None:
 		ret = ret + ',"access_token":"' + CLIENT.access_token + '"'
 		ret = ret + ',"token_state":' + ('2' if SESSION_ID_V2 != CLIENT.access_token else '1')
-		ret = ret + ',"access_token_expires":' + str(CLIENT.access_token_expires)
-	else:
-		ret = ret + ',"access_token":"0"'
-		ret = ret + ',"token_state":0'
-		ret = ret + ',"access_token_expires":0'
-	return ret
+		return ret + ',"access_token_expires":' + str(CLIENT.access_token_expires)
+	ret = ret + ',"access_token":"0"'
+	ret = ret + ',"token_state":0'
+	return ret + ',"access_token_expires":0'
+
+VERSION = sys.argv[1]
 
 # Set login details in the 2 fields below
-USERNAME = sys.argv[1]
-PASSWORD = sys.argv[2]
+USERNAME = sys.argv[2]
+PASSWORD = sys.argv[3]
 # payload A
 # -- a1
-SESSION_ID_V1 = sys.argv[3]
+SESSION_ID_V1 = sys.argv[4]
 SessionIdV1Org = SESSION_ID_V1
-USER_ID_V1 = sys.argv[4]
+USER_ID_V1 = sys.argv[5]
 # -- a2
-SESSION_ID_V2 = None if sys.argv[5] == '0' else sys.argv[5]
-SESSION_EXPIRES_V2 = float(sys.argv[6])
+SESSION_ID_V2 = None if sys.argv[6] == '0' else sys.argv[6]
+SESSION_EXPIRES_V2 = float(sys.argv[7])
 # -- a3
-DEBUG = sys.argv[7] == '1'
+DEBUG = sys.argv[8] == '1'
 # -- a4
-LOCATION_ID = sys.argv[8]
+LOCATION_ID = sys.argv[9]
 # payload B
-READ_SCHEDULE = sys.argv[9]
+READ_SCHEDULE = sys.argv[10]
 
 logguedV1 = False
 
@@ -117,7 +131,7 @@ try:
 	# 0.3.0 - manage cached session V1
 	if V1_ACTIVE:
 		if USER_ID_V1 == '' or USER_ID_V1 == '0' or SESSION_ID_V1 == '' or SESSION_ID_V1 == '0':
-			logguedV1 = loginV1()			# requests new session
+			logguedV1 = loginV1()	# requests new session
 			if DEBUG and logguedV1:
 				evohome_logV1.warning('new requested : %s' % SESSION_ID_V1)
 		else:
@@ -144,13 +158,13 @@ try:
 				response = getAllDataV1()
 				lastResponseAllDataV1 = response.content
 				if response.status_code != requests.codes.ok:	# can't be 401
-					evohome_logV1.error('error=%s : %s' % ( str(response.status_code), lastResponseAllDataV1.replace('\r\n','') ))
+					evohome_logV1.error('error=%s : %s' % ( str(response.status_code), removeCR(lastResponseAllDataV1) ))
 					getAllDataDone = False
 					removeSessionV1()
 					USER_ID_V1 = '0'
 					SESSION_ID_V1 = '0'
 		elif response.status_code != requests.codes.ok:
-			evohome_logV1.error('error=%s : %s' % ( str(response.status_code), lastResponseAllDataV1.replace('\r\n','') ))
+			evohome_logV1.error('error=%s : %s' % ( str(response.status_code), removeCR(lastResponseAllDataV1) ))
 			getAllDataDone = False
 			removeSessionV1()
 			USER_ID_V1 = '0'
@@ -158,15 +172,14 @@ try:
 
 		if getAllDataDone:
 			locationsV1 = json.loads(lastResponseAllDataV1)
-			if (lastResponseAllDataV1.startswith('[') and locationsV1[0].has_key('code')) or (not lastResponseAllDataV1.startswith('[') and locationsV1.has_key('code')):
-				evohome_logV1.error('got 200 but error=<%s>' % lastResponseAllDataV1.replace('\r\n',''))
-			elif LOCATION_ID == '-1':
-				devicesV1 = locationsV1[0]['devices']
-			else:
-				for location in locationsV1:
-					if str(location['locationID']) == LOCATION_ID:
-						devicesV1 = location['devices']
-						break
+			if check(lastResponseAllDataV1,locationsV1):
+				if LOCATION_ID == '-1':
+					devicesV1 = locationsV1[0]['devices']
+				else:
+					for location in locationsV1:
+						if str(location['locationID']) == LOCATION_ID:
+							devicesV1 = location['devices']
+							break
 
 	loc = None
 	if LOCATION_ID == '-1':
@@ -298,12 +311,16 @@ try:
 		jZones = jZones + addTokenTags()
 		jZones = jZones + '}'
 		# 2018-02-21 - thx to ecc - fix to correctly send some non ascii characters (specifically inside the names of the zones)
-		print (jZones.encode('utf-8'))
+		
+		ret = jZones.encode('utf-8')
+		if VERSION == '3':
+			ret = codecs.encode(ret,"hex")
+		print (ret)
 
 except Exception as e:
 	evohome_log.exception('Exception')
 	if lastResponseAllDataV1 != None and DEBUG:
-		evohome_logV1.warning('V1 lastResponse : %s' % lastResponseAllDataV1.replace('\r\n',''))
+		evohome_logV1.warning('V1 lastResponse : %s' % removeCR(lastResponseAllDataV1))
 	print ('{"success":false,"code":"Exception","message":"%s" %s}' % ('{0}'.format(e), addTokenTags()))
 
 finally:

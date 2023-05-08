@@ -63,7 +63,7 @@ class evohome extends honeywell {
 		if ( honeyutils::isDebug() ) honeyutils::logDebug('running python process : nb=' . ($nb/2 - 1));
 		return $nb != 2;*/
 		$out = "";
-		evohome::__executePHP("ps -ef | grep 'python /var/www/html/plugins/".honeywell::PLUGIN_NAME."'", null, $out, 0, 1);
+		evohome::__executePHP("ps -ef | grep '" . self::PYTHON . " /var/www/html/plugins/".honeywell::PLUGIN_NAME."'", null, $out, 0, 1);
 		$tmp = explode("www-data ", $out);
 		$parts = array();
 		foreach ( $tmp as $line ) if ( $line != '' && stripos($line,"grep") === false ) $parts[] = trim($line);
@@ -118,7 +118,7 @@ class evohome extends honeywell {
 		} else {
 			// 0.4.0 - looking for and destroy the 2 process (parent/child)
 			$out = "";
-			self::__executePHP("ps -ef | grep 'python /var/www/html/plugins/".honeywell::PLUGIN_NAME."'", null, $out, 0, 1);
+			self::__executePHP("ps -ef | grep '" . self::PYTHON . " /var/www/html/plugins/".honeywell::PLUGIN_NAME."'", null, $out, 0, 1);
 			$parts = array();
 			foreach ( explode("www-data ", $out) as $line ) {
 				if ( $line != '' && stripos($line,"grep") === false ) $parts[] = trim($line);
@@ -159,7 +159,7 @@ class evohome extends honeywell {
 			self::refreshComponent($data, "1".$data['task']." : ".self::i18n("démarrage"));
 		}
 		self::setPythonRunning($taskName);
-		$cmd = 'python ' . dirname(__FILE__) . '/../../resources/' . $prgName . ' ' . $credentials;
+		$cmd = self::PYTHON . ' ' . dirname(__FILE__) . '/../../resources/' . $prgName . ' ' . self::PYTHON_VERSION . ' ' . $credentials;
 
 		// -- inject access_token/session from cachedInfosAPI
 		$cachedInfosAPI = honeyutils::getCacheData(self::CACHE_INFOS_API);
@@ -191,8 +191,13 @@ class evohome extends honeywell {
 			$ret = self::__executePHP($cmd, $data, $json, 310);
 			if ( honeyutils::isDebug() && $ret != 0 ) honeyutils::logDebug("Error while __executePHP ($ret) : <$json>");
 			$json = trim($json);
+			// Compatibilité Python3, la chaine en hexa : "b'xxxx'" :
+			if ( honeyutils::startsWith($json,"b'") && honeyutils::endsWith($json,"'") ) {
+				honeyutils::logDebug("Python3 : décodage hexa..");
+				$json = hex2bin(substr($json, 2, strlen($json)-3));
+			}
 		} catch (Exception $e) {
-			honeyutils::logError("Exception while running python part");
+			honeyutils::logException($e, "running python part");
 			$json = '';
 		}
 
@@ -486,19 +491,11 @@ class evohome extends honeywell {
 			if ( honeyutils::isDebug() ) honeyutils::logDebug('<<OUT iGetInformations[' . $execUnitId . ']');
 			return $infosZones;
 		} catch (Exception $e) {
-			honeyutils::logError("Exception while iGetInformations");
+			honeyutils::logException($e, "iGetInformations");
 			return null;
 		}
 	}
 
-	/*const EVO_MODES_ARRAY = array(self::CODE_MODE_AUTO=>new HeatMode('Auto','Planning','i_calendar',true,null,HeatMode::SMD_NONE,true),
-					 self::CODE_MODE_ECO=>new HeatMode('AutoWithEco','Economie','i_economy',true,null,HeatMode::SMD_PERM_DURING,true),
-					 self::CODE_MODE_AWAY=>new HeatMode('Away','Innocupé','i_away',false,null,HeatMode::SMD_PERM_UNTIL,true),
-					 self::CODE_MODE_DAYOFF=>new HeatMode('DayOff','Congé','i_dayoff',true,null,HeatMode::SMD_PERM_UNTIL,true),
-					 self::CODE_MODE_CUSTOM=>new HeatMode('Custom','Personnalisé','i_custom',true,null,HeatMode::SMD_PERM_UNTIL,true),
-					 self::CODE_MODE_OFF=>new HeatMode('HeatingOff','Arrêt','i_off',false,null,HeatMode::SMD_NONE,true)
-					 );
-	*/
 	function iGetModesArray() {
 		return array(self::CODE_MODE_AUTO=>new HeatMode('Auto','Planning','i_calendar',true,null,HeatMode::SMD_NONE,true),
 					 self::CODE_MODE_ECO=>new HeatMode('AutoWithEco','Economie','i_economy',true,null,HeatMode::SMD_PERM_DURING,true),
@@ -573,7 +570,11 @@ class evohome extends honeywell {
 		honeyutils::setCacheData(self::CACHE_SYNCHRO_RUNNING, $execUnitId, 60);
 
 		honeyutils::lockCron();
-		$ret = self::syncTH($prefix,$resizeWhenSynchronize);
+		try {
+			$ret = self::syncTH($prefix,$resizeWhenSynchronize);
+		} catch (Exception $e) {
+			honeyutils::logException($e, "ajaxSynchronizeTH");
+		}
 		honeyutils::unlockCron();
 		
 		if ( honeyutils::isDebug() ) honeyutils::logDebug("<<OUT - Evohome::ajaxSynchronizeTH(EUI=$execUnitId)");

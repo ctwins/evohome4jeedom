@@ -2,7 +2,7 @@
 
 <img align="left" src="plugin_info/evohome_icon.png" width="120" style="padding-right:16px;">
 This is a plugin for Jeedom 3.3 to 4.3.x platform, regarding the Honeywell Evohome, Round T87RF and Lyric T6/T6R.<br/>
-State is : v0.5.6 - Previous mode by Scenario & Auto schedules limits
+State is : v0.5.7 - Python 3 compatibility & Added TH Scenario modes
 
 Written in php, the Jeedom main langage, 'a bit' of javascript, of course some html, and, at this time (from 0.3.0), a forked Python bridge (from the excellent python library "evohome" of watchforstock).<br/>
 Great thanks to him (and contributors). This implementation can be ***[found here](https://github.com/watchforstock/evohome-client)*** <br/>

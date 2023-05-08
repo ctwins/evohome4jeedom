@@ -84,7 +84,7 @@ class ConsigneInfos {
 		return new ConsigneInfos($aConsigneInfos);
 	}
 	
-	public static function buildObj(eqLogic $equ) {
+	public static function buildObj($equ) {
 		if ( $equ == null ) {
 			return null;
 		}
@@ -151,7 +151,7 @@ class State {
 		return new State($aState);
 	}
 	
-	public static function buildObj(eqLogic $equ) {
+	public static function buildObj($equ) {
 		if ( $equ == null ) {
 			return null;
 		}

@@ -17,6 +17,9 @@ abstract class honeywell extends eqLogic {
     const PLUGIN_NAME = "evohome";
     const RELOAD = true;
 
+	const PYTHON = 'python3';
+    const PYTHON_VERSION = 3;
+
 	const CONF_HNW_SYSTEM = "hnwSystem";
 	const SYSTEM_EVOHOME = 'EVOHOME';
 	const SYSTEM_LYRIC = 'LYRIC';
@@ -584,22 +587,24 @@ abstract class honeywell extends eqLogic {
 
 		// 0.4.2 - change dependency check
 		// 0.4.3 - change 2>nul >> 2>dev/null (thanks github/titidnh)
-		$x = system::getCmdSudo() . ' dpkg-query --show python-requests 2>/dev/null | wc -l';
-		$r = exec($x);
-		if ( honeyutils::isDebug() ) honeyutils::logDebug("dependancy_info 1/2 [$x] = [$r]");
-		if ($r == 0) {
+        // 0.5.7 - check against python version
+        $pythonRequests = self::PYTHON_VERSION == 2 ? 'python-requests' : 'python3-requests';
+		if ( !self::checkDependancy('dpkg-query --show ' . $pythonRequests . ' 2>/dev/null') ) {
 			$ret['state'] = 'nok';
 		}
-
-		$x = system::getCmdSudo() . system::get('cmd_check') . ' gd | grep php | wc -l';
-		$r = exec($x);
-		if ( honeyutils::isDebug() ) honeyutils::logDebug("dependancy_info 2/2 [$x] = [$r]");
-		if ($r == 0) {
+		if ( !self::checkDependancy(system::get('cmd_check') . ' gd | grep php') ) {
 			$ret['state'] = 'nok';
 		}
 
 		return $ret;
 	}
+
+    static function checkDependancy($dep) {
+      $cmd = system::getCmdSudo() . $dep;
+      $r = exec($cmd);
+	  if ( honeyutils::isDebug() ) honeyutils::logDebug("checkDependancy [$cmd] = [$r]");
+      return $r != '';
+    }
 
 	static function setPythonRunning($name) {
 		honeyutils::setCacheData(self::CACHE_PYTHON_RUNNING, $name, 86400);
@@ -633,7 +638,7 @@ abstract class honeywell extends eqLogic {
                 }
 			}
 		}
-		honeyutils::logDebug("getOneEquByLocation = " . json_encode($locIdAndEqus));
+		//honeyutils::logDebug("getOneEquByLocation = " . json_encode($locIdAndEqus));
 		return $locIdAndEqus;
 	}
 	

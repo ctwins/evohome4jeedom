@@ -144,7 +144,7 @@ class Schedule {
 				$temp = $schedule['GeofenceSchedule']['awayPeriod']['heatSetPoint'];
 				$ret = array('TH'=>$temp, 'UNTIL'=>'');
 			} else {	// assume INSIDE
-				$currentTime = (new DateTime())->format('H:i:s');
+			    $currentTime = honeyutils::getDateTime()->format('H:i:s');
 				$sleepData = $schedule['GeofenceSchedule']['sleepMode'];
 				$sleepStart = $sleepData['startTime'];	// "22:00:00"
 				$sleepEnd = $sleepData['endTime'];		// "07:00:00"
@@ -168,7 +168,7 @@ class Schedule {
 		if ( $fileId == 0) {
 			$subTitle = honeywell::i18n("Programmation courante");
 		} else {
-			$dt = new DateTime();
+		    $dt = honeyutils::getDateTime();
 			$dt->setTimestamp($scheduleToShow['datetime']);
 			$subTitle = honeywell::i18n("Programmation de '{0}' créée le {1} à {2}", [self::getFileInfosById($locId,$fileId)['name'], $dt->format('Y-m-d'), $dt->format('H:i:s')]);
 			if ( !$isEdit ) {
@@ -234,7 +234,6 @@ class Schedule {
 	}
 
 	static public function getScheduleNames($locId) {
-		//honeyutils::logDebug("getScheduleNames($locId)...");
 		$list = array();
 		$schedulePath = self::getSchedulePath();
 		foreach (ls($schedulePath, '*') as $file) {
@@ -272,8 +271,8 @@ class Schedule {
 		//honeywell::waitingIAZReentrance('SaveSChedule-' . rand(0,10000));
 		//honeyutils::lockCron();
 		$dateTime = time();
-		// force refresh inside __getInformations
 		if ( $newSchedule == null ) {
+			// force refresh inside __getInformations
 			$rbs = honeyutils::getParam(honeywell::CFG_REFRESH_BEFORE_SAVE,0);
 			$schedule = self::getSchedule($locId,self::CURRENT_SCHEDULE_ID,$dateTime,$rbs==1);
 		} else {

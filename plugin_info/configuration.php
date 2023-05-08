@@ -52,7 +52,7 @@ if (!isConnect('admin')) {
 					<input type="password" class="configKey lyricSecretKey" data-l1key="<?php echo lyric::CFG_SECRET_KEY;?>" />
 				</div>
 				<div class="col-lg-4" style="padding-top:22px;">
-					<a style="display:none;" target="_blank" id="callHnwlOAuth2" />
+					<a style="display:none;" target="_blank" id="callHnwlOAuth2"></a>
 					<a class="btn btn-warning lyricToken" style="margin-left:32px;">{{Initialisation}}</a>
 				</div>
 			</div>
@@ -63,12 +63,12 @@ if (!isConnect('admin')) {
 				<div class="col-lg-2">
 					<label>{{Nom d'utilisateur}}</label>
 					<br/>
-					<?php echo '<input type="text" style="width:unset;" class="configKey form-control userName" data-l1key="' . evohome::CFG_USER_NAME . '" />'; ?>
+					<input type="text" style="width:unset;" class="configKey form-control userName" data-l1key="<?php echo evohome::CFG_USER_NAME;?>" />
 				</div>
 				<div class="col-lg-2">
 					<label>{{Mot de passe}}</label>
 					<br/>
-					<?php echo '<input type="password" style="width:unset;" class="configKey form-control password" data-l1key="' . evohome::CFG_PASSWORD . '" />'; ?>
+					<input type="password" style="width:unset;" class="configKey form-control password" data-l1key="<?php echo evohome::CFG_PASSWORD;?>" />
 				</div>
 			</div>
 		</div>
@@ -80,14 +80,12 @@ if (!isConnect('admin')) {
 				<input type="text" class="form-control thPrefix" style="width:80px;" value="TH" />
 			</div>
 			<div class="col-lg-3" style="margin-top:20px;margin-right:20px;">
-				<?php
-				if ( count(honeywell::getEquipments()) > 0 ) {
-					echo	'<input id="resizeWhenSynchronize" type="checkbox" style="width:24px;top: 4px!important;" class="resizeWhenSynchronize" />';
-					echo	'<label for="resizeWhenSynchronize" style="font-style:italic;">';
-					echo 	'{{Redimensionner les widgets existants}}';
-					echo	'</label>';
-				}
-				?>
+				<?php if ( count(honeywell::getEquipments()) > 0 ) { ?>
+					<input id="resizeWhenSynchronize" type="checkbox" style="width:24px;top: 4px!important;" class="resizeWhenSynchronize" />
+					<label for="resizeWhenSynchronize" style="font-style:italic;">
+					{{Redimensionner les widgets existants}}
+					</label>
+				<?php } ?>
 				<br/>
 				<a class="btn btn-warning btnSync">{{Synchroniser}}</a>
 			</div>
@@ -140,10 +138,10 @@ if (!isConnect('admin')) {
 			</div>
 			<div class="col-lg-3">
 				{{orange si}} >=&nbsp;
-				<?php echo '<input type="text" style="width:40px;text-align:center;" maxlength=4 class="bct2NA configKey form-control" data-l1key="' . honeywell::CFG_BCT_2N_A . '" />'; ?>
+				<input type="text" style="width:40px;text-align:center;" maxlength=4 class="bct2NA configKey form-control" data-l1key="<?php echo honeywell::CFG_BCT_2N_A;?>" />
 				&nbsp;&nbsp;
 				{{rouge si}} >=&nbsp;
-				<?php echo '<input type="text" style="width:40px;text-align:center;" maxlength=4 class="bct2NB configKey form-control" data-l1key="' . honeywell::CFG_BCT_2N_B . '" />'; ?>
+				<input type="text" style="width:40px;text-align:center;" maxlength=4 class="bct2NB configKey form-control" data-l1key="<?php echo honeywell::CFG_BCT_2N_B;?>" />
 			</div>
 		</div>
 		<div class="form-group">
@@ -166,7 +164,7 @@ if (!isConnect('admin')) {
 			</div>
 		</div>
 		<div class="form-group">
-			<label class="col-lg-4" />
+			<div class="col-lg-4"></div>
 			<label class="col-lg-4" style="text-align:left;"><i>{{Attention : concerne l'affichage et le stockage historique}}</i></label>
 		</div>
 		<div class="form-group system<?php echo honeywell::SYSTEM_EVOHOME;?> systems" style="display:none;">

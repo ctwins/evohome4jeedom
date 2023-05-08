@@ -15,29 +15,29 @@ def addTokenTags():
 	if CLIENT != None and CLIENT.access_token != None:
 		ret = ', "access_token":"' + CLIENT.access_token + '"'
 		ret = ret + ', "token_state":' + ('2' if SESSION_ID_V2 != CLIENT.access_token else '1')
-		ret = ret + ', "access_token_expires":' + str(CLIENT.access_token_expires)
-	else:
-		ret = ', "access_token":"0"'
-		ret = ret + ', "token_state":0'
-		ret = ret + ', "access_token_expires":0'
-	return ret
+		return ret + ', "access_token_expires":' + str(CLIENT.access_token_expires)
+	ret = ', "access_token":"0"'
+	ret = ret + ', "token_state":0'
+	return ret + ', "access_token_expires":0'
+
+VERSION = sys.argv[1]
 
 # Ser login details in the 2 fields below
-USERNAME = sys.argv[1]
-PASSWORD = sys.argv[2]
+USERNAME = sys.argv[2]
+PASSWORD = sys.argv[3]
 # payload A
 # -- a1
-#SESSION_ID_V1 = sys.argv[3]
-#USER_ID_V1 = sys.argv[4]
+#SESSION_ID_V1 = sys.argv[4]
+#USER_ID_V1 = sys.argv[5]
 # -- a2
-SESSION_ID_V2 = None if sys.argv[5] == '0' else sys.argv[5]
-SESSION_EXPIRES_V2 = float(sys.argv[6])
+SESSION_ID_V2 = None if sys.argv[6] == '0' else sys.argv[6]
+SESSION_EXPIRES_V2 = float(sys.argv[7])
 # -- a3
-DEBUG = sys.argv[7] == '1'
+DEBUG = sys.argv[8] == '1'
 # -- a4
-LOCATION_ID = sys.argv[8]
+LOCATION_ID = sys.argv[9]
 # payload B
-CODE_MODE = sys.argv[9]
+CODE_MODE = sys.argv[10]
 UNTIL = None
 
 CLIENT = None
@@ -58,6 +58,7 @@ try:
 
 	if loc == None:
 		print ('{"success":false,"code":"UnknownLocation","message":"no location for ID %s" %s}' % (LOCATION_ID, addTokenTags()))
+
 	else:
 		tcs = loc._gateways[0]._control_systems[0]
 

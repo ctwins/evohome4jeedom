@@ -595,13 +595,14 @@ class lyric extends honeywell {
 				if ( $infosZonesBefore != null ) $infosZones = $infosZonesBefore;
 			}
 			if ( honeyutils::isDebug() ) honeyutils::logDebug('<<OUT Lyric::iGetInformations[' . $execUnitId . ']');
-			return $infosZones;
+			$ret = $infosZones;
 		} catch (Exception $e) {
 			honeyutils::logError("Exception while Lyric::iGetInformations");
-			return null;
+			$ret = null;
 		}
 
 		honeyutils::logDebug("<<< Lyric::iGetInformations");
+		return $ret;
 	}
 
 	function iSetHtmlConsole(&$replace,$state,$currentMode) {
@@ -770,8 +771,7 @@ class lyric extends honeywell {
 			}
 			$data = array("deviceID"=>$zoneId,
 						  "scheduleType"=>"Timed",
-						  "timedSchedule"=>array("days"=>$days)
-						  );
+						  "timedSchedule"=>array("days"=>$days));
 			honeyutils::logDebug(">>>> Schedule To Send " . json_encode($data));
 		} else {	// SCHEDULE_TYPE_VACANCY
 			return array(self::SUCCESS=>false, "code"=>3, "message"=>"Error : schedule type not suppported yet");

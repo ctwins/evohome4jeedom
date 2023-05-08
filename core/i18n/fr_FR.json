@@ -27,6 +27,7 @@
         "Connexion perdue (date inconnue), batterie HS": "Connexion perdue (date inconnue), batterie HS",
         "Connexion perdue depuis {0}, batterie HS": "Connexion perdue depuis {0}, batterie HS",
         "Consigne forcée à {0}° au lieu de {1}°": "Consigne forcée à {0}° au lieu de {1}°",
+		"Consigne courante": "Consigne courante",
         "Consigne programmée": "Consigne programmée",
         "Consigne": "Consigne",
         "Console": "Console",

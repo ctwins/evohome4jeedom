@@ -15,29 +15,29 @@ def addTokenTags():
 	if CLIENT != None and CLIENT.access_token != None:
 		ret = ', "access_token":"' + CLIENT.access_token + '"'
 		ret = ret + ', "token_state":' + ('2' if SESSION_ID_V2 != CLIENT.access_token else '1')
-		ret = ret + ', "access_token_expires":' + str(CLIENT.access_token_expires)
-	else:
-		ret = ', "access_token":"0"'
-		ret = ret + ', "token_state":0'
-		ret = ret + ', "access_token_expires":0'
-	return ret
+		return ret + ', "access_token_expires":' + str(CLIENT.access_token_expires)
+	ret = ', "access_token":"0"'
+	ret = ret + ', "token_state":0'
+	return ret + ', "access_token_expires":0'
+
+VERSION = sys.argv[1]
 
 # Ser login details in the 2 fields below
-USERNAME = sys.argv[1]
-PASSWORD = sys.argv[2]
+USERNAME = sys.argv[2]
+PASSWORD = sys.argv[3]
 # payload A
 # -- a1
-#SESSION_ID_V1 = sys.argv[3]
-#USER_ID_V1 = sys.argv[4]
+#SESSION_ID_V1 = sys.argv[4]
+#USER_ID_V1 = sys.argv[5]
 # -- a2
-SESSION_ID_V2 = None if sys.argv[5] == '0' else sys.argv[5]
-SESSION_EXPIRES_V2 = float(sys.argv[6])
+SESSION_ID_V2 = None if sys.argv[6] == '0' else sys.argv[5]
+SESSION_EXPIRES_V2 = float(sys.argv[7])
 # -- a3
-DEBUG = sys.argv[7] == '1'
+DEBUG = sys.argv[8] == '1'
 # -- a4
-LOCATION_ID = sys.argv[8]
+LOCATION_ID = sys.argv[9]
 # payload B
-schedules = json.loads(sys.argv[9])
+schedules = json.loads(sys.argv[10])
 
 CLIENT = None
 
@@ -57,6 +57,7 @@ try:
 
 	if loc == None:
 		print ('{"success":false,"code":"UnknownLocation","message":"no location for ID %s %s}' % (LOCATION_ID, addTokenTags()))
+
 	else:
 		tcs = loc._gateways[0]._control_systems[0]
 
@@ -79,8 +80,8 @@ try:
 		# loop on the "id of task", and get out when each is finished
 		nbTasks = len(taskId)
 		td = time.time()
-		more = True
 		lastBadState = "dummy"
+		more = True
 		while more:
 			nbOk = 0
 			nbFailed = 0
@@ -96,7 +97,7 @@ try:
 					lastReceived = r.text
 					ct = json.loads(lastReceived)
 					if DEBUG:
-						evohome_log.warning(" > gives : " + ct['state'])
+						evohome_log.warning(" > gives : %s" % ct['state'])
 					if ct['state'] == 'Succeeded':
 						nbOk = nbOk + 1
 						nuplet[1] = True
@@ -105,6 +106,7 @@ try:
 						nuplet[2] = True
 					else:
 						lastBadState = ct['state']
+
 			if (nbOk + nbFailed) == nbTasks:
 				if nbFailed > 0:
 					msg = "%s/%s task(s) failed" % (nbFailed, nbTasks)
@@ -120,7 +122,7 @@ try:
 				more = False
 			else:
 				#if DEBUG:
-				evohome_log.warning("Waiting for " + str(nbTasks-nbOk) + " zone(s)...")
+				evohome_log.warning("Waiting for %s zone(s)..." % str(nbTasks-nbOk))
 				time.sleep(2)
 
 except Exception as e:

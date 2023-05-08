@@ -35,8 +35,8 @@ try {
 		}
 		if ( honeyutils::isDebug() ) honeyutils::logDebug("IN>> - ajax.setStatScope($locId,$statScope)");
 		honeywell::ajaxChangeStatScope($locId,$statScope);
-		ajax::success();
 		honeyutils::logDebug("<<OUT - ajax.setStatScope");
+		ajax::success();
 	}
 	else if ($action == 'ajaxListLocations') {
 		honeyutils::logDebug("IN>> - ajax.ajaxListLocations()");
@@ -48,8 +48,8 @@ try {
 				if ( $loc['zones'] != null ) usort($loc['zones'], "honeywell::cmpName");
 			}
 		}		
-		ajax::success(array('loc'=>$locList));
 		honeyutils::logDebug("<<OUT - ajax.ajaxListLocations");
+		ajax::success(array('loc'=>$locList));
 	}
 	else if ($action == 'ajaxSynchronizeTH') {
 		$prefix = init('prefix');
@@ -85,5 +85,5 @@ try {
 
 	throw new Exception(__('Aucune méthode correspondante à : ', __FILE__) . $action);
 } catch (Exception $e) {
-	ajax::error(displayExeption($e), $e->getCode());
+	ajax::error(displayException($e), $e->getCode());
 }

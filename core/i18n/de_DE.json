@@ -26,6 +26,7 @@
         "Congés": "Days-off",
         "Connexion perdue (date inconnue), batterie HS": "Connection lost (unknown date), battery KO",
         "Connexion perdue depuis {0}, batterie HS": "Connection lost since {0}, battery KO",
+		"Consigne courante": "Current setting point",
         "Consigne forcée à {0}° au lieu de {1}°": "Heating off. Setting point fixed to {0}° rather {1}°",
         "Consigne programmée": "Scheduled setting point",
         "Consigne": "Setting Point",

@@ -1,25 +1,27 @@
+#!/bin/sh
+
 PROGRESS_FILE=/tmp/dependancy_evohome_in_progress
 if [ ! -z $1 ]; then
 	PROGRESS_FILE=$1
 fi
 touch ${PROGRESS_FILE}
-echo 0 > ${PROGRESS_FILE}
+echo 0 > $PROGRESS_FILE
 
-echo "Clean.."
+echo "Clean...";
 sudo apt-get clean
-echo 50 > ${PROGRESS_FILE}
+echo 33 > $PROGRESS_FILE
 
 echo "Update.."
 sudo apt-get update
-echo 65 > ${PROGRESS_FILE}
+echo 66 > $PROGRESS_FILE
 
 echo "Python requests"
-apt-get install -y  python-requests
-echo 80 > ${PROGRESS_FILE}
+retValue=$(php /var/www/html/plugins/evohome/resources/install.php ${PROGRESS_FILE})
 
-echo "Check and potentially remove previous evohomeclient module"
-sudo pip list | awk 'NR>2 {print $1}' | grep evohomeclient | xargs -I {} pip uninstall -y {}
-echo 100 > ${PROGRESS_FILE}
+if [ $? -ne 0 ]; then
+	echo $retValue
+else
+	echo "Everything is successfully installed !"
+fi
 
-echo "Everything is successfully installed !"
-rm ${PROGRESS_FILE}
+rm $PROGRESS_FILE

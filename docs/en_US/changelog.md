@@ -1,5 +1,23 @@
 # Changelog - Evohome (& Round T87RF & Lyric T6/T6R) for Jeedom V3.3 to V4.3.x
 
+## [version 0.5.7] - 2023-05-08 - Python 3 compatibility & Added TH Scenario modes
+
+#### Added
+
+1. New settings added in the list of Setting point :<br/>
+Current setting point -1°
+Current setting point -0.5°
+Current setting point +0.5°
+Current setting point +1°
+Please note the new value is computed from the Current setting, not the Current scheduled<br/>
+
+#### Fixes
+
+1. Plugin is now dependant of Python 3 library (and no more Python 2)<br/>
+This was required by the Debian 11 Bulleye edition.
+2. Lyric only : was a bug during first initialization preventing creation of 2 two equipments.
+
+
 ## [version 0.5.6] - 2022-11-04 - Previous mode by Scenario & Auto schedules limits
 
 #### Added
@@ -27,7 +45,6 @@ B) General
 
 #### Remarks
 1. Under Jeedom 4.3.9 (perhaps 4.3.x), the dynamic display while setting a TH is disturbed (but the command works properly).
-
 
 
 ## [version 0.5.5] - 2022-02-13 - Jeedom 4.2.x compatibility (Lyric part)

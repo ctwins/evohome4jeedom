@@ -45,6 +45,10 @@ class honeyutils {
 		log::add(honeywell::PLUGIN_NAME, 'error', $msg);
 	}
 
+	static function logException($e,$fn) {
+		self::logError("Exception while $fn : " . $e->getMessage() . " (code=" . $e->getCode() . ")");
+	}
+
 	static function jsonDecode($text, $fnName) {
 		if ( $text == null || $text == '' ) {
 			if ( self::isDebug() ) self::logDebug("jsonDecode null for $fnName");
@@ -63,15 +67,17 @@ class honeyutils {
 	}
 
 	static function setParam($paramName, $value, $locId='', $suffix='') {
-		//self::logDebug("setParam ($paramName, $value)");
 	    config::save($paramName.$suffix.$locId, $value, honeywell::PLUGIN_NAME);
 	}
 
 	static function getParam($paramName, $defValue=null, $locId='', $suffix='') {
 	    $cfgValue = config::byKey($paramName.$suffix.$locId, honeywell::PLUGIN_NAME);
 		$ret = $cfgValue == null ? $defValue : $cfgValue;
-		//self::logDebug("getParam($paramName,$locId)=" . (is_array($ret) ? "array=".json_encode($ret) : $ret));
 		return $ret;
+	}
+
+	static function getDateTime($p1=null) {
+	    return $p1 == null ? new DateTime() : new DateTime($p1);
 	}
 
 	static function tsToLocalDateTime($ts) {
@@ -85,18 +91,18 @@ class honeyutils {
 		return $date->format('H:i:s');
 	}
 	static function tsToAbsoluteHM($ts) {
-		$date = new DateTime();
+		$date = self::getDateTime();
 		$date->setTimestamp($ts);
 		$date->setTimezone(new DateTimeZone('UTC'));
 		return str_replace(":","h",$date->format('H:i'));
 	}
 	static function tsToLocalMS($ts) {
-		$date = new DateTime();
+	    $date = self::getDateTime();
 		$date->setTimestamp($ts);
 		return $date->format('i:s');
 	}
 	static function tsToLocalHMS($ts) {
-		$date = new DateTime();
+	    $date = self::getDateTime();
 		$date->setTimestamp($ts);
 		//$date->setTimezone(new DateTimeZone('UTC'));
 		return $date->format('H:i:s');
@@ -116,12 +122,12 @@ class honeyutils {
 		return date("Y-m-d G:i:s", $dt);
 	}
 	static function gmtToLocalDate($gmtDateTime) {
-		//return strftime('%x', self::_gmtToLocalDateTime($gmtDateTime)->getTimestamp());
 		return self::_gmtToLocalDateTime($gmtDateTime)->format('d/m/y');
 	}
 	static function localDateTimeToGmtZ($dateTime) {
 		$dateTime->setTimezone(new DateTimeZone('UTC'));
-		return $dateTime->format('Y-m-d') . 'T' . $dateTime->format('H:i:s') . 'Z';	// %Y-%m-%dT%H:%M:%SZ
+		// %Y-%m-%dT%H:%M:%SZ
+		return $dateTime->format('Y-m-d') . 'T' . $dateTime->format('H:i:s') . 'Z';
 		}
 	
 	static function isAdmin() {
@@ -197,19 +203,25 @@ class honeyutils {
 		return self::getDayName(self::ECDayToNumDay[$ecDay]);
 	}
 
+	static function encodeURIComponent($str) {
+	    $revert = array('%21'=>'!', '%2A'=>'*', '%27'=>"'", '%28'=>'(', '%29'=>')');
+	    return strtr(rawurlencode($str), $revert);
+	}
+
 	static function saveInfo($equ,$infoId,$data,$defaut=null) {
-		//self::logDebug("saveInfo $infoId new : " . json_encode($data));
 		$tmp = $equ->getCmd(null,$infoId);
 		if (is_object($tmp)) {
 			$ret = $tmp->execCmd();
-			//self::logDebug("saveInfo $infoId was : " . json_encode($ret));
 			$tmp->event($data);
-			//$ret2 = $tmp->execCmd();
-			//self::logDebug("saveInfo $infoId is now : " . json_encode($ret2));
 			return $ret;
 		}
-		self::logDebug("saveInfo $infoId can't save");
+		self::logDebug("saveInfo has failed as no cmd found with id=$infoId");
 		return $defaut;
+	}
+
+	static function getInfo($equ,$infoId,$def=null) {
+		$cmd = $equ->getCmd(null,$infoId);
+		return !is_object($cmd) ? $def : $cmd->execCmd();
 	}
 
 	static function readInfo($equ,$infoId) {
@@ -218,6 +230,25 @@ class honeyutils {
 			return $tmp->execCmd();
 		}
 		return null;
+	}
+
+	static function showUserTimeUsed() {
+		$dat = getrusage();
+		/**$a = $dat["ru_nswap"];         // number of swaps
+		$b = $dat["ru_majflt"];        // number of page faults
+		$c = $dat["ru_utime.tv_sec"];  // user time used (seconds)*/
+		$d = $dat["ru_utime.tv_usec"] / 1000; // user time used (microseconds) > ms
+		//$tid = Thread::getCurrentThreadId();
+		$tid = getmypid();
+		//honeyutils::logDebug("user time used=$d ; tid=$tid");
+	}
+
+	static function startsWith($inString, $begin) {
+		return substr($inString, 0, strlen($begin)) === $begin;
+	}
+
+	static function endsWith($inString, $end) {
+		return substr($inString, -strlen($end)) === $end;
 	}
 
 }
