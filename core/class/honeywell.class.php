@@ -445,7 +445,6 @@ abstract class honeywell extends eqLogic {
 			honeyutils::logError("<<OUT - injectInformationsFromZone - zone undefined ; nothing to do");
 			return;
 		}
-		$locId = $this->getLocationId();
 		if ( $this->getConfiguration(self::CONF_TYPE_EQU) == self::TYPE_EQU_CONSOLE ) {
 			Console::injectInformations($this,$infosZones);
 		} else {

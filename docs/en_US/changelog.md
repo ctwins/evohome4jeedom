@@ -1,14 +1,25 @@
-# Changelog - Evohome (& Round T87RF & Lyric T6/T6R) for Jeedom V3.3 to V4.3.x
+# Changelog - Evohome (& Round T87RF & Lyric T6/T6R) for Jeedom V3.3 to V4.4.x
+
+## [version 0.6.0] - 2024-12-05 - Jeedom 4.4.x compatibility
+
+#### Fixes
+
+1. Widgets malformed when displaying first time on screen<br/>
+(due to unexplained switch in version 4.4 of Jeedom of delayed import of js files)<br/>
+Thanks to [thierry.viens](https://community.jeedom.com/t/probleme-daffichage-plugin-honeywell/131356/18) for his time during our tests
+2. Change setpoint no more worked.<br/>
+(due to a more restrictive PHP version regarding static functions)<br/>
+Thanks to [Gsxrnoir2001](https://community.jeedom.com/t/probleme-setconsignedata/131862) for his request.
 
 ## [version 0.5.7] - 2023-05-08 - Python 3 compatibility & Added TH Scenario modes
 
 #### Added
 
 1. New settings added in the list of Setting point :<br/>
-Current setting point -1Â°
-Current setting point -0.5Â°
-Current setting point +0.5Â°
-Current setting point +1Â°
+Current setting point -1°<br/>
+Current setting point -0.5°<br/>
+Current setting point +0.5°<br/>
+Current setting point +1°<br/>
 Please note the new value is computed from the Current setting, not the Current scheduled<br/>
 
 #### Fixes
@@ -565,5 +576,5 @@ This could be have to effect to show additional errors in the "Jeedom messages" 
 	2. PHP7 restrictions on json : booleans built in python are now returned correctly formed<br/>
 
 
-## [beta 1] - 2012-02-18
+## [beta 1] - 2018-02-18
 first publication

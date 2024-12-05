@@ -82,11 +82,52 @@
 	</a>
 </td>
 </tr></table>
-<script type="text/javascript" src="plugins/#pluginName#/core/template/dashboard/dashboard_min.js?#dashboard_min_js_size#"></script>
-<script type="text/javascript" src="plugins/#pluginName#/core/template/dashboard/temperature_min.js?#temperature_min_js_size#"></script>
 <script>
-evoRegisterHover(#id#,'Batt');
-initVarsCommon('#pluginName#',#id#,'#evoBackgroundColor#','#evoCmdBackgroundColor#',#apiAvailable#,"#msgApiUnavailable#",'#evoDefaultShowingScheduleMode#','#showHorizontal#','#argZoneId#','#argFileId#',#dashboard_css_size#,'#evoMsgInfo#');
-initVarsTH('#locId#',#id#,'#zoneId#');
-if ( '#setConsigneDisplayV1#' != 'none' || '#setConsigneDisplayV2#' != 'none' ) initVarsAC(#taskIsRunning#,'#adjustAvailable#',"#msgAdjustConsigneUnavailable#","#msgEnforceConsigne#",'#zoneId#','#currentConsigne#','#currentConsigneUntil#','#consigneNoUnit#','#adjustLow#','#adjustHigh#','#adjustStep#','#cmd_setConsigne_id#',"#canReset#" == "1",'#setConsigneDisplayV1#' != 'none',"#name_display#","#lblAdjTHTitle1#",#setThModes#);
+if (!window.evoHnwPubSub) {
+	window.evoHnwPubSub = {
+		e : [],
+		p : function(scriptPart) {
+			this[scriptPart] = 2;
+			this.e.forEach((func) => func());
+		},
+		s : function(func) {
+			this.e.push(func);
+		},
+		db: 0,
+		th: 0,
+		co: 0,
+		thr : function() { return this.db === 2 && this.th === 2 },
+		cor : function() { return this.db === 2 && this.co === 2 },
+		load: function(part, suffixe) {
+			if (!this[part]) {
+				this[part] = 1;
+				const script = document.createElement("script");
+				script.src = 'plugins/#pluginName#/core/template/dashboard/' + suffixe;
+				document.body.appendChild(script);
+			}
+		}
+	};
+}
+evoHnwTHready#id# = false;
+function checkInit#id#() {
+	if (evoHnwPubSub.thr()) {
+		evoRegisterHover(#id#,'Batt');
+		initVarsCommon('#pluginName#',#id#,'#evoBackgroundColor#','#evoCmdBackgroundColor#',#apiAvailable#,"#msgApiUnavailable#",'#evoDefaultShowingScheduleMode#','#showHorizontal#','#argZoneId#','#argFileId#',#dashboard_css_size#,'#evoMsgInfo#');
+		initVarsTH('#locId#',#id#,'#zoneId#');
+		if ( '#setConsigneDisplayV1#' != 'none' || '#setConsigneDisplayV2#' != 'none' ) {
+			initVarsAC(#taskIsRunning#,'#adjustAvailable#',"#msgAdjustConsigneUnavailable#","#msgEnforceConsigne#",'#zoneId#','#currentConsigne#','#currentConsigneUntil#','#consigneNoUnit#','#adjustLow#','#adjustHigh#','#adjustStep#','#cmd_setConsigne_id#',"#canReset#" == "1",'#setConsigneDisplayV1#' != 'none',"#name_display#","#lblAdjTHTitle1#",#setThModes#);
+		}
+		return true;
+	}
+	return false;
+}
+if (!(evoHnwTHready#id# = checkInit#id#())) {
+	evoHnwPubSub.s(function() {
+		if (!evoHnwTHready#id#) {
+			evoHnwTHready#id# = checkInit#id#();
+		}
+	});
+}
+evoHnwPubSub.load('db', 'dashboard_min.js?#dashboard_min_js_size#');
+evoHnwPubSub.load('th', 'temperature_min.js?#temperature_min_js_size#');
 </script>

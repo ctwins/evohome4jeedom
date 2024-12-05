@@ -186,7 +186,7 @@ class SetConsigneData {
 		$this->until = $until;
 	}
 	
-	public function buildStrForSelect($label) {
+	public static function buildStrForSelect($label) {
 		return $this->mode
 		. self::SEP . $this->zoneId
 		. self::SEP . $this->t1
@@ -195,7 +195,7 @@ class SetConsigneData {
 		. "|" . $label;
 	}
 	
-	public function buildFromStr($data) {
+	public static function buildFromStr($data) {
 		$aData = explode(self::SEP,$data);
 		if ( count($aData) != 5 ) {
 			return null;
@@ -213,7 +213,7 @@ class ReadStates {
 	const STATE_IS_ACCURATE = 'isAccurate';
 	const STATE_CNX_LOST = 'cnxLost';
 
-	static function getStates($locId,$infosZones=null) {
+	public static function getStates($locId,$infosZones=null) {
 		$states = array();
 		$states[self::STATE_UNREAD] = (honeywell::CACHE_IAZ_DURATION - honeyutils::getCacheRemaining(honeywell::CACHE_IAZ,$locId)) > honeywell::getLoadingInterval()*60;
 		$states[self::STATE_CRON_ACTIVE] = honeywell::isCronActive();

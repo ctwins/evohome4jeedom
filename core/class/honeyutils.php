@@ -232,17 +232,6 @@ class honeyutils {
 		return null;
 	}
 
-	static function showUserTimeUsed() {
-		$dat = getrusage();
-		/**$a = $dat["ru_nswap"];         // number of swaps
-		$b = $dat["ru_majflt"];        // number of page faults
-		$c = $dat["ru_utime.tv_sec"];  // user time used (seconds)*/
-		$d = $dat["ru_utime.tv_usec"] / 1000; // user time used (microseconds) > ms
-		//$tid = Thread::getCurrentThreadId();
-		$tid = getmypid();
-		//honeyutils::logDebug("user time used=$d ; tid=$tid");
-	}
-
 	static function startsWith($inString, $begin) {
 		return substr($inString, 0, strlen($begin)) === $begin;
 	}

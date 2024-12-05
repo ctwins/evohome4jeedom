@@ -1,8 +1,8 @@
 # evohome4jeedom
 
 <img align="left" src="plugin_info/evohome_icon.png" width="120" style="padding-right:16px;">
-This is a plugin for Jeedom 3.3 to 4.3.x platform, regarding the Honeywell Evohome, Round T87RF and Lyric T6/T6R.<br/>
-State is : v0.5.7 - Python 3 compatibility & Added TH Scenario modes
+This is a plugin for Jeedom 3.3 to 4.4.x platform, regarding the Honeywell Evohome, Round T87RF and Lyric T6/T6R.<br/>
+State is : v0.6.0 - Jeedom 4.4.x compatibility
 
 Written in php, the Jeedom main langage, 'a bit' of javascript, of course some html, and, at this time (from 0.3.0), a forked Python bridge (from the excellent python library "evohome" of watchforstock).<br/>
 Great thanks to him (and contributors). This implementation can be ***[found here](https://github.com/watchforstock/evohome-client)*** <br/>
@@ -20,8 +20,9 @@ More, a statistics panel on every TH widget could appear (requested from the Con
 NEW 0.5.0 - Integration of the Lyric T6/T6R systems.<br/>
 NEW 0.5.3 - Detailed cmd Informations appear in the Console and TH equipments (see the french doc).<br/>
 NEW 0.5.4 - Jeedom 4.2.x compatibility (Horizontal Schedule part)<br/>
-NEW 0.5.5 - Jeedom 4.2.x compatibility (Lyric part)
-<br/><br/><br/>
+NEW 0.5.5 - Jeedom 4.2.x compatibility (Lyric part)<br/>
+NEW 0.6.0 - Jeedom 4.4.x compatibility<br/>
+<br/><br/>
 Some words about configuration (or see the french doc.) :<br/>
 
 1> Evohome and Round T87RF :<br/>

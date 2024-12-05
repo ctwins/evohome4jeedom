@@ -23,6 +23,8 @@ Depuis 0.5.0 : gère désormais les thermostats **Lyric T6/T6R**<br/><br/>
 
 Depuis 0.5.4/5 : Compatibilité **Jeedom 4.2.x**<br/><br/>
 
+Depuis 0.6.0 : Compatibilité **Jeedom 4.4.x**<br/><br/>
+
 
 
 # Page configuration
