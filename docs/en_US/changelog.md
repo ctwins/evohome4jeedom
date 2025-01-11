@@ -51,10 +51,10 @@ Thanks to [Gsxrnoir2001](https://community.jeedom.com/t/probleme-setconsignedata
 #### Added
 
 1. New settings added in the list of Setting point :<br/>
-Current setting point -1°<br/>
-Current setting point -0.5°<br/>
-Current setting point +0.5°<br/>
-Current setting point +1°<br/>
+Current setting point -1Â°<br/>
+Current setting point -0.5Â°<br/>
+Current setting point +0.5Â°<br/>
+Current setting point +1Â°<br/>
 Please note the new value is computed from the Current setting, not the Current scheduled<br/>
 
 #### Fixes
