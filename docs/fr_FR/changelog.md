@@ -14,7 +14,7 @@ Thanks [Agamemnon](https://community.jeedom.com/t/evolution-info-flamme/135157) 
 2. New cmd info on Console<br/>
     - boiler request (0 to n), based on sum of "TH boiler request"<br/>
     Available with #[Object name][Console][Demande de chauffage]#.<br/>
-    A line added on widget "Boiler request" with the fire icon, which appears if this info > 0<br/>
+    A line added on widget "Boiler request" with the flame icon, which appears if this info > 0<br/>
     Visibility settable from configuration (true by default).<br/>
     Historization is also available<br/>
 
