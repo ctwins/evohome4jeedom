@@ -357,8 +357,7 @@ class evohome extends honeywell {
 								honeyutils::setParam(self::iCFG_SCHEDULE_ID, $sId, $locId);
 								config::remove(self::iCFG_SCHEDULE_ID, __CLASS__);
 							}
-						}
-						else {
+						} else {
 							// 0.4.0 - 2019-06-29 - new : alert settings
 							honeyutils::logDebug("-- alert settings..");
 							$temp = $eqLogic->getCmd(null,TH::CMD_TEMPERATURE_ID);

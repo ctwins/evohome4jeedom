@@ -31,6 +31,10 @@ abstract class honeywell extends eqLogic {
 	const CFG_LOCATION_DEFAULT_ID = -1;
 	const iCFG_SCHEDULE_ID = 'intScheduleFileId';
 
+	// Common commands (Console & TH)
+	// 0.6.1 - Scenario or external management helper
+	const CMD_BOILER_REQUEST = 'boilerRequest';
+
 	const CONF_MODEL_TYPE = 'modelType';
 	const CONF_ALLOWED_SYSTEM_MODE = 'allowedSystemMode';
 	const ID_NO_ZONE = -2;
@@ -153,6 +157,8 @@ abstract class honeywell extends eqLogic {
 		}
 	}
 
+	/*********************** Méthodes d'instance **************************/
+
 	function createOrUpdateCmd($order, $logicalId, $name, $type, $subType, $isVisible, $isHistorized) {
 		$cmd = $this->getCmd(null, $logicalId);
 		$created = false;
@@ -204,6 +210,8 @@ abstract class honeywell extends eqLogic {
 	public function preUpdate() {
 		if ($this->getConfiguration(self::CONF_TYPE_EQU) == self::TYPE_EQU_CONSOLE) {
 			Console::preUpdate($this);
+		} else {
+			TH::preUpdate($this);
 		}
 		return true;
 	}
@@ -233,8 +241,6 @@ abstract class honeywell extends eqLogic {
 
 		return true;
 	}
-
-	/*********************** Méthodes d'instance **************************/
 
 	public function postRemove() {
 	}
@@ -299,8 +305,7 @@ abstract class honeywell extends eqLogic {
 
 		if ( $typeEqu == self::TYPE_EQU_CONSOLE ) {
 			Console::toHtml($this,$pVersion,$version,$replace,$scheduleCurrent);
-		}
-		else {
+		} else {
 			// TH WIDGET
 			TH::toHtml($this,$pVersion,$version,$replace,$scheduleCurrent);
 		}
@@ -383,13 +388,19 @@ abstract class honeywell extends eqLogic {
 		return $this->getConfiguration(self::CONF_LOC_ID, self::CFG_LOCATION_DEFAULT_ID);
 	}
 
-	function iRefreshComponent($infosZones=null,$inject=false) {
+	function iRefreshComponent($doRefresh, $infosZones=null,$inject=false) {
 		honeyutils::logDebug("IN>> refreshComponent");
+		$boilerRequest = false;
 		if ( is_array($infosZones) && $inject ) {
-			$this->injectInformationsFromZone($infosZones);
+			$boilerRequest = $this->injectInformationsFromZone($infosZones);
+		} else {
+			$boilerRequest = honeyutils::readInfo($this, self::CMD_BOILER_REQUEST) == "1";
 		}
-		$this->refreshWidget();	// does the toHtml by event (in another Thread, so the cache usage)
+		if ($doRefresh) {
+			$this->refreshWidget();	// does the toHtml by event (in another Thread, so the cache usage)
+		}
 		honeyutils::logDebug("<<OUT refreshComponent");
+		return $boilerRequest;
 	}
 
 	function setAllowedSystemModes($asmList) {
@@ -437,27 +448,29 @@ abstract class honeywell extends eqLogic {
 	// $razMinMax = true for a manual command (RUF)
 	function injectInformationsFromZone($infosZones, $razMinMax=false) {
 		if ( !is_array($infosZones) ) {
-			return;
+			return false;
 		}
 		$zoneId = $this->getLogicalId();
 		if ( honeyutils::isDebug() ) honeyutils::logDebug("IN>> - injectInformationsFromZone on zone $zoneId");
 		if ( $zoneId == self::ID_NO_ZONE ) {
 			honeyutils::logError("<<OUT - injectInformationsFromZone - zone undefined ; nothing to do");
-			return;
+			return false;
 		}
+		$boilerRequest = false;
 		if ( $this->getConfiguration(self::CONF_TYPE_EQU) == self::TYPE_EQU_CONSOLE ) {
 			Console::injectInformations($this,$infosZones);
 		} else {
-			TH::injectInformations($this,$infosZones,$zoneId);
+			$boilerRequest = TH::injectInformations($this,$infosZones,$zoneId);
 		}
-		honeyutils::logDebug("<<OUT - injectInformationsFromZone");
+		honeyutils::logDebug("<<OUT - injectInformationsFromZone $zoneId (br=" . ($boilerRequest ? "1" : "0") . ")");
+		return $boilerRequest;
 	}
 
 	function getToHtmlDataKey() {
 	    return 'toHtmlData_' . $this->getLocationId() . "_" . $this->getLogicalId();
 	}
 
-	function setToHtmlProperties($pStates,$pScheduleCurrent,$pMsgInfo,$pTaskIsRunning=false,$pConsigne=null) {
+	function setToHtmlProperties($pStates,$pScheduleCurrent,$pMsgInfo='',$pTaskIsRunning=false,$pConsigne=null) {
 		honeyutils::setCacheData($this->getToHtmlDataKey(),
 			array("states"=>$pStates,
 			      "scheduleCurrent"=>$pScheduleCurrent,
@@ -740,12 +753,23 @@ abstract class honeywell extends eqLogic {
 		if ( honeyutils::isDebug() ) honeyutils::logDebug("IN>> - refreshAllForLoc($locId)");
 		$aStates = ReadStates::getStates($locId,$infosZones);
 		$scheduleCurrent = Schedule::getSchedule($locId);
+		$boilerRequestForAll = 0;
+		$console = null;
 		foreach (self::getEquipmentsForLoc($locId) as $equ) {
 			// NB : $taskIsRunning should be set on console only
-			$equ->setToHtmlProperties($aStates,$scheduleCurrent,$msgInfo,$taskIsRunning && $equ->getConfiguration(self::CONF_TYPE_EQU) == self::TYPE_EQU_CONSOLE);
+			$isConsole = $equ->getConfiguration(self::CONF_TYPE_EQU) == self::TYPE_EQU_CONSOLE;
+			$equ->setToHtmlProperties($aStates,$scheduleCurrent,$msgInfo,$taskIsRunning && $isConsole);
 			$msgInfo = '';	// set only on the first equ
-			$equ->iRefreshComponent($infosZones,$inject);
+			$boilerRequest = $equ->iRefreshComponent(!$isConsole,$infosZones,$inject);
+			if ($isConsole) {
+				$console = $equ;
+			} else {
+				honeyutils::logDebug("boilerRequest=$boilerRequest for zone " . $equ->getLocationId());
+				$boilerRequestForAll += $boilerRequest ? 1 : 0;
+			}
 		}
+		Console::setBoilerRequest($locId,$boilerRequestForAll);
+		$console->refreshWidget();	// does the toHtml by event (in another Thread, so the cache usage)
 		if ( honeyutils::isDebug() ) honeyutils::logDebug("<<OUT - refreshAllForLoc($locId)");
 	}
 
@@ -777,7 +801,7 @@ abstract class honeywell extends eqLogic {
 			$scheduleCurrent = Schedule::getSchedule($locId);
 			$consigne = array_key_exists('consigne',$data) ? $data['consigne'] : null;
 			$comp->setToHtmlProperties($aState,$scheduleCurrent,$msgInfo,$data['taskIsRunning'],$consigne);
-			$comp->iRefreshComponent();
+			$comp->iRefreshComponent(true);
 		}
 		honeyutils::logDebug('<<OUT - refreshComponent');
 	}

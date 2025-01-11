@@ -44,12 +44,18 @@ class TH {
 	const SET_TH_MODE_UNTIL_END_OF_DAY = 'STM_4';
 	const SET_TH_MODE_UNTIL_END_OF_PERIOD = 'STM_5';	// Lyric+Geofence case
 
+	static function preUpdate($equ) {
+		// nothing to do
+	}
+	
 	static function postSave($equ) {
 		honeyutils::logDebug('postSave - create TH widget');
 		$i = 0;
 		//$equ->deleteCmd([honeywell::CMD_STATE, honeywell::CMD_SET_MODE, honeywell::CMD_SAVE, honeywell::CMD_RESTORE, honeywell::CMD_DELETE, honeywell::CMD_STATISTICS_ID]);
 		$equ->createOrUpdateCmd($i++, self::CMD_TEMPERATURE_ID, 'Température', 'info', 'numeric', 1, 1);
 		$equ->createOrUpdateCmd($i++, self::CMD_CONSIGNE_ID, 'Consigne', 'info', 'numeric', 1, 1);
+		// 0.6.1 - Scenario or external management helper
+		$equ->createOrUpdateCmd($i++, honeywell::CMD_BOILER_REQUEST, 'Demande de chauffage', 'info', 'numeric', 1, 1);
 		$equ->createOrUpdateCmd($i++, self::CMD_SCH_CONSIGNE_ID, 'Consigne programmée', 'info', 'numeric', 0, 1);
 		$equ->createOrUpdateCmd($i++, self::CMD_CONSIGNE_TYPE_ID, 'Type Consigne', 'info', 'string', 0, 0);	// 0.4.1 - no display usage
 		$equ->createOrUpdateCmd($i++, self::CMD_SET_CONSIGNE_ID, 'Set Consigne', 'action', 'select', 1, 0);
@@ -105,12 +111,13 @@ class TH {
 		honeyutils::logDebug("** Inject TH...");
 		$infosZone = honeyutils::extractZone($infosZones,$zoneId);
 		if ( $infosZone == null ) {
-			honeyutils::logError("<<OUT - injectInformationsFromZone - no data found on zone $zoneId");
-			return;
+			honeyutils::logError("<<OUT - injectInformations - no data found on zone $zoneId");
+			return false;
 		}
 		$temp = honeywell::adjustByUnit($infosZone['temperature'],$infosZone['units']);
 		$previousTemp = honeyutils::saveInfo($equ, self::CMD_TEMPERATURE_ID, $temp, 0);
-		honeyutils::saveInfo($equ, self::CMD_CONSIGNE_ID, honeywell::adjustByUnit($infosZone['setPoint'], $infosZone['units']));
+		$setPoint = honeywell::adjustByUnit($infosZone['setPoint'], $infosZone['units']);
+		honeyutils::saveInfo($equ, self::CMD_CONSIGNE_ID, $setPoint);
 		$locId = $equ->getLocationId();
 		$consigneScheduled = Schedule::getConsigneScheduledForZone($locId,$infosZone,$infosZone['units'],Schedule::getScheduleType($infosZones))['TH'];
 		honeyutils::saveInfo($equ ,self::CMD_SCH_CONSIGNE_ID, honeywell::adjustByUnit($consigneScheduled, $infosZone['units']));
@@ -147,9 +154,21 @@ class TH {
 		honeyutils::saveInfo($equ, self::CMD_SCH_MAX_PER_DAY, $oCI->maxPerDay);
 		honeyutils::saveInfo($equ, self::CMD_SCH_RESOLUTION, $oCI->timeInterval);
 
-		if ( honeyutils::isDebug() ) {
-			honeyutils::logDebug("zone$zoneId=" . $infosZone['name'] . " : temp = " . $infosZone['temperature'] . ", consigne = " . $infosZone['setPoint'] . ", consigneInfos = $consigneInfos");
+		// 0.6.1 - boiler request
+		$prevBoilerRequest = honeyutils::readInfo($equ, honeywell::CMD_BOILER_REQUEST);
+		$boilerRequest = $temp < $setPoint ? 1 : 0;
+		if ($prevBoilerRequest != $boilerRequest) {
+			honeyutils::saveInfo($equ, honeywell::CMD_BOILER_REQUEST, $boilerRequest);
 		}
+
+		if ( honeyutils::isDebug() ) {
+			honeyutils::logDebug("zone$zoneId=" . $infosZone['name'] . " : temp = " . $infosZone['temperature'] .
+				", consigne = " . $infosZone['setPoint'] .
+				", consigneInfos = $consigneInfos" .
+				", boilerRequest = $boilerRequest (previous=$prevBoilerRequest)");
+		}
+		
+		return $temp < $setPoint;
 	}
 
 	static function toHtml($equ,$pVersion,$version,&$replace,$scheduleCurrent) {
@@ -167,7 +186,7 @@ class TH {
 		$replace_TH['#etatImg#'] = 'empty.svg';
 		$replace_TH['#etatUntilImg#'] = 'empty.svg';
 
-		$cmdTemperature = $equ->getCmd(null,self::CMD_TEMPERATURE_ID);
+		$cmdTemperature = $equ->getCmd('info',self::CMD_TEMPERATURE_ID);
 		$cmdId = is_object($cmdTemperature) ? $cmdTemperature->getId() : '';
 		$replace_TH['#temperatureId#'] = $cmdId;
 		$replace_TH['#temperatureDisplay#'] = (is_object($cmdTemperature) && $cmdTemperature->getIsVisible()) ? "block" : "none";
@@ -183,7 +202,7 @@ class TH {
 		}
 
 		// *** CONSIGNE
-		$cmdConsigne = $equ->getCmd(null,self::CMD_CONSIGNE_ID);
+		$cmdConsigne = $equ->getCmd('info',self::CMD_CONSIGNE_ID);
 		$replace_TH['#consigneId#'] = is_object($cmdConsigne) ? $cmdConsigne->getId() : '';
 		$replace_TH['#consigneDisplay#'] = (is_object($cmdConsigne) && $cmdConsigne->getIsVisible()) ? "block" : "none";
 		$consigne = $forcedConsigne != null ? $forcedConsigne : (is_object($cmdConsigne) ? $cmdConsigne->execCmd() : 0);
@@ -193,24 +212,26 @@ class TH {
 
 		// forcer l'arrondi en mode HNW pour détection demande chauffe
 		$tempHNW = honeywell::applyRounding($temperatureNative,honeywell::CFG_ACC_HNW);
-        switch ($temperatureNative == null ? 0 : ($consigneInfos->heating == 1 || $tempHNW < $consigne ? 2 : 1) ) {
-			case 0 :
+		if ($temperatureNative == null ) {
 			$replace_TH['#temperatureImg#'] = 'batt-hs.png';
 			$replace_TH['#temperatureImgStyle#'] = 'height:36px;width:36px;margin-top:2px;';
+			$replace_TH['#temperatureImgClass#'] = '';
 			$replace_TH['#temperatureDeltaDisplay#'] = 'none;';
-			break;
-
-			case 1:
-			$replace_TH['#temperatureImg#'] = 'check-mark-md.png';
-			$replace_TH['#temperatureImgStyle#'] = 'height:20px;';
+		} else {
+			$cmdBoilerCall = $equ->getCmd('info',honeywell::CMD_BOILER_REQUEST);
+			$replace_TH['#temperatureBoilerId#'] = is_object($cmdBoilerCall) ? $cmdBoilerCall->getId() : '';
+			$imgVisible = !is_object($cmdBoilerCall) ? true : $cmdBoilerCall->getIsVisible() ? true : false;
+			$replace_TH['#temperatureImgClass#'] = $imgVisible ? 'history' : '';
 			$replace_TH['#temperatureDeltaDisplay#'] = 'block';
-			break;
-
-			case 2:
-			$replace_TH['#temperatureImg#'] = 'chauffage_on.gif';
-			$replace_TH['#temperatureImgStyle#'] = 'height:15px;width:15px;';
-			$replace_TH['#temperatureDeltaDisplay#'] = 'block';
+			if ( $consigneInfos->heating == 1 || $temperatureNative < $consigne ) {
+				$replace_TH['#temperatureImg#'] = 'chauffage_on.gif';
+				$replace_TH['#temperatureImgStyle#'] = $imgVisible ? 'height:15px;width:15px;' : 'display:none';
+			} else {
+				$replace_TH['#temperatureImg#'] = 'check-mark-md.png';
+				$replace_TH['#temperatureImgStyle#'] = $imgVisible ? 'height:20px;' : 'display:none';
+			}
 		}
+		
 		// **********************************************************************
 		$thMode = $equ->getThModes($currentMode,null,$consigneInfos);
 		// **********************************************************************
@@ -248,7 +269,6 @@ class TH {
 		$consigneTypeImg = null;
 		if ( $consigneInfos != null ) {
 			# $consigneInfos->status = for Evohome : FollowSchedule / PermanentOverride / TemporaryOverride
-			$consigneTip = '';
 			$consigneTypeUntil = '';
 			$consigneTypeUntilFull = '';
 			if ( $isEco ) {
@@ -291,7 +311,6 @@ class TH {
 					}
 				}
 			} else if ( $isTemporary ) {
-				$consigneTip = '';
 				$consigneTypeImg = 'temp-override.svg';
 				// example : $consigneInfos->until = "2018-01-28T23:00:00Z"
 				$time = honeyutils::gmtToLocalHM($consigneInfos->until);
@@ -303,7 +322,6 @@ class TH {
 			}
 			$replace_TH['#consigneTypeUntil#'] = $consigneTypeUntil;
 			$replace_TH['#consigneTypeUntilFull#'] = $consigneTypeUntilFull;
-			$replace_TH['#consigneTip#'] = $consigneTip;
 		}
 		
 		$cmdSetConsigne = $equ->getCmd(null,self::CMD_SET_CONSIGNE_ID);
@@ -484,7 +502,10 @@ class TH {
 			foreach ( honeywell::C2BG as $tr=>$bgRef ) {
 				if ($tB == "" && $temperature >= $tr) {
 					$tB = $bgRef;
-					$pc = $temperature == 0 ? 100 : 100 * (min(1, ($temperature - $tr) / 3));
+					// 0.6.1 - gradient of 1st slice was incorrect
+					$pc = $tr == 0 ?
+                            $temperature*100/16 :
+                            100 * (min(1, ($temperature - $tr) / 3));
 					break;
 				}
 			}
@@ -551,6 +572,7 @@ class TH {
 			honeyutils::logDebug("<<OUT - actionSetConsigne");
 			return;
 		}
+		$currentTemp = honeyutils::readInfo($equ,TH::CMD_TEMPERATURE_ID);
 		$oldConsigne = honeyutils::readInfo($equ,TH::CMD_CONSIGNE_ID);	// btw, equ value is against unit chosen
 		$oldConsigneInfos = ConsigneInfos::buildObj($equ);
 		if ( $oldConsigne != null && is_object($oldConsigneInfos) ) {
@@ -605,7 +627,7 @@ class TH {
 			honeyutils::logError($msgInfo);
 			if ( $prefixByScenario == "" ) {
 				$equ->setMsgInfo($msgInfo);
-				$equ->iRefreshComponent($infosZones);
+				$equ->iRefreshComponent(true,$infosZones);
 			}
 			honeyutils::logDebug("<<OUT - actionSetConsigne");
 			return;
@@ -651,6 +673,11 @@ class TH {
 					$infosZone['until'] = $newUntil;
 					$msgInfo = "1" . honeywell::i18n("La consigne de {0}° a été correctement envoyée vers : {1}", [$params->t2,$zname]);
 					honeyutils::setCacheData(honeywell::CACHE_IAZ, $infosZones, honeywell::CACHE_IAZ_DURATION, $locId);
+					$prevBoiler = $oldConsigne > $currentTemp ? -1 : 0;
+					$newBoiler = $data['realValue'] > $currentTemp ? 1 : 0;
+					$adjBoiler = $prevBoiler + $newBoiler;
+						honeyutils::logDebug("call adjustBoilerRequest(ct=$currentTemp, oc=$oldConsigne, nc=" . $data['realValue'] . ",  ab=$adjBoiler, prev=$prevBoiler , new=$newBoiler");
+						Console::adjustBoilerRequest($locId,$adjBoiler);
 					$updated = true;
 					break;
 				}
@@ -659,7 +686,7 @@ class TH {
 			$scheduleCurrent = Schedule::getSchedule($locId);
 			$equ->setToHtmlProperties($states,$scheduleCurrent,$msgInfo);
 		}
-		$equ->iRefreshComponent($infosZones,$updated);
+		$equ->iRefreshComponent(true,$infosZones,$updated);
 		honeyutils::logDebug('<<OUT - actionSetConsigne');
 	}
 

@@ -152,8 +152,9 @@ $eqLogics = eqLogic::byType($plugin->getId());
 							<th style="width:70px;">Id</th>
 							<th>{{Nom}}</th>
 							<th>{{Type}}</th>
+							<th>{{Etat}}</th>
 							<th id="_idSH">-</th>
-							<th>{{Action}}</th>
+							<th>{{Configuration}}</th>
 						</tr>
 					</thead>
 					<tbody></tbody>

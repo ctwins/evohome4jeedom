@@ -18,6 +18,10 @@
 			<option value="3" #statScope3#>#statScopeTitle3#</option>
 		</select>
 	</div>
+	<div style="display:#boilerRequestDisplay#;margin-top:6px;">
+		<span style="font-size:12px;">#boilerRequestLabel#</span>
+		<img data-cmd_id="#boilerRequestId#" class="history" title="#boilerRequestTitle#" src="plugins/#pluginName#/img/chauffage_on.gif"/>
+	</div>
 	
 	<span style="font-size:12px;">#scheduleTitle#</span><br/>
 	<select id="scheduleList#id#" style="color: var(--txt-color);width:146px;font-size:11px;padding:4px !important;">#scheduleOptions#</select>
@@ -46,47 +50,9 @@
 	</a>
 </div>
 <script>
-if (!window.evoHnwPubSub) {
-	window.evoHnwPubSub = {
-		e : [],
-		p : function(scriptPart) {
-			this[scriptPart] = 2;
-			this.e.forEach((func) => func());
-		},
-		s : function(func) {
-			this.e.push(func);
-		},
-		db: 0,
-		th: 0,
-		co: 0,
-		thr : function() { return this.db === 2 && this.th === 2 },
-		cor : function() { return this.db === 2 && this.co === 2 },
-		load: function(part, suffixe) {
-			if (!this[part]) {
-				this[part] = 1;
-				const script = document.createElement("script");
-				script.src = 'plugins/#pluginName#/core/template/dashboard/' + suffixe;
-				document.body.appendChild(script);
-			}
-		}
-	};
-}
-evoHnwCOready#id# = false;
-function checkInit#id#() {
-	if (evoHnwPubSub.cor()) {
-		initVarsCommon('#pluginName#',#id#,'#evoBackgroundColor#','#evoCmdBackgroundColor#',#apiAvailable#,'#msgApiUnavailable#','#evoDefaultShowingScheduleMode#','#showHorizontal#','#argZoneId#','#argFileId#',#dashboard_css_size#,'#evoMsgInfo#');
-		initVarsConsole('#locId#','#argLocId#',#id#,#isAdmin#,"#scheduleFileId#",'#scheduleType#','#canRestoreCurrent#',#taskIsRunning#,"#title.setMode#",#codesAllowed#,#modesArray#,#schedulesList#,'#etatCode#',"#displaySetModeConsole#","#cmd_setmode_id#",'#argCodeMode#',"#setModeConfirm#","#setModeInfoList#","#cmd_save_id#","#saveAs#","#saveInfoList#","#saveReplace#","#saveName#","#saveRemark#","#argFileName#","#argFileRem#","#cmd_restore_id#","#restoreConfirm#","#restoreInfoList#","#cmd_delete_id#","#deleteConfirm#","#deleteInfoList#","#lblSelectedProgram#");
-		return true;
-	}
-	return false;
-}
-if (!(evoHnwCOready#id# = checkInit#id#())) {
-	evoHnwPubSub.s(function() {
-		if (!evoHnwCOready#id#) {
-			evoHnwCOready#id# = checkInit#id#();
-		}
-	});
-}
-evoHnwPubSub.load('db', 'dashboard_min.js?#dashboard_min_js_size#');
-evoHnwPubSub.load('co', 'console_min.js?#console_min_js_size#');
+if(!window.evoHnwPubSub){window.evoHnwPubSub={e:[],p:function(scriptPart){this[scriptPart]=2;this.e.forEach((func)=>func());},s:function(func){this.e.push(func);},db:0,th:0,co:0,thr:function(){return this.db===2&&this.th===2},cor:function(){return this.db===2&&this.co===2},load:function(part,suffixe){if(!this[part]){this[part]=1;const script=document.createElement("script");script.src='plugins/#pluginName#/core/template/dashboard/'+suffixe;document.body.appendChild(script);}}};}
+evoHnwCOready#id#=false;function checkInit#id#(){if(evoHnwPubSub.cor()){initVarsCommon('#pluginName#',#id#,'#evoBackgroundColor#','#evoCmdBackgroundColor#',#apiAvailable#,'#msgApiUnavailable#','#evoDefaultShowingScheduleMode#','#showHorizontal#','#argZoneId#','#argFileId#',#dashboard_css_size#,'#evoMsgInfo#');initVarsConsole('#locId#','#argLocId#',#id#,#isAdmin#,"#scheduleFileId#",'#scheduleType#','#canRestoreCurrent#',#taskIsRunning#,"#title.setMode#",#codesAllowed#,#modesArray#,#schedulesList#,'#etatCode#',"#displaySetModeConsole#","#cmd_setmode_id#",'#argCodeMode#',"#setModeConfirm#","#setModeInfoList#","#cmd_save_id#","#saveAs#","#saveInfoList#","#saveReplace#","#saveName#","#saveRemark#","#argFileName#","#argFileRem#","#cmd_restore_id#","#restoreConfirm#","#restoreInfoList#","#cmd_delete_id#","#deleteConfirm#","#deleteInfoList#","#lblSelectedProgram#");return true;}
+return false;}
+if(!(evoHnwCOready#id#=checkInit#id#())){evoHnwPubSub.s(function(){if(!evoHnwCOready#id#){evoHnwCOready#id#=checkInit#id#();}});}
+evoHnwPubSub.load('db','dashboard_min.js?#dashboard_min_js_size#');evoHnwPubSub.load('co','console_min.js?#console_min_js_size#');
 </script>

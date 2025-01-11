@@ -39,6 +39,8 @@ class Console {
 		$i = 0;
 		//$this->deleteCmd([honeywell::CMD_TEMPERATURE_ID, honeywell::CMD_CONSIGNE_ID, honeywell::CMD_SCH_CONSIGNE_ID, honeywell::CMD_CONSIGNE_TYPE_ID, honeywell::CMD_SET_CONSIGNE_ID]);
 		$equ->createOrUpdateCmd($i++, self::CMD_STATE, 'Etat', 'info', 'string', 1, 0);
+		// 0.6.1 - Scenario or external management helper
+		$equ->createOrUpdateCmd($i++, honeywell::CMD_BOILER_REQUEST, 'Demande de chauffage', 'info', 'numeric', 0, 1);
 		$equ->createOrUpdateCmd($i++, self::CMD_SET_MODE, 'Réglage mode', 'action', 'select', 1, 0);
 		$equ->createOrUpdateCmd($i++, self::CMD_SAVE, 'Sauvegarder', 'action', 'other', 1, 0);
 		$equ->createOrUpdateCmd($i++, self::CMD_RESTORE, 'Restaure', 'action', 'select', 1, 0);
@@ -53,7 +55,7 @@ class Console {
 		// ---- schedule
 		$equ->createOrUpdateCmd($i++, self::CMD_CURRENT_SCHEDULE, 'Programme actif', 'info', 'string', 0, 0);
 		if ( $equ->isLyric() ) {
-			$equ->createOrUpdateCmd($i++, self::CMD_STATE_PRESENCE, 'Présence', 'info', 'string', 0, 0);
+			$equ->createOrUpdateCmd($i, self::CMD_STATE_PRESENCE, 'Présence', 'info', 'string', 0, 0);
 		}
 
 		self::consoleUpdateActionsList($equ);
@@ -99,7 +101,7 @@ class Console {
 		$cmd->save();
 	}
 
-	static function injectinformations($equ,$infosZones) {
+	static function injectInformations($equ,$infosZones) {
 		honeyutils::logDebug("** Inject Console...");
 		$strState = State::buildStr($infosZones);
 		$strPrevState = honeyutils::saveInfo($equ, self::CMD_STATE, $strState);
@@ -120,6 +122,33 @@ class Console {
 		$schName = Schedule::getActiveScheduleName($equ->getLocationId(),$infosZones);
 		honeyutils::saveInfo($equ, self::CMD_CURRENT_SCHEDULE, $schName);
 	}
+	
+	static function setBoilerRequest($locId, $boilerRequest) {
+		$console = self::getConsole($locId);
+		$prevBoilerRequest = honeyutils::readInfo($console, honeywell::CMD_BOILER_REQUEST);
+		honeyutils::logDebug("Console $locId setBoilerRequest($boilerRequest) / previous=$prevBoilerRequest");
+		if ($prevBoilerRequest != $boilerRequest) {
+			self::saveBoilerRequest($console,$boilerRequest,false);
+		}
+	}
+  
+    static function adjustBoilerRequest($locId, $adjust) {
+    	if ($adjust === 0) {
+    		return;
+    	}
+    	$console = self::getConsole($locId);
+		$prevBoilerRequest = honeyutils::readInfo($console, honeywell::CMD_BOILER_REQUEST);
+		$boilerRequest = $prevBoilerRequest + $adjust;
+		honeyutils::logDebug("Console $locId adjustBoilerRequest($boilerRequest) / previous=$prevBoilerRequest");
+		self::saveBoilerRequest($console,$boilerRequest,true);
+    }
+    
+    static function saveBoilerRequest($console, $boilerRequest,$doRefresh) {
+    	honeyutils::saveInfo($console, honeywell::CMD_BOILER_REQUEST, $boilerRequest);
+    	if ($doRefresh) {
+    		$console->refreshWidget();
+    	}
+    }
 
 	static function getConsole($locId) {
 		return honeywell::getComponent($locId);
@@ -322,13 +351,20 @@ class Console {
 		// Mobile
 		$replace['#mLblPresence#'] = honeywell::i18n("Mode de présence");
 		$replace['#mLblValidate#'] = honeywell::i18n("Valider");
+		
+		$cmdBoilerCall = $equ->getCmd('info',honeywell::CMD_BOILER_REQUEST);
+		$nbRequesters = honeyutils::readInfo($equ, honeywell::CMD_BOILER_REQUEST);
+		$replace['#boilerRequestDisplay#'] = $cmdBoilerCall->getIsVisible() && $nbRequesters > 0 ? 'display' : 'none';
+		$replace['#boilerRequestLabel#'] = honeywell::i18n("Système en demande");
+		$replace['#boilerRequestId#'] = is_object($cmdBoilerCall) ? $cmdBoilerCall->getId() : '';
+		$replace['#boilerRequestTitle#'] = honeywell::i18n("{0} thermostat(s) en demande", $nbRequesters);
 	}
 
 	static function refreshConsole($locId, $msgInfo='', $taskIsRunning=false) {
 		honeywell::refreshComponent(array("zoneId"=>$locId, "taskIsRunning"=>$taskIsRunning), $msgInfo);
 	}
 
-	function actionSetMode($equ,$locId,$parameters) {
+	static function actionSetMode($equ,$locId,$parameters) {
 		$inCodeMode = $parameters[honeywell::ARG_CODE_MODE];
 		if ( $inCodeMode === null || $inCodeMode === '' ) {
 			honeyutils::logDebug("actionSetMode called without code");
@@ -383,7 +419,7 @@ class Console {
 
 	static function doAction($equ,$locId,$paramAction,$parameters) {
 		switch ($paramAction) {
-			case Console::CMD_SET_MODE:
+			case self::CMD_SET_MODE:
 				self::actionSetMode($equ,$locId,$parameters);
 				return true;
 		}

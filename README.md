@@ -2,7 +2,7 @@
 
 <img align="left" src="plugin_info/evohome_icon.png" width="120" style="padding-right:16px;">
 This is a plugin for Jeedom 3.3 to 4.4.x platform, regarding the Honeywell Evohome, Round T87RF and Lyric T6/T6R.<br/>
-State is : v0.6.0 - Jeedom 4.4.x compatibility
+State is : v0.6.1 - Boiler Request
 
 Written in php, the Jeedom main langage, 'a bit' of javascript, of course some html, and, at this time (from 0.3.0), a forked Python bridge (from the excellent python library "evohome" of watchforstock).<br/>
 Great thanks to him (and contributors). This implementation can be ***[found here](https://github.com/watchforstock/evohome-client)*** <br/>
@@ -22,6 +22,7 @@ NEW 0.5.3 - Detailed cmd Informations appear in the Console and TH equipments (s
 NEW 0.5.4 - Jeedom 4.2.x compatibility (Horizontal Schedule part)<br/>
 NEW 0.5.5 - Jeedom 4.2.x compatibility (Lyric part)<br/>
 NEW 0.6.0 - Jeedom 4.4.x compatibility<br/>
+NEW 0.6.1 - Boiler Request<br/>
 <br/><br/>
 Some words about configuration (or see the french doc.) :<br/>
 

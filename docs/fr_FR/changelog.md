@@ -1,11 +1,46 @@
 # Changelog - Evohome (& Round T87RF & Lyric T6/T6R) for Jeedom V3.3 to V4.4.x
 
+## [version 0.6.1] - 2025-01-11 - Boiler Request
+
+#### Added
+
+Thanks [Agamemnon](https://community.jeedom.com/t/evolution-info-flamme/135157) for this idea.
+
+1. New cmd info on TH<br/>
+    - boiler request (0 or 1) based on temperature < set point<br/>
+    No additional effects on the widget (the flame icon already reflected this situation), added for use in scenario or history.<br/>
+    Available with #[object][TH xxx][Demande de chauffage]#.<br/>
+    Historization is also available.
+2. New cmd info on Console<br/>
+    - boiler request (0 to n), based on sum of "TH boiler request"<br/>
+    Available with #[Object name][Console][Demande de chauffage]#.<br/>
+    A line added on widget "Boiler request" with the fire icon, which appears if this info > 0<br/>
+    Visibility settable from configuration (true by default).<br/>
+    Historization is also available<br/>
+
+Launch a synchronization to add these new cmd (all equipments should be updated so the new cmd info on Console should work).
+
+   3\. On configuration panel, added a Status column (current value) and remove of Test button which is not really useful.
+
+
+#### Fixes
+3 bug reported by **Gsxrnoir2001**, thanks to him !
+
+1. Setting mode was broken due to a Jeedom 4.4.x incompatibility (similar as 0.6.0/Fixes/2)
+2. Regression from 0.6.0 : error when reading Locations (appear for example during synchronisation)
+3. On TH widgets, when this displaying mode is chosen, gradient of 1st slice was incorrect
+
+
+#### More
+1. Remove of an empty tip info which appeared on setpoint value (TH widget)
+
+
 ## [version 0.6.0] - 2024-12-05 - Jeedom 4.4.x compatibility
 
 #### Fixes
 
 1. Widgets malformed when displaying first time on screen<br/>
-(due to unexplained switch in version 4.4 of Jeedom of delayed import of js files)<br/>
+(due to unexplained switch in Jeedom 4.4 of delayed import of js files)<br/>
 Thanks to [thierry.viens](https://community.jeedom.com/t/probleme-daffichage-plugin-honeywell/131356/18) for his time during our tests
 2. Change setpoint no more worked.<br/>
 (due to a more restrictive PHP version regarding static functions)<br/>

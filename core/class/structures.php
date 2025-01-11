@@ -186,7 +186,7 @@ class SetConsigneData {
 		$this->until = $until;
 	}
 	
-	public static function buildStrForSelect($label) {
+	public function buildStrForSelect($label) {
 		return $this->mode
 		. self::SEP . $this->zoneId
 		. self::SEP . $this->t1

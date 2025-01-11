@@ -25,6 +25,7 @@ Depuis 0.5.4/5 : Compatibilité **Jeedom 4.2.x**<br/><br/>
 
 Depuis 0.6.0 : Compatibilité **Jeedom 4.4.x**<br/><br/>
 
+Depuis 0.6.1 : Ajout de cmd info "Demande de chauffage" (boiler request)<br/><br/>
 
 
 # Page configuration
@@ -116,7 +117,8 @@ Soit :
 - Restaure<br/>
 Charge une programmation sauvegardée au préalable via la Console ou l'éditeur de programmes
     - /!\ lorsqu'un programme est utilisé dans un Scénario, vous ne pouvez plus le supprimer depuis la Console
-
+- Depuis 0.6.1, la console comporte un cmd info permettant de savoir si le système est en demande de chauffage (au moins 1 TH affiche la flamme).<br/>
+Le nom de ce nouveau cmd est "Demande chauffage", l'accès à l'info en scénario est donc, par exemple : #[Maison][Console][Demande de chauffage]#
 
 # Forum
 N'hésitez pas à visiter le **[forum dédié](https://community.jeedom.com/t/plugin-evohome)** pour toute question ou suggestion.
