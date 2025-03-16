@@ -1,5 +1,13 @@
 # Changelog - Evohome (& Round T87RF & Lyric T6/T6R) for Jeedom V3.3 to V4.4.x
 
+## [version 0.6.2] - 2025-02-16 - Debian 12  'bookworm' / PHP 8 and 0.6.1 fix
+
+#### Fixes
+
+1. 0.6.1 regression when update plugin without update widgets, or install from scratch (thanks **jeedommaison59** and **bludomo**)
+2. Change of Honeywell Cloud URL (mytotalconnectcomfort.com > tccna.resideo.com) (thanks **Gsxrnoir2001** - one again)
+3. Last but not least, Debian 12 / PHP 8 sensibilities corrected (many thanks to **Gsxrnoir2001**)
+
 ## [version 0.6.1] - 2025-01-11 - Boiler Request
 
 #### Added

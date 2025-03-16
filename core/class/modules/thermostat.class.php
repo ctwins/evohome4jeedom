@@ -116,6 +116,9 @@ class TH {
 		}
 		$temp = honeywell::adjustByUnit($infosZone['temperature'],$infosZone['units']);
 		$previousTemp = honeyutils::saveInfo($equ, self::CMD_TEMPERATURE_ID, $temp, 0);
+        if (gettype($previousTemp) == "string") {
+          $previousTemp = $temp;
+        }
 		$setPoint = honeywell::adjustByUnit($infosZone['setPoint'], $infosZone['units']);
 		honeyutils::saveInfo($equ, self::CMD_CONSIGNE_ID, $setPoint);
 		$locId = $equ->getLocationId();
@@ -156,7 +159,7 @@ class TH {
 
 		// 0.6.1 - boiler request
 		$prevBoilerRequest = honeyutils::readInfo($equ, honeywell::CMD_BOILER_REQUEST);
-		$boilerRequest = $temp < $setPoint ? 1 : 0;
+		$boilerRequest = ($temp < $setPoint) ? 1 : 0;
 		if ($prevBoilerRequest != $boilerRequest) {
 			honeyutils::saveInfo($equ, honeywell::CMD_BOILER_REQUEST, $boilerRequest);
 		}
@@ -168,7 +171,7 @@ class TH {
 				", boilerRequest = $boilerRequest (previous=$prevBoilerRequest)");
 		}
 		
-		return $temp < $setPoint;
+		return ($temp < $setPoint);
 	}
 
 	static function toHtml($equ,$pVersion,$version,&$replace,$scheduleCurrent) {
@@ -193,6 +196,7 @@ class TH {
 		$temperatureNative = is_object($cmdTemperature) ? $cmdTemperature->execCmd() : 0;
 		if ( $temperatureNative == null ) {
 			$temperature = 0;
+            $temperatureNative = 0;
 			$replace_TH['#temperature#'] = '';
 			$replace_TH['#temperatureDisplay2#'] = 'none';
 		} else {
@@ -220,10 +224,10 @@ class TH {
 		} else {
 			$cmdBoilerCall = $equ->getCmd('info',honeywell::CMD_BOILER_REQUEST);
 			$replace_TH['#temperatureBoilerId#'] = is_object($cmdBoilerCall) ? $cmdBoilerCall->getId() : '';
-			$imgVisible = !is_object($cmdBoilerCall) ? true : $cmdBoilerCall->getIsVisible() ? true : false;
+			$imgVisible = !is_object($cmdBoilerCall) || $cmdBoilerCall->getIsVisible() ? true : false;
 			$replace_TH['#temperatureImgClass#'] = $imgVisible ? 'history' : '';
 			$replace_TH['#temperatureDeltaDisplay#'] = 'block';
-			if ( $consigneInfos->heating == 1 || $temperatureNative < $consigne ) {
+			if ( ($consigneInfos->heating == 1) || ($temperatureNative < $consigne) ) {
 				$replace_TH['#temperatureImg#'] = 'chauffage_on.gif';
 				$replace_TH['#temperatureImgStyle#'] = $imgVisible ? 'height:15px;width:15px;' : 'display:none';
 			} else {
@@ -503,9 +507,7 @@ class TH {
 				if ($tB == "" && $temperature >= $tr) {
 					$tB = $bgRef;
 					// 0.6.1 - gradient of 1st slice was incorrect
-					$pc = $tr == 0 ?
-                            $temperature*100/16 :
-                            100 * (min(1, ($temperature - $tr) / 3));
+					$pc = $tr == 0 ? $temperature*100/16 : 100 * (min(1, ($temperature - $tr) / 3));
 					break;
 				}
 			}

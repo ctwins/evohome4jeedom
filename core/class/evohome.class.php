@@ -307,7 +307,8 @@ class evohome extends honeywell {
 		foreach ( $locations as $loc ) {
 			$locId = $loc['locationId'];
 			$zones = $loc['zones'];
-			$zones[] = array("typeEqu"=>self::TYPE_EQU_CONSOLE, "id"=>$locId.'', "name"=>self::i18n("Console")." ".$loc['name']);
+			$objIdForConsole = -1;
+			array_unshift($zones, array("typeEqu"=>self::TYPE_EQU_CONSOLE, "id"=>$locId.'', "name"=>self::i18n("Console")." ".$loc['name']));
 			foreach ($zones as $zone) {
 				if ( honeyutils::isDebug() ) honeyutils::logDebug("Check for " . $zone["name"] . "/" . $zone["id"]);
 				$todo = true;
@@ -357,6 +358,8 @@ class evohome extends honeywell {
 								honeyutils::setParam(self::iCFG_SCHEDULE_ID, $sId, $locId);
 								config::remove(self::iCFG_SCHEDULE_ID, __CLASS__);
 							}
+							// 0.6.2 - save obj id for console
+							$objIdForConsole = $eqLogic->getObject_id();
 						} else {
 							// 0.4.0 - 2019-06-29 - new : alert settings
 							honeyutils::logDebug("-- alert settings..");
@@ -390,15 +393,25 @@ class evohome extends honeywell {
 					$eqLogic->setConfiguration(self::CONF_MODEL_TYPE, $loc['modelType']);
 					// 0-5-0 - Specify system
 					$eqLogic->setConfiguration(self::CONF_HNW_SYSTEM, self::SYSTEM_EVOHOME);
+					$objSet = false;
 					foreach (jeeObject::all() as $obj) {
 						if ( stripos($zName,$obj->getName()) !== false || stripos($obj->getName(),$zName) !== false ) {
 							$sql = "select count(*) as cnt from eqLogic where name = '" . $zName . "' and object_id = " . $obj->getId();
 							$dbResults = DB::Prepare($sql, array(), DB::FETCH_TYPE_ALL);
 							if ( count($dbResults) == 0 || $dbResults[0]['cnt'] == 0 ) {
 								$eqLogic->setObject_id($obj->getId());
+								$objSet = true;
+								// 0.6.2 - save obj id for console
+								if ($zone["typeEqu"] == self::TYPE_EQU_CONSOLE) {
+									$objIdForConsole = $obj->getId();
+								}
 								break;
 							}
 						}
+					}
+					if (!$objSet && $zone["typeEqu"] == self::TYPE_EQU_THERMOSTAT && $objIdForConsole != -1) {
+						// 0.6.2 - use obj id from console if set
+						$eqLogic->setObject_id($objIdForConsole);
 					}
 					$eqLogic->setConfiguration(self::CONF_TYPE_EQU, $zone["typeEqu"]);
 					if ( $zone["typeEqu"] == self::TYPE_EQU_CONSOLE ) {

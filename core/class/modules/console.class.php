@@ -175,7 +175,8 @@ class Console {
 	}
 	
 	static function getTimeWindow($locId,$cmdTempId) {
-		$cmd = self::getConsole($locId)->getCmd('info',self::CMD_STATISTICS_ID);
+        $equ = self::getConsole($locId);
+		$cmd = !is_object($equ) ? 0 : $equ->getCmd('info',self::CMD_STATISTICS_ID);
 		return !is_object($cmd) || !$cmd->getIsVisible() || $cmdTempId == '' ? 0 : max(0, $cmd->execCmd());
 	}
 
@@ -354,7 +355,7 @@ class Console {
 		
 		$cmdBoilerCall = $equ->getCmd('info',honeywell::CMD_BOILER_REQUEST);
 		$nbRequesters = honeyutils::readInfo($equ, honeywell::CMD_BOILER_REQUEST);
-		$replace['#boilerRequestDisplay#'] = $cmdBoilerCall->getIsVisible() && $nbRequesters > 0 ? 'display' : 'none';
+		$replace['#boilerRequestDisplay#'] = is_object($cmdBoilerCall) && $cmdBoilerCall->getIsVisible() && $nbRequesters > 0 ? 'display' : 'none';
 		$replace['#boilerRequestLabel#'] = honeywell::i18n("Système en demande");
 		$replace['#boilerRequestId#'] = is_object($cmdBoilerCall) ? $cmdBoilerCall->getId() : '';
 		$replace['#boilerRequestTitle#'] = honeywell::i18n("{0} thermostat(s) en demande", $nbRequesters);

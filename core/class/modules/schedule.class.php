@@ -13,7 +13,7 @@ class Schedule {
 	/*************** Statics about Scheduling ********************/
 
 	static function getScheduleType($scheduleContentOrInfosZones) {
-		return array_key_exists('scheduleType',$scheduleContentOrInfosZones) ? $scheduleContentOrInfosZones["scheduleType"] : HeatMode::SCHEDULE_TYPE_TIME;
+		return is_array($scheduleContentOrInfosZones) && array_key_exists('scheduleType',$scheduleContentOrInfosZones) ? $scheduleContentOrInfosZones["scheduleType"] : HeatMode::SCHEDULE_TYPE_TIME;
 	}
 
 	static function getCfgScheduleFileId($locId,$scheduleContentOrInfosZones) {

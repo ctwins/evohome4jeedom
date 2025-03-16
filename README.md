@@ -2,7 +2,7 @@
 
 <img align="left" src="plugin_info/evohome_icon.png" width="120" style="padding-right:16px;">
 This is a plugin for Jeedom 3.3 to 4.4.x platform, regarding the Honeywell Evohome, Round T87RF and Lyric T6/T6R.<br/>
-State is : v0.6.1 - Boiler Request
+State is : v0.6.2 - Debian 12 'bookworm' / PHP 8 compatibility
 
 Written in php, the Jeedom main langage, 'a bit' of javascript, of course some html, and, at this time (from 0.3.0), a forked Python bridge (from the excellent python library "evohome" of watchforstock).<br/>
 Great thanks to him (and contributors). This implementation can be ***[found here](https://github.com/watchforstock/evohome-client)*** <br/>
@@ -23,6 +23,7 @@ NEW 0.5.4 - Jeedom 4.2.x compatibility (Horizontal Schedule part)<br/>
 NEW 0.5.5 - Jeedom 4.2.x compatibility (Lyric part)<br/>
 NEW 0.6.0 - Jeedom 4.4.x compatibility<br/>
 NEW 0.6.1 - Boiler Request<br/>
+NEW 0.6.2 - Debian 12 'bookworm' / PHP 8 compatibility<br/>
 <br/><br/>
 Some words about configuration (or see the french doc.) :<br/>
 
@@ -50,7 +51,7 @@ Please note as a schedule file is set in at least one scenario, it could not be 
 
 **Warning : some operations take time**, could be some minutes for the schedule restoring with Evohome and many rooms, just be patient when you see the rolling picture, and/or, take an eye on the notifications which appear ;)
 
-Last but not least, a **[Jeedom forum is dedicated to this Evohome plugin](https://community.jeedom.com/t/plugin-evohome)** (***[previous forum](https://forum.jeedom.com/viewtopic.php?f=143&t=31647&sid=41c4acd4ffe5ecc1c4f120ecf7ce7569&start=200)***)<br/>
+Last but not least, a **[Jeedom forum is dedicated to this Evohome plugin](https://community.jeedom.com/t/plugin-evohome)**<br/>
 Don't hesitate to contact me in this blog for any question or problem you could encounter.
 <br/>
 

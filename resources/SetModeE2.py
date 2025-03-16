@@ -8,8 +8,8 @@ import logging
 logging.basicConfig()
 evohome_log = logging.getLogger("evohomeBridge-SetMode")
 
-#baseUrl = 'https://tccna.honeywell.com/WebAPI/emea/api/v1/'
-baseUrl = 'https://mytotalconnectcomfort.com/WebAPI/emea/api/v1/'
+baseUrl = 'https://tccna.resideo.com/WebAPI/emea/api/v1/'
+#baseUrl = 'https://mytotalconnectcomfort.com/WebAPI/emea/api/v1/'
 
 def addTokenTags():
 	if CLIENT != None and CLIENT.access_token != None:

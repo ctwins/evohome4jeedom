@@ -1,7 +1,7 @@
 <img align="left" src="../img/evohome_icon.png" width="120" style="padding-right:16px"/>
 Plugin permettant l'intégration des systèmes Honeywell **Evohome, Round T87RF, Lyric T6/T6R**
 
-*Pour la partie Evohome/Round, basé sur l'excellente  **[librairie de watchforstock](https://github.com/watchforstock/evohome-client)**&nbsp;(fork embarqué depuis 0.3.0)*<br/><br/><br/><br/><br/>
+*Pour la partie Evohome/Round, basé sur l'excellente&nbsp;**[librairie de watchforstock](https://github.com/watchforstock/evohome-client)**&nbsp;(fork embarqué depuis 0.3.0)*<br/><br/><br/><br/><br/>
 
 
 
@@ -17,21 +17,19 @@ Plugin permettant l'intégration des systèmes Honeywell **Evohome, Round T87RF,
 
 Depuis 0.4.0 : gère la multi-localisations et le Round-Thermostat T87RF (2025=NL,2033=EN,2041=IT,FR,ES,2059=DE)<br/>
 **/!\ ATTENTION - VOUS DEVEZ LANCER UNE SYNCHRONISATION LORS DE LA MISE A JOUR DE LA VERSION 0.3.x VERS 0.4.x**<br/>
-**/!\ Sauvegarde préalable hautement conseillée. Contactez-moi pour tout problème d'update**
+**/!\ Sauvegarde préalable hautement conseillée. Contactez-moi pour tout problème d'update**<br/>
 
-Depuis 0.5.0 : gère désormais les thermostats **Lyric T6/T6R**<br/><br/>
-
-Depuis 0.5.4/5 : Compatibilité **Jeedom 4.2.x**<br/><br/>
-
-Depuis 0.6.0 : Compatibilité **Jeedom 4.4.x**<br/><br/>
-
-Depuis 0.6.1 : Ajout de cmd info "Demande de chauffage" (boiler request)<br/><br/>
+Depuis 0.5.0 : gère désormais les thermostats **Lyric T6/T6R**<br/>
+Depuis 0.5.4/5 : Compatibilité **Jeedom 4.2.x**<br/>
+Depuis 0.6.0 : Compatibilité **Jeedom 4.4.x**<br/>
+Depuis 0.6.1 : Ajout de cmd info "Demande de chauffage" (boiler request)<br/>
+Depuis 0.6.2 : Compatibilité Debian 12 'bookworm' / PHP 8<br/><br/>
 
 
 # Page configuration
 ## Initialisation
 ### Evohome et Round T87RF
-Saisir login et mot de passe, tels que vous les avez définis sur le site officiel.<br/>
+Saisir votre login et votre mot de passe tels que vous les avez définis sur le site officiel et/ou pour l'application Smartphone.<br/>
 
 ### Lyric T6/T6R
 Un peu plus compliqué, vu que l'authentificaiton s'effectue sous protocole OAuth2 :
@@ -49,8 +47,11 @@ Cela ouvre une page d'authentification sur le site d'Honeywell, qui vous invite 
 
 ### Cliquer ensuite sur le bouton Synchroniser
 sur chaque localisation existante, une Console va être créée, ainsi que les équipements pour chaque zone trouvée.<br/>
-NB1 : le nommage des équipements utilise le préfixe modifiable "TH" + " " + [nom de la zone].<br/>
-NB2 : les TH sont rattachés aux objets parents comportant le même nom ou similaire que celui de la zone (A dans B ou B dans A, indépendant de la casse)<br/>
+NB1 :<br/>
+Le nommage des équipements utilise le préfixe modifiable "TH" + " " + [nom de la zone].<br/><br/>
+NB2 :<br/>
+Les TH sont rattachés aux objets parents comportant le même nom ou similaire que celui de la zone (A dans B ou B dans A, indépendant de la casse)<br/>
+Depuis 0.6.2, les TH sont attachés au même Objet que celui affecté à la Console, si l'association a pu être trouvée.<br/>
 **=> en cas d'erreur lors de la synchronisation, n'hésitez pas à me contacter via le forum**
 
 
@@ -61,9 +62,9 @@ NB2 : les TH sont rattachés aux objets parents comportant le même nom ou simil
 
 ### Thermostats
   - style de la barre de titre
-  - unité d'affichage des températures et consigne
+  - unité d'affichage des températures et consignes
   - (sauf Lyric) précision d'affichage
-  - mode de réglage manuel des consignes : intégré (mode permanent), par popup (réglage de la durée)
+  - mode de réglage manuel des consignes : intégré (mode permanent), par popup (réglages de durée)
 
 ### Programmes hebdomadaires
   - mode d'affichage par défaut (lors de l'action des boutons Pc et Ps)

@@ -119,22 +119,24 @@ abstract class honeywell extends eqLogic {
 	    return honeyutils::i18n($txt, "plugins/".self::PLUGIN_NAME."/core/class/evohome.class.php", $arg);
 	}
 
-	static function setCron($cron) {
-		$cron->setClass(self::PLUGIN_NAME);
-		$cron->setFunction('main_refresh');
-		$cron->setEnable(1);
-		$cron->setDeamon(0);
-		$cron->setSchedule("*/20 * * * * *");
-		$cron->save();
+	static function installCron() {
+	    $cron = cron::byClassAndFunction(self::PLUGIN_NAME, 'main_refresh');
+		if (!is_object($cron)) {
+			log::add("evohome", 'debug', "hnw_install 3");
+			$cron = new cron();
+			$cron->setClass(self::PLUGIN_NAME);
+			$cron->setFunction('main_refresh');
+			$cron->setEnable(1);
+			$cron->setDeamon(0);
+			$cron->setSchedule("*/20 * * * * *");
+			$cron->save();
+		}
 	}
 
 	static function hnw_install() {
-	    $cron = cron::byClassAndFunction(self::PLUGIN_NAME, 'main_refresh');
-		if (!is_object($cron)) {
-			$cron = new cron();
-			self::setCron($cron);
-		}
+		self::installCron();
 	}
+	
 	static function hnw_update() {
 	    foreach (self::getEquipments() as $eqLogic) {
 	        // When HNW_SYSTEM is unset, that means it's an old installation which concern Evohome system only
@@ -143,12 +145,9 @@ abstract class honeywell extends eqLogic {
 	            $eqLogic->save();
 	        }
 	    }
-	    $cron = cron::byClassAndFunction(self::PLUGIN_NAME, 'main_refresh');
-	    if (!is_object($cron)) {
-	        $cron = new cron();
-	        self::setCron($cron);
-	    }
+		self::installCron();
 	}
+	
 	static function hnw_remove() {
 	    $cron = cron::byClassAndFunction(self::PLUGIN_NAME, 'main_refresh');
 		if (is_object($cron)) {
@@ -775,7 +774,7 @@ abstract class honeywell extends eqLogic {
 
 	static function getInformationsForLoc($locId,$doRefresh=false) {
 		$equ = Console::getConsole($locId);
-		return $equ->getInformations($doRefresh);
+		return $equ == null ? null : $equ->getInformations($doRefresh);
 	}
 
 	public static function getBackColorForTemp($temp,$isOff=false) {

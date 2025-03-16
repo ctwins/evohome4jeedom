@@ -18,8 +18,8 @@ class EvohomeClientSC(EvohomeBase):
 		self.password = password
 		self.debug = debug
 		self.request_timeout = 15
-		#self.domain = 'https://tccna.honeywell.com'
-		self.domain = 'https://mytotalconnectcomfort.com'
+		self.domain = 'https://tccna.resideo.com'
+		#self.domain = 'https://mytotalconnectcomfort.com'
 		self.loginurl = self.domain + '/Auth/OAuth/Token'
 		self.baseurl = self.domain + '/WebAPI/emea/api/v1'
 		self.basicAuth = 'NGEyMzEwODktZDJiNi00MWJkLWE1ZWItMTZhMGE0MjJiOTk5OjFhMTVjZGI4LTQyZGUtNDA3Yi1hZGQwLTA1OWY5MmM1MzBjYg=='

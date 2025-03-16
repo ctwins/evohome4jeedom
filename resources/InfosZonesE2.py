@@ -12,8 +12,8 @@ evohome_logV1 = logging.getLogger("evohomeBridge-InfosZones(APIV1)")
 
 # V1 data
 V1_ACTIVE = True
-#baseurl = 'https://tccna.honeywell.com/WebAPI/api/'
-baseurl = 'https://mytotalconnectcomfort.com/WebAPI/api/'
+baseurl = 'https://tccna.resideo.com/WebAPI/api/'
+#baseurl = 'https://mytotalconnectcomfort.com/WebAPI/api/'
 appId = '91db1612-73fd-4500-91b2-e63b069b185c'
 SESSION_ID_V1 = None
 USER_ID_V1 = None
